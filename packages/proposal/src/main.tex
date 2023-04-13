@@ -1,0 +1,59 @@
+\documentclass[titlepage,colorinlistoftodos]{article}
+\usepackage{style}
+
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage{svg}
+\usepackage{todonotes}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\begin{document}
+
+\title{ADRIAN: Automated Decentralized Risk Assessment and Mitigation}
+\author{Jorn J. Verhoeven}
+\birthdate{January 10th, 1995}
+\birthplace{Utrecht, The Netherlands}
+\defensedate{August 1th, 2023}
+\supervisor{Dr. Z.A. Mann}
+% \committeemember{Dr. C.U. Grelck}
+\maketitle
+
+\listoftodos{}
+\newpage
+
+\tableofcontents
+
+\asJava % By default use Java as the code language
+
+\todo[inline]{Set Defense Date}
+\todo[inline]{Add other supervisors}
+\todo[inline]{Add other committee members}
+
+
+\input{sections/project-details.tex}
+\input{sections/project-summary.tex}
+\input{sections/problem-analysis.tex}
+\input{sections/research-method.tex}
+%\newpage
+\input{sections/required-expertise.tex}
+\input{sections/timeline.tex}
+\input{sections/risks.tex}
+
+
+% Main content
+%\input{thesis/sections/background}
+%\input{thesis/sections/metrics}
+%\input{thesis/sections/framework}
+%
+%
+%\input{thesis/sections/discussion}
+%\input{thesis/sections/related-work}
+%\input{thesis/sections/conclusion}
+% Subsection \input{thesis/sections/f uture-work}
+%
+
+\bibliographystyle{alpha}
+\bibliography{bibliography}
+\end{document}

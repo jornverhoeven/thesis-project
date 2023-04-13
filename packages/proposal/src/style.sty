@@ -1,0 +1,197 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{style}[2023/04/13 Master thesis style, J. Verhoeven]
+% Based on https://www.overleaf.com/latex/templates/title-page-for-university-of-amsterdam-master-of-logic-thesis/wnvkqptxhyvp
+
+
+\RequirePackage{epsfig}
+\RequirePackage{listing}
+
+\newcommand{\degree}[1]{%
+  \gdef\@degree{#1}
+}
+\newcommand{\@degree}[1]{%
+  MSc in Software Engineering
+}
+\newcommand{\birthdate}[1]{%
+  \gdef\@birthdate{#1}
+}
+\newcommand{\@birthdate}{%
+  \@latex@warning@no@line{No \noexpand\birthdate given}
+}
+\newcommand{\birthplace}[1]{%
+  \gdef\@birthplace{#1}
+}
+\newcommand{\@birthplace}{%
+  \@latex@warning@no@line{No \noexpand\birthplace given}
+}
+\newcommand{\defensedate}[1]{%
+  \gdef\@defensedate{#1}
+}
+\newcommand{\@defensedate}{%
+  \@latex@warning@no@line{No \noexpand\defensedate given}
+}
+\newcount\@supervisorcnt
+\@supervisorcnt=1
+\newcommand{\supervisor}[1]{%
+  \advance\@supervisorcnt 1%
+  \ifnum\@supervisorcnt=1%
+  {\gdef\@supervisorA{#1}\gdef\@supervisorAA{\textbf{#1}}}
+  \else\ifnum\@supervisorcnt=2%
+  {\gdef\@supervisorB{#1}\gdef\@supervisorBB{ and \textbf{#1}}}
+  \fi\fi
+}
+\newcommand{\@supervisorA}{%
+  \@latex@warning@no@line{No \noexpand\supervisor given}
+}
+\newcommand{\@supervisorAA}{%
+  \@latex@warning@no@line{No \noexpand\supervisor given}
+}
+\newcommand{\@supervisorB}{}
+\newcommand{\@supervisorBB}{}
+
+
+
+\newcount\@committeemembercnt
+\@committeemembercnt=1
+\newcommand{\committeemember}[1]{%
+  \advance\@committeemembercnt 1%
+  \ifnum\@committeemembercnt=1%
+  \gdef\@committeememberA{#1}
+  \else\ifnum\@committeemembercnt=2%
+  \gdef\@committeememberB{#1}
+  \else\ifnum\@committeemembercnt=3%
+  \gdef\@committeememberC{#1}
+  \else\ifnum\@committeemembercnt=4%
+  \gdef\@committeememberD{#1}
+  \else\ifnum\@committeemembercnt=5%
+  \gdef\@committeememberE{#1}
+  \else\ifnum\@committeemembercnt=6%
+  \gdef\@committeememberF{#1}
+  \else\ifnum\@committeemembercnt=7%
+  \gdef\@committeememberG{#1}
+  \else\ifnum\@committeemembercnt=8%
+  \gdef\@committeememberH{#1}
+  \fi\fi\fi\fi\fi\fi\fi\fi
+}
+
+
+
+\newcommand{\@committeememberA}{%
+  \@latex@warning@no@line{No \noexpand\committeemember given}
+}
+\newcommand{\@committeememberB}{}
+\newcommand{\@committeememberC}{}
+\newcommand{\@committeememberD}{}
+\newcommand{\@committeememberE}{}
+\newcommand{\@committeememberF}{}
+\newcommand{\@committeememberG}{}
+\newcommand{\@committeememberH}{}
+\renewcommand{\maketitle}{%
+  \begin{titlepage}%
+    % Make sure title-page is centered even with option 'twopage'
+    % Note: these lenghts should auto-revert after the titlepage is complete
+    \setlength{\oddsidemargin}{0.5\paperwidth}
+    \addtolength{\oddsidemargin}{-0.5\textwidth}
+    \addtolength{\oddsidemargin}{-1in}
+    \setlength{\evensidemargin}{\oddsidemargin}
+    \let\footnotesize\small
+    \let\footnoterule\relax
+    \let\footnote\thanks
+    \null\vfil
+    \begin{center}%
+      {\Large \@title \par}%
+      \vskip2cm%
+      {\large \textbf{MSc Thesis Proposal} \textsl{(Afstudeerscriptie voorstel)}}%
+      \vskip3mm%
+      written by%
+      \vskip3mm%
+      \textbf{\@author}\\
+      (born \@birthdate\ in \@birthplace)%
+      \vskip3mm%
+      under the supervision of
+      {\@supervisorAA}{\@supervisorBB},
+      and submitted to the Board of Examiners
+      in partial fulfillment of the requirements for the degree of%
+      \vskip5mm%
+      {\large\textbf{\@degree}}%
+      \vskip5mm%
+      at the \textit{Universiteit van Amsterdam}.%
+      \vskip2cm%
+      \begin{tabular}{ll}%
+        \textbf{Supervisor:} & \textbf{Members of the Thesis Committee:}\\%
+        \textsl{\@supervisorA}                & \@committeememberA\\%
+                                              & \@committeememberB\\%
+        \textbf{Date of the public defense:}  & \@committeememberC\\%
+        \textsl{\@defensedate}                & \@committeememberD\\%
+      \end{tabular}%
+      \vfill%
+      \resizebox{10cm}{!}{\includegraphics{logo.jpg}}%
+    \end{center}\par%
+    \@thanks%
+    \vfil\null%
+  \end{titlepage}%
+  \setcounter{footnote}{0}%
+  \global\let\thanks\relax
+  \global\let\title\relax
+  \global\let\author\relax
+  \global\let\date\relax
+  \global\let\birthdate\relax
+  \global\let\birthplace\relax
+  \global\let\supervisor\relax
+  \global\let\committeemember\relax
+  \global\let\@thanks\@empty
+  \global\let\@title\@empty
+  \global\let\@author\@empty
+  \global\let\@date\@empty
+  \global\let\@birthdate\@empty
+  \global\let\@birthplace\@empty
+  \global\let\@supervisor\@empty
+  \global\let\@committeemember\@empty
+  \global\let\maketitle\relax
+  \global\let\and\relax
+}
+% added to allow working with amsbook
+\renewcommand{\author}[1]{%
+  \gdef\@author{#1}%
+}
+
+% Notes
+\newcommand{\comment}[2]{\todo[size=\small, color=green!20]{#1: #2}}
+\newcommand{\info}[1]{\todo[inline, color=blue!20]{Info: #1}}
+\newcommand{\question}[1]{\todo[inline, color=blue!10]{Q: #1}}
+\newcommand{\add}[1]{\todo[inline, color=green!20]{To add: #1}}
+
+\newcommand{\required}[1]{\todo[inline, color=red!20]{Req: #1}}
+\newcommand{\unchecked}[1]{\todo[inline, color=yellow!20]{Unckd.: #1}}
+\newcommand{\done}[1]{\todo[inline, color=green!20]{Done: #1}}
+
+
+% Research question references
+\newcounter{rq}
+\newcommand{\researchquestion}[2]{\refstepcounter{rq}\vspace{0.5em}
+    \textbf{RQ \therq}\label{rq:#1} \emph{#2}\vspace{0.5em}}
+\newcommand{\refRQ}[1]{\hyperref[rq:#1]{\textbf{RQ \ref{rq:#1}}}}
+
+% Hypotheses references
+\newcounter{hyp}
+\newcommand{\hypothesis}[2]{\refstepcounter{hyp}\vspace{0.5em}
+    \textbf{Hypothesis \thehyp}\label{hyp:#1} \emph{#2}\vspace{0.5em}}
+\newcommand{\refHyp}[1]{\hyperref[hyp:#1]{\textbf{Hyp. \ref{hyp:#1}}}}
+
+% Discussion references
+\newcounter{disc}
+\newcommand{\discussion}[2]{\refstepcounter{disc}\vspace{0.5em}
+    \textbf{Discussion \thedisc}\label{disc:#1} \emph{#2}\vspace{0.5em}}
+\newcommand{\refDisc}[1]{\hyperref[disc:#1]{\textbf{Disc. \ref{disc:#1}}}}
+
+% Code
+\newcommand{\asJava}[0]{
+    \lstset{language=Java,
+            numbers=left,
+            basicstyle=\ttfamily,
+            keywordstyle=\color{blue}\ttfamily,
+            stringstyle=\color{red}\ttfamily,
+            commentstyle=\color{green}\ttfamily,
+            morecomment=[l][\color{magenta}]{\#}}
+}
+\newcommand{\inlineCode}[1]{\lstinline{#1}}

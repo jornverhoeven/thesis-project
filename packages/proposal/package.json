@@ -1,0 +1,11 @@
+{
+  "name": "proposal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "TEXINPUTS=.:./src: pdflatex -output-directory ./dist -jobname='Proposal' main.tex"
+  },
+  "author": "",
+  "license": "ISC"
+}
