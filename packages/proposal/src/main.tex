@@ -2,12 +2,16 @@
 \usepackage{style}
 
 \usepackage{float}
-\usepackage[hidelinks]{hyperref}
+% \usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
 \usepackage{svg}
+% \usepackage[disable]{todonotes}
 \usepackage{todonotes}
 
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{pgfgantt}
+\usepackage{pdflscape}
 
 \begin{document}
 
@@ -15,7 +19,7 @@
 \author{Jorn J. Verhoeven}
 \birthdate{January 10th, 1995}
 \birthplace{Utrecht, The Netherlands}
-\defensedate{August 1th, 2023 (Estimation)}
+\defensedate{September 1th, 2023 (Estimation)}
 \supervisor{Dr. Z.A. Mann}
 % \committeemember{Dr. C.U. Grelck}
 \maketitle
@@ -27,17 +31,14 @@
 
 \asJava % By default use Java as the code language
 
-\required{Set Defense Date}
-\required{Add committee members}
-
 \input{sections/project-details.tex}
 \input{sections/project-summary.tex}
 \input{sections/problem-analysis.tex}
 \input{sections/research-method.tex}
+\input{sections/expected-results.tex}
 %\newpage
 \input{sections/required-expertise.tex}
 \input{sections/timeline.tex}
-\input{sections/risks.tex}
 
 
 % Main content

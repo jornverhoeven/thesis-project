@@ -1,1 +1,33 @@
 \section{Problem Analysis}
+\label{sec:problem-analysis}
+
+% Things to mention:
+% - Nodes, Agents, Software Components, Links, Critical Software.
+% - Attack Graphs, Risk Rules, Risk Probability.
+% - Auctioning, Attack Graph Merging, Mitigation Proposals, Ranking of Mitigation strategies.
+
+As mentioned in the section above, the increasing growth of network networks creates an environment where potential risk assessment is getting too complex to easily do by hand. Although risk assessment tools are in place, their focus is limited to the properties and attributes of a single node, and the software components it is running. Some of these properties could be; Server is running Software A with version, or the firewall ports that are opened. 
+
+\add{More info on the problem and missing link with current software and research}
+
+
+In this thesis research we propose to address the limitation of inspecting single nodes by creating a protocol for automated risk assessment and mitigation by creating a decentralized network of agents that communicate within a localized set of nodes, in order to decrease the calculated risk of the entire network. 
+
+% The proposed method of doing this is:
+
+% 1. to have neighbouring agents share information within the network, and keep track of a local knowledge-base.
+% 2. have agents calculate an attack graph of its knowledge-base, and apply a set of predefined risk-rules to it. The output of this step is a set of risks with a probability score indicating the probability of an attack happening to a critical component in the network.
+% 3. have an agent auction of the highest risk to neighbouring agents. The neighbouring agents receive the attack graph and the calculated risk. They merge the received attack graph with their own knowledge-base.
+% 4. The nodes that participate in the auction will use this newly merged attack graph to apply several adoption patterns and propose a mitigation strategy to the auctioneer.
+% 5. The adaptation strategy will be selected by the initial agent and the strategy will be applied to the network. 
+% 6. This new information will be shared to neighbouring nodes, starting the cycle anew.
+
+The proposed protocol consists of several steps. Firstly, neighbouring agents will share information within the network and maintain a local knowledge-base. This knowledge-base contains information on the software components and other attributes the neighbouring nodes have. Throughout the thesis we will introduce a variable that will determine the depth to which knowledge is shared in this phase. 
+
+Secondly, agents should use their newly acquired knowledge of their local network with a set of predefined risk-rules to create an Attack Graph. This attack graph contains all nodes and software components in the knowledge-base, where the edges are determined by the risk-rules. A rule defines the relation from node-to-node, node-to-software, or software-to-software. These relations are directional, and make up a graph through which an attacker could reach a critical piece of software. This Attack Graph will then be used to calculate the probability of an attack for each software component. 
+
+An agent will select a risk it wants to mitigate and will initiate an auction to neighbouring agents, in which it acts as both the Consignor and the Auctioneer (in auction jargon).  
+\question{I dont think it makes sense to sketch the entire idea from the Concept, as this is just the proposal for the rest of the research.}
+The neighbouring nodes can then \emph{bid} on the risk in the form of mitigation proposals. These mitigation proposals are created from a set of predefined adaptation patterns. The auctioning agent will select a bid that results in the best reduction of the risk. We note that other strategies could also be considered for selecting the best bid, for example strategies that take costs and performance into account.
+
+The last step is for the winning agent to apply the changes to it's properties, and therefore decrease the overall risk of the network. Neighbouring agents are then notified of these changes, updating their local knowledge bases. This event can potentially trigger the whole flow again, making the network continuously attempt to reduce the overall risk.

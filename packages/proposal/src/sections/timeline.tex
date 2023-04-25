@@ -1,1 +1,52 @@
-\section{Timeline}
+\section{Timeline} \label{sec:timeline}
+
+\begin{landscape}
+
+\begin{figure}[ht]
+
+\begin{ganttchart}[
+hgrid,
+vgrid={*2dotted, red, *3dotted, red, *3dotted, red, *3dotted, red, *3dotted, red},
+x unit=.6cm, 
+y unit title=0.6cm,
+y unit chart=0.6cm,
+bar/.append style={fill=black!20},
+bar label node/.append style=%
+{align=left}
+]{1}{19}
+\gantttitle{Weeks}{19} \\
+\gantttitlelist{18,...,36}{1} \\
+
+\ganttgroup{Learning}{1}{6} \\
+\ganttbar{Case-studies for relevant work}{1}{2} \\
+\ganttbar{Graph Theory / Knowledge bases}{3}{5} \\
+
+\ganttgroup{Code Implementation}{1}{14} \\
+\ganttbar{Core Application Architecture}{1}{5} \\ 
+\ganttbar{Knowledge Base}{4}{5} \\ 
+\ganttbar{Attack Graph}{6}{7} \\ 
+\ganttbar{Risk Assessment}{8}{9} \\
+\ganttbar{Auctioning}{12}{13} \\ 
+
+\ganttgroup{Experiment Execution}{4}{17} \\ 
+\ganttbar{Initial Experiment Setup}{4}{7} \\ 
+\ganttbar{RQ-1}{8}{11} \\ 
+\ganttbar{RQ-2}{12}{15} \\ 
+\ganttbar{Re-evaluation}{16}{17} \\
+
+\ganttgroup{Thesis writing}{1}{19} \\
+\ganttbar{Background \& Related work}{1}{6} \\
+\ganttbar{Methodology}{4}{4}
+\ganttbar{}{8}{8} 
+\ganttbar{}{12}{12} \\
+\ganttbar{Results \& evaluation}{7}{7}
+\ganttbar{}{11}{11} 
+\ganttbar{}{15}{15} \\
+\ganttbar{Conclusion}{16}{18} \\
+\ganttbar{Fine-tuning}{18}{19}
+
+\end{ganttchart}
+
+\caption{\label{fig::timeline}Thesis timeline}
+\end{figure}
+\end{landscape}

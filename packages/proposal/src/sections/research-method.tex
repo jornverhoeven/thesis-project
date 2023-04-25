@@ -1,1 +1,32 @@
 \section{Research Method}
+The thesis will primarily focus on defining a \todo{Maybe get rid of 'functional'}functional protocol between agents to overcome the problems that were mentioned in the sections before. We think that by first creating an attack graph using predefined risk rules should allow any nodes within the network to assess the risk, in a localized portion of the network. We also think that allowing neighbouring agents to propose mitigations will reduce the overall risk of the network. 
+
+To initiate, experiment with and refine the protocol we will perform a 
+\begin{enumerate}
+    \item Literature study
+    \item Define hypotheses
+    \item Experiments
+\end{enumerate}
+
+\subsection{Literature Study}
+An initial literature study is done to investigate the current bleeding-edge technology and recent literature for risk assessment and mitigation strategies. The knowledge from this literature study will be applied to create a path that combines the hypothesized strengths (Subsection~\ref{ssec:hypothesis}) to a workable proof of concept. This proof of concept will then be used to evaluate the proposed protocol by running several experiments (Subsection~\ref{ssec:experiments}.
+
+\subsection{Hypothesis} \label{ssec:hypothesis}
+As explained in Section \ref{sec:problem-analysis}, existing research has been done to figure out ways of locally mitigating security risks. We however want to have a network of agents attempt to solve this problem together. We hypothesise that by letting agents within a network communicate and negotiate with one another according to our proposed protocol, that the overall risk probability of a network will decrease. 
+
+We think that by having agents calculate Attack Graphs based on a local knowledge-base will allow the network to identify risks accurately and efficiently. We will experiment with different variables, such as the distance each agent can communicate (See Section \ref{ssec:experiments}), to analyze the impact of different strategies. This research aims to investigate the overall effect of this method, and will not be an exhaustive list of possible strategies. 
+
+Additionally, we think that allowing agents to propose solutions to identified risks (through auctions) will decrease the overall risk probability. 
+
+
+\subsection{Experiments} \label{ssec:experiments}
+In order to validate the hypothesis, answer the research question a Proof of Concept (PoC) will be created as explained in Section \ref{sec:expected-results}. This PoC will allow us to execute several experiments in a controlled environment, where we can simulate different networks and events. Each experiment will be performed over multiple epochs. We define an epoch as a moment in time with an initial infrastructure which can be changed by agents by means of adaptations. This initial infrastructure can be different in each subsequent epoch, based on these mutations. No new infrastructure nodes or software components are added during an epoch. If mutations to the infrastructure should be considered, they are added to the initial infrastructure of the subsequent epoch.
+
+\subsubsection{Control Experiment} 
+To evaluate the quality of our proposed protocol we want to perform a control experiment. This experimental setup will allow nodes to apply predefined adaptation patterns to the properties and attributes of the node it is running on, just like in our proposal. However, the agents are not allowed to communicate with it's neighbours. What this will effectively simulate is a network in which agents will only identify and mitigate risks on it's own hosting node. 
+
+In our controlled environment we can still calculate the overall risk probability and measure it over time. Thinks to consider when measuring are (but not limited to); Amount of adaptations, total number of risks identified, number of remaining risks.
+
+\subsubsection{Broadcasting range}
+Agents will be able to communicate with other agents in the network within an exchange range of \( Range(n) \), where \(n\) is a number representing the maximum distance (shortest path) between nodes. In our control experiment we effectively set \( Range(0) \) for the entire network, meaning that no knowledge is shared between nodes. \( Range(1) \) means that knowledge is shared between immediate neighbours. 
+In this experiment we aim to evaluate the impact and cost of different knowledge exchange ranges. For this experiment we will attempt different ranges, and measure the effects over time. Thinks to consider when measuring are (but not limited to); Amount of adaptations, total number of messages exchanged, total number of risks identified, number of remaining risks.
