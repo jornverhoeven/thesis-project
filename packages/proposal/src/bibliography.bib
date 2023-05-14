@@ -1,0 +1,138 @@
+@inproceedings{hamza2019detecting,
+	title        = {Detecting volumetric attacks on lot devices via sdn-based monitoring of mud activity},
+	author       = {Hamza, Ayyoob and Gharakheili, Hassan Habibi and Benson, Theophilus A and Sivaraman, Vijay},
+	year         = 2019,
+	booktitle    = {Proceedings of the 2019 ACM Symposium on SDN Research},
+	pages        = {36--48}
+}
+% Current security approaches are inaccurate, expensive, or unscalable, as they require static signatures of known attacks, specialized hardware, or full packet inspection.
+
+@inproceedings{paudel2019detecting,
+	title        = {Detecting dos attack in smart home iot devices using a graph-based approach},
+	author       = {Paudel, Ramesh and Muncy, Timothy and Eberle, William},
+	year         = 2019,
+	booktitle    = {2019 IEEE international conference on big data (big data)},
+	pages        = {5249--5258},
+	organization = {IEEE}
+}
+% From \cite{paudel2019detecting}
+% A common solution being discussed in the literature is implementing a network-level security system. However, it is often not enough to simply have a passive network-level monitor or intrusion detection system as many times it will not be until after an attack has occurred and had a measurable impact that one will notice a new device has connected or launched an attack. This is why it is important to have an active networklevel monitoring system that will react to anomalous behavior In real-time, thereby protecting the whole network of devices.
+
+% From \cite{paudel2019detecting}
+% One possible approach for detecting anomalous behavior in connected, IoT devices, is through graphs. A graph provides a natural abstraction for representing such highly relational and inter-dependent data where each device in the network can be treated as a node and the communication between devices as edges.
+
+% From \cite{paudel2019detecting} about \cite{zarpelao2017survey}
+%  As stated in their paper, at this time it is not evident which methods for detection or detection system placement strategies are best suited for IoT systems. This is why it is important to continue to test the strengths and weaknesses of different approaches.
+
+% From \cite{paudel2019detecting} about \cite{miettinen2017iot}
+% In the literature, some have taken the approach of more preventive measures. One example includes IoT Sentinel, which attempts to mitigate traffic to vulnerable devices as they are added to the network, but does not have much in the way of stopping a missed threat already in the process of attacking [13]. 
+
+% From \cite{paudel2019detecting} about \cite{khan2018iot, dorri2017blockchain, hamza2019detecting}
+% Other preventive measures include the use of blockchain algorithms for smart contracts [14], [15]. However, very little research has addressed reactive security solutions for the IoT [1]. 
+
+% From \cite{paudel2019detecting} about \cite{hamza2019detecting}
+% Unfortunately, older solutions such as Zeek (formerly Bro), and Snort, which may implement networklevel security solutions, do not work as well due to relying on a Signature-Based Intrusion Detection system. As such, it should be noted that signature-based approaches are not going to be substantial enough to address all of the relatively new and ever-increasing security issues associated with IoT devices as attack signatures simply can not be developed for the increasing number of these devices [1]
+
+% From \cite{paudel2019detecting} about \cite{doshi2018machine}
+% Some studies, while not directly exploring a reactive solution, are testing whether machine learning could be implemented to detect these attacks, which is the first real step towards a truly reactive solution. Doshi et al. [5] used a machine learning approach to categorize attack traffic with a test accuracy over 0.99 using a supervised approach like k-nearest neighbors and random forest.
+
+% From \cite{paudel2019} about \cite{canedo2016using, hamza2019detecting, sivanathan2018classifying}
+% Canedo et al. [16] used Artifical Neural Network in a network’s gateway to identify anomalous traffic and network behavior. In their study, they created a simulated IoT testbed connecting 10 different Arduino Unos to a network, each with their own wifi chip and a temperature sensor that would send temperature data to the gateway approximately every 2 seconds. Hamza et al. [1] proposed a clustering approach for anomaly detection in a test-bed of 28 different devices. Sivanathan et al. [17] used random forest on the data collected from the testbed of 28 IoT devices used by Hamza et al. [1] to find anomalous traffic patterns for IoT devices. They were able to identify anomalous behaviors with over 99 percent accuracy using these traffic activity pattern profiles. Most machine learning approaches need full packet access to generate features such as protocol, packet size, activity cycles, port numbers, signaling patterns, and cipher suites, as well other detailed information about the traffic which may not always be available.
+
+
+
+@inproceedings{wurm2016security,
+	title        = {Security analysis on consumer and industrial IoT devices},
+	author       = {Wurm, Jacob and Hoang, Khoa and Arias, Orlando and Sadeghi, Ahmad-Reza and Jin, Yier},
+	year         = 2016,
+	booktitle    = {2016 21st Asia and South Pacific design automation conference (ASP-DAC)},
+	pages        = {519--524},
+	organization = {IEEE}
+}
+@article{zarpelao2017survey,
+	title        = {A survey of intrusion detection in Internet of Things},
+	author       = {Zarpel{\~a}o, Bruno Bogaz and Miani, Rodrigo Sanches and Kawakani, Cl{\'a}udio Toshio and de Alvarenga, Sean Carlisto},
+	year         = 2017,
+	journal      = {Journal of Network and Computer Applications},
+	publisher    = {Elsevier},
+	volume       = 84,
+	pages        = {25--37}
+}
+@inproceedings{miettinen2017iot,
+	title        = {Iot sentinel: Automated device-type identification for security enforcement in iot},
+	author       = {Miettinen, Markus and Marchal, Samuel and Hafeez, Ibbad and Asokan, N and Sadeghi, Ahmad-Reza and Tarkoma, Sasu},
+	year         = 2017,
+	booktitle    = {2017 IEEE 37th International Conference on Distributed Computing Systems (ICDCS)},
+	pages        = {2177--2184},
+	organization = {IEEE}
+}
+
+@article{khan2018iot,
+  title={IoT security: Review, blockchain solutions, and open challenges},
+  author={Khan, Minhaj Ahmad and Salah, Khaled},
+  journal={Future generation computer systems},
+  volume={82},
+  pages={395--411},
+  year={2018},
+  publisher={Elsevier}
+}
+
+@inproceedings{dorri2017blockchain,
+  title={Blockchain for IoT security and privacy: The case study of a smart home},
+  author={Dorri, Ali and Kanhere, Salil S and Jurdak, Raja and Gauravaram, Praveen},
+  booktitle={2017 IEEE international conference on pervasive computing and communications workshops (PerCom workshops)},
+  pages={618--623},
+  year={2017},
+  organization={IEEE}
+}
+
+@inproceedings{doshi2018machine,
+  title={Machine learning ddos detection for consumer internet of things devices},
+  author={Doshi, Rohan and Apthorpe, Noah and Feamster, Nick},
+  booktitle={2018 IEEE Security and Privacy Workshops (SPW)},
+  pages={29--35},
+  year={2018},
+  organization={IEEE}
+}
+
+@inproceedings{canedo2016using,
+  title={Using machine learning to secure IoT systems},
+  author={Canedo, Janice and Skjellum, Anthony},
+  booktitle={2016 14th annual conference on privacy, security and trust (PST)},
+  pages={219--222},
+  year={2016},
+  organization={IEEE}
+}
+
+@article{sivanathan2018classifying,
+  title={Classifying IoT devices in smart environments using network traffic characteristics},
+  author={Sivanathan, Arunan and Gharakheili, Hassan Habibi and Loi, Franco and Radford, Adam and Wijenayake, Chamith and Vishwanath, Arun and Sivaraman, Vijay},
+  journal={IEEE Transactions on Mobile Computing},
+  volume={18},
+  number={8},
+  pages={1745--1759},
+  year={2018},
+  publisher={IEEE}
+}
+
+@article{singh2020overview,
+  title={An overview of IoT hardware development platforms},
+  author={Singh, Dhawan and Sandhu, Amanpreet and Sharma Thakur, Aditi and Priyank, Nikhil},
+  journal={Int. J. Emerg. Technol},
+  volume={11},
+  pages={155--163},
+  year={2020}
+}
+
+@misc{khandelwal2016friday,
+	title        = {Friday’s Massive DDoS Attack Came from Just 100,000 Hacked IoT Devices},
+	author       = {Swati Khandelwal},
+	year         = 2016,
+	url          = {https://thehackernews.com/2016/10/ddos-attack-mirai-iot.html}
+}
+@misc{wei2018casino,
+	title        = {Casino Gets Hacked Through Its InternetConnected Fish Tank Thermometer},
+	author       = {Wang Wei},
+	year         = 2018,
+	url          = {https://thehackernews.com/2018/04/iot-hacking-thermometer.html}
+}
