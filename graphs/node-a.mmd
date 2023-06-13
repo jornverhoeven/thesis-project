@@ -1,0 +1,22 @@
+%% node-a
+flowchart LR
+	node-a[Node A]
+	node-d[Node D]
+	node-c[Node C]
+	node-b[KnowledgeNode node-b]
+	style node-b stroke-dasharray: 5 5
+
+	node-a --> node-d
+	node-d --> node-a
+	node-a --> node-c
+	node-c --> node-a
+	node-d -.-> node-b
+	node-b -.-> node-d
+
+	software-2([Software Component 2])
+	node-a --> software-2
+
+	6f1f0254{{damageValue : 45.5}}
+	6f1f0254 -.-o software-2
+	a1eed597{{isCritical : false}}
+	a1eed597 -.-o software-2

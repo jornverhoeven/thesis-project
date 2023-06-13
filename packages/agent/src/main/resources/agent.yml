@@ -1,0 +1,9 @@
+self:
+  id: me
+  ref: 10.100.0.1
+
+local:
+  - id: abcdef
+    ref: 10.100.0.2
+  - id: ghijkl
+    ref: 10.100.0.3

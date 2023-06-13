@@ -5,6 +5,8 @@ dist/
 
 DPDP/
 
+**/target/
+
 
 # Core latex/pdflatex auxiliary files:
 *.aux

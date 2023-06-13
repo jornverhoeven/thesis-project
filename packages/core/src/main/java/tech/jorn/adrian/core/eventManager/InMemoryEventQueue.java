@@ -1,4 +1,4 @@
-package tech.jorn.adrian.core.events;
+package tech.jorn.adrian.core.eventManager;
 
 public class InMemoryEventQueue extends EventQueue {
 }
