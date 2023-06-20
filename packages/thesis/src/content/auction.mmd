@@ -1,0 +1,33 @@
+---
+title: Auctioning process
+---
+sequenceDiagram
+    participant C as Agent C
+    participant A as Agent A
+    participant B as Agent B
+
+    Note over A: Agent A initiates an auction with a chosen Risk,<br/>and invates agents
+    A ->> B: JoinAuctionRequestEvent
+    activate B
+    Note over B: Participating in Auction
+
+    A ->> C: JoinAuctionRequestEvent
+    activate C
+    Note over C: Participating in Auction
+
+    Note over A: Agent A waits for a response from<br/>each agent (or timeout)
+
+    B ->> A: JoinAuctionAcceptEvent
+    C ->> A: JoinAuctionAcceptEvent
+
+    Note over A: All agents responded or timed-out.
+
+    Note over B,C: B & C Calculate a proposal based on the chosen Risk
+    B ->> A: AuctionProposalEvent
+    C ->> A: AuctionProposalEvent
+
+    Note over A: Agent A selects a proposal and notifies all agents<br/> of winning proposal
+    A ->> B: AuctionCloseEvent
+    deactivate B
+    A ->> C: AuctionCloseEvent
+    deactivate C

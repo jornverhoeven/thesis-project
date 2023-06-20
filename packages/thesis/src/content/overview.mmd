@@ -1,0 +1,73 @@
+---
+title: General Overview of the packages and class hierarchy
+---
+classDiagram
+namespace Core {
+    class IIdentifiable {
+        <<interface>>
+        string id
+        string name
+    }
+    class INode {
+        <<interface>>
+    }
+    class IEdge {
+        <<interface>>
+    }
+    class IGraph {
+        <<interface>>
+    }
+
+    class Node
+    class Link
+    class Infrastructure
+
+    class KNode
+    class KEdge
+    class IKnowledgeBase {
+        <<interface>>
+    }
+
+    class RiskNode
+    class RiskEdge
+    class AttackGraph
+}
+
+namespace Agent {
+    class AdrianAgent
+    class AgentConfiguration
+    class KnowledgeBase
+}
+
+namespace Risks {
+    class PropertyBasedRule
+}
+
+namespace Experiments {
+    class ExperimentManager
+    class ExperimentMessageBroker
+}
+
+INode --> IIdentifiable
+IEdge ..> INode
+IGraph ..> INode
+IGraph ..> IEdge
+
+%% Node --> INode
+%% Link --> IEdge
+%% Infrastructure --> IGraph
+Infrastructure ..> Node
+Infrastructure ..> Link
+
+%% KNode --> INode
+%% KEdge --> IEdge
+%% IKnowledgeBase --> IGraph
+IKnowledgeBase ..> KNode
+IKnowledgeBase ..> KEdge
+
+
+%% RiskNode --> INode
+%% RiskEdge --> IEdge
+%% AttackGraph --> IGraph
+AttackGraph ..> RiskNode
+AttackGraph ..> RiskEdge

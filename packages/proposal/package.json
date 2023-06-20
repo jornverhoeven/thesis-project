@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "TEXINPUTS=.:./src: pdflatex -output-directory ./dist -jobname='Proposal' main.tex"
+    "build": "./build.sh",
+    "clean": "rm -rf dist"
   },
   "author": "",
   "license": "ISC"

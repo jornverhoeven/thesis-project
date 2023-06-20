@@ -1,0 +1,48 @@
+\documentclass[titlepage,colorinlistoftodos]{article}
+\usepackage{style}
+
+\usepackage{float}
+% \usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
+% \usepackage{svg}
+\usepackage[inkscapeformat=png]{svg}
+\usepackage[disable]{todonotes}
+% \usepackage{todonotes}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{pgfgantt}
+\usepackage{pdflscape}
+
+\begin{document}
+
+\title{Implementing a Software System for Decentralized Security Risk Management}
+\author{Jorn J. Verhoeven}
+\birthdate{January 10th, 1995}
+\birthplace{Utrecht, The Netherlands}
+\defensedate{September 18th, 2023 (Estimation)}
+\supervisor{Dr. Z.A. Mann}
+% \committeemember{Dr. C.U. Grelck}
+\maketitle
+
+\listoftodos{}
+\newpage
+
+\tableofcontents
+
+\asJava % By default use Java as the code language
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/related-work.tex}
+
+\input{sections/methodology}
+\input{sections/experiments} 
+
+\input{sections/discussion}
+\input{sections/future-research}
+\input{sections/conclusion}
+
+\bibliographystyle{abbrv}
+\bibliography{bibliography}
+\end{document}
