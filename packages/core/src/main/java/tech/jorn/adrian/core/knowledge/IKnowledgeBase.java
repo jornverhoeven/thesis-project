@@ -2,9 +2,7 @@ package tech.jorn.adrian.core.knowledge;
 
 import tech.jorn.adrian.core.NodeLink;
 import tech.jorn.adrian.core.assets.SoftwareAsset;
-import tech.jorn.adrian.core.graph.IEdge;
 import tech.jorn.adrian.core.graph.IGraph;
-import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.infrastructure.Node;
 import tech.jorn.adrian.core.observables.SubscribableEvent;
 

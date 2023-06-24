@@ -3,7 +3,7 @@ package tech.jorn.adrian.core.graph;
 import java.util.List;
 import java.util.Optional;
 
-public interface IGraph<N extends INode, E extends IEdge> {
+public interface IGraph<N extends INode, E extends IEdge<N>> {
     List<N> getNodes();
     List<E> getEdges();
 

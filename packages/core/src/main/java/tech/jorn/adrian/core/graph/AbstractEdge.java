@@ -1,7 +1,5 @@
 package tech.jorn.adrian.core.graph;
 
-import tech.jorn.adrian.core.infrastructure.Node;
-
 public abstract class AbstractEdge<N extends INode> implements IEdge<N> {
     private N parent;
     private N child;

@@ -4,7 +4,6 @@ import tech.jorn.adrian.core.IIdentifiable;
 import tech.jorn.adrian.core.infrastructure.Node;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface IMessageBroker {
     <M> void broadcast(M message);

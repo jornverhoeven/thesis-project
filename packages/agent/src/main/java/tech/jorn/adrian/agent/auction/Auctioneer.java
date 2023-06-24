@@ -1,6 +1,5 @@
 package tech.jorn.adrian.agent.auction;
 
-import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.core.Auction;
 import tech.jorn.adrian.core.AuctionProposal;
 import tech.jorn.adrian.core.IIdentifiable;

@@ -1,8 +1,6 @@
 package tech.jorn.adrian.core.messaging;
 
 import tech.jorn.adrian.core.IIdentifiable;
-import tech.jorn.adrian.core.infrastructure.Node;
-
 import java.util.UUID;
 
 public class Message<T> {

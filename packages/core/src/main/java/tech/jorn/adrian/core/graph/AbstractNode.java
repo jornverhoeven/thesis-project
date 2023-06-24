@@ -1,9 +1,6 @@
 package tech.jorn.adrian.core.graph;
 
-import tech.jorn.adrian.core.assets.SoftwareAsset;
 import tech.jorn.adrian.core.properties.IProperty;
-import tech.jorn.adrian.core.properties.NodeProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

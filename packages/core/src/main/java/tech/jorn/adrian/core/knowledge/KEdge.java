@@ -1,7 +1,6 @@
 package tech.jorn.adrian.core.knowledge;
 
 import tech.jorn.adrian.core.graph.AbstractEdge;
-import tech.jorn.adrian.core.graph.IEdge;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 

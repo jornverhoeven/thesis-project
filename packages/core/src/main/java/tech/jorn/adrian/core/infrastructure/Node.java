@@ -1,13 +1,11 @@
 package tech.jorn.adrian.core.infrastructure;
 
-import tech.jorn.adrian.core.IIdentifiable;
 import tech.jorn.adrian.core.assets.SoftwareAsset;
 import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.properties.NodeProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class Node implements INode {

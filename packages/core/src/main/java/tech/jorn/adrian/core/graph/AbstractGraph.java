@@ -1,6 +1,5 @@
 package tech.jorn.adrian.core.graph;
 
-import tech.jorn.adrian.core.infrastructure.Node;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 
 import java.util.ArrayList;

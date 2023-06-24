@@ -10,7 +10,6 @@ import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.observables.SubscribableEvent;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 

@@ -1,9 +1,6 @@
 package tech.jorn.adrian.core.utils;
 
-import tech.jorn.adrian.core.assets.SoftwareAsset;
-import tech.jorn.adrian.core.graph.IEdge;
 import tech.jorn.adrian.core.graph.IGraph;
-import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.knowledge.KEdge;
 import tech.jorn.adrian.core.knowledge.KNode;
 import tech.jorn.adrian.core.knowledge.KnowledgeEntry;

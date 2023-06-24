@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 public class SubscribableValueEvent<T> extends Subscribable<T, Consumer<T>> {
 
-    public SubscribableValueEvent(ValueDispatcher dispatcher) {
+    public SubscribableValueEvent(ValueDispatcher<T> dispatcher) {
         super(dispatcher);
     }
 
@@ -12,7 +12,7 @@ public class SubscribableValueEvent<T> extends Subscribable<T, Consumer<T>> {
         return this.subscribe(handler, false);
     }
     public Runnable subscribe(Consumer<T> handler, boolean dispatchImmediately) {
-        return ((ValueDispatcher)this.dispatcher)
+        return ((ValueDispatcher<T>)this.dispatcher)
                 .subscribe(handler, dispatchImmediately);
     }
 }

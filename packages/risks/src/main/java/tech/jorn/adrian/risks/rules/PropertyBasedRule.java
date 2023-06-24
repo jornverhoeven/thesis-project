@@ -6,9 +6,7 @@ import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.core.risks.RiskType;
 import tech.jorn.adrian.core.risks.graph.AttackGraph;
 import tech.jorn.adrian.core.risks.graph.RiskEdge;
-import tech.jorn.adrian.risks.types.RiskInfrastructureNodeHasFirewall;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,15 +1,9 @@
 package tech.jorn.adrian.core.assets;
 
-import tech.jorn.adrian.core.IIdentifiable;
 import tech.jorn.adrian.core.graph.AbstractNode;
-import tech.jorn.adrian.core.graph.INode;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
-import tech.jorn.adrian.core.observables.SubscribableValueEvent;
-import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public abstract class SoftwareAsset extends AbstractNode<SoftwareProperty<?>> {
