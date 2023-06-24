@@ -1,0 +1,20 @@
+%% ---
+%% title: Knowledge Sharing
+%% ---
+sequenceDiagram
+    autonumber
+    participant A as Agent A
+    participant B as Agent B
+    participant C as Agent C
+
+    Note over A: Share (current) properties of Node A
+    A ->>+ B: ShareKnowledgeEvent
+    Note right of B: Update local KnowledgeBase
+    deactivate B
+
+    opt Should Forward?
+        B ->>+ C: Forward message to connected node
+        Note left of C: Update local KnowledgeBase
+        deactivate C
+        Note over B,C: Repeat recursively
+    end

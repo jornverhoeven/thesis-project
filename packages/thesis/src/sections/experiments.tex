@@ -2,6 +2,16 @@
 \label{sec:experiments}
 
 % Talk about Epochs
+% Talk about the different experiments
+% Talk about the different measures
+
+All experiments are controlled by an \texttt{ExperimentManager} which is responsible for the following tasks:
+\begin{itemize}
+    \item Create the \texttt{Infrastructure}, which consists of \texttt{Node}s, \texttt{Agent}s, and \texttt{Software Component}s.
+    \item Attach event listeners to \texttt{Node}s and \texttt{Agent}s to measure (depending on the experiment) for example the number of adaptations, the number of messages exchanged, and the number of risks identified.
+    \item Send custom events \texttt{Agent}s.
+    \item Keep track of the current epoch and stop the experiment after a predefined number of epochs.
+\end{itemize}
 
 \subsection{Baseline Experiment}
 % - No communication, no cooperation
@@ -11,6 +21,15 @@
 %   - Total number of risks identified
 %   - Number of remaining risks
 %   - Sum of the damage for remaining risks
+
+% Mitigations take time, also communication. This should be discussed and used in the experiment.
+% Check costs of a mitigation
+
+\begin{itemize}
+    \item The agents are still connected to the \texttt{ExperimentManager} but do not communicate with each other. This is done to be able to mimic and measure events.
+    \item Agents are allowed to adapt their own properties and software components.
+    \item Agents are not allowed to adapt the properties and software components of other agents/nodes.
+\end{itemize}
 
 \begin{figure}[H]
     \centering
