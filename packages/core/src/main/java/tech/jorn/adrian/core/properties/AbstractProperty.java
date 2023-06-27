@@ -18,4 +18,10 @@ public abstract class AbstractProperty<T> implements IProperty<T> {
     public T getValue() {
         return this.value;
     }
+
+    @Override
+    public T setValue(T value) {
+        this.value = value;
+        return this.value;
+    }
 }

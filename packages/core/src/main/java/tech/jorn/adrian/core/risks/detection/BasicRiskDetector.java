@@ -40,4 +40,10 @@ public class BasicRiskDetector implements IRiskDetection {
 
         return attackGraph;
     }
+
+    @Override
+    public AttackGraph mergeAttackGraph(AttackGraph attackGraph, RiskReport riskReport) {
+        // TODO Auto-generated method stub
+        return attackGraph;
+    }
 }

@@ -75,8 +75,8 @@ public class AuctionManager {
         this.auction.setCurrent(auction);
 
         // TODO: Start proposing things
-        var proposal = new AuctionProposal(this.agent.getConfiguration().getParentNode(), auction, new Object());
-        this.broker.send(auction.getHost(), new AuctionProposalEvent(proposal));
+        // var proposal = new AuctionProposal(this.agent.getConfiguration().getParentNode(), auction, new Object());
+        // this.broker.send(auction.getHost(), new AuctionProposalEvent(proposal));
 
         return new Participant(auction, this.agent);
     }

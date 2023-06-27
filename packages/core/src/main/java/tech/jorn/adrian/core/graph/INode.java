@@ -9,4 +9,5 @@ public interface INode extends IIdentifiable {
 
     <P extends IProperty<?>> List<P> getProperties();
     public <T> Optional<T> getProperty(String key);
+    public <T> void setProperty(String key, T value);
 }

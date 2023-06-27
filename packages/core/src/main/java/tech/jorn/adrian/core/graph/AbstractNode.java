@@ -36,4 +36,10 @@ public class AbstractNode<P extends IProperty<?>> implements INode {
                 .map(p -> (T) p.getValue())
                 .findAny();
     }
+
+    public <T> void setProperty(String key, T value) {
+        this.properties.stream()
+                .filter(p -> p.getName().equals(key))
+                .forEach(p -> ((IProperty<T>) p).setValue(value));
+    }
 }

@@ -6,4 +6,6 @@ import tech.jorn.adrian.core.risks.graph.AttackGraph;
 public interface IRiskDetection {
     AttackGraph calculateAttackGraph(IKnowledgeBase knowledgeBase);
 
+    AttackGraph mergeAttackGraph(AttackGraph attackGraph, RiskReport riskReport);
+
 }

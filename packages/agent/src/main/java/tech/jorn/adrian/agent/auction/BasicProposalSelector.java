@@ -8,6 +8,6 @@ import java.util.Optional;
 public class BasicProposalSelector implements IProposalSelector {
     @Override
     public Optional<AuctionProposal> select(AdrianAgent agent, Auctioneer auction) {
-        return Optional.empty();
+        return Optional.of(auction.getProposals().values().stream().toList().get(0));
     }
 }

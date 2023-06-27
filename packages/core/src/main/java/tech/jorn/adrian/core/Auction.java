@@ -10,11 +10,13 @@ public class Auction {
     private final Date startDate;
     private final IIdentifiable host;
     private final List<IIdentifiable> participants;
+    private final RiskReport riskReport;
 
     public Auction(String id, IIdentifiable host, List<IIdentifiable> participants, RiskReport riskReport) {
         this.id = id;
         this.host = host;
         this.participants = participants;
+        this.riskReport = riskReport;
         this.startDate = new Date();
     }
 
@@ -32,6 +34,10 @@ public class Auction {
 
     public List<IIdentifiable> getParticipants() {
         return participants;
+    }
+
+    public RiskReport getRiskReport() {
+        return riskReport;
     }
 }
 

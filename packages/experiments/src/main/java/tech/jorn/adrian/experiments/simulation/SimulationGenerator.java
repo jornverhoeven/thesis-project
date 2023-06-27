@@ -4,6 +4,10 @@ import org.yaml.snakeyaml.Yaml;
 import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.AgentConfiguration;
 import tech.jorn.adrian.agent.AgentConfigurationLoader;
+import tech.jorn.adrian.agent.mitigation.IMutationStrategy;
+import tech.jorn.adrian.agent.mitigation.RandomRiskMutationSelector;
+import tech.jorn.adrian.agent.mitigation.MitigationManager;
+import tech.jorn.adrian.agent.mitigation.SingletonMutationStrategy;
 import tech.jorn.adrian.core.assets.SoftwareAssetFactory;
 import tech.jorn.adrian.core.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.infrastructure.Link;
@@ -13,6 +17,8 @@ import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.experiments.ExperimentalNode;
 import tech.jorn.adrian.experiments.ExperimentMessageBroker;
 import tech.jorn.adrian.experiments.utils.MessageQueue;
+import tech.jorn.adrian.risks.mitigations.PropertyBasedMutator;
+import tech.jorn.adrian.risks.rules.PropertyBasedRule;
 import tech.jorn.adrian.risks.rules.RuleInfrastructureNodeHasFirewall;
 import tech.jorn.adrian.risks.rules.RuleSoftwareComponentIsEncrypted;
 
@@ -89,10 +95,17 @@ public class SimulationGenerator {
 
             var neighbours = infrastructure.getNeighbours(parent.get());
             var riskDetection = new BasicRiskDetector(riskRules);
+            var mutationStrategies = riskRules.stream()
+                    .filter(r -> r instanceof PropertyBasedRule<?>)
+                    .map(r -> new PropertyBasedMutator<>((PropertyBasedRule<?>) r))
+                    .map(r -> (IMutationStrategy) new SingletonMutationStrategy(r))
+                    .toList();
+            var mitigationManager = new MitigationManager(mutationStrategies, new RandomRiskMutationSelector());
             var agent = new AdrianAgent(
                     new AgentConfiguration(parent.get(), neighbours),
                     new ExperimentMessageBroker(neighbours, messageQueue),
-                    riskDetection
+                    riskDetection,
+                    mitigationManager
             );
             agents.add(agent);
         });

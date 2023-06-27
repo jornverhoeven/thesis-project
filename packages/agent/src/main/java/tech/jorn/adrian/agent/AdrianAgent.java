@@ -3,12 +3,18 @@ package tech.jorn.adrian.agent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.auction.AuctionManager;
+import tech.jorn.adrian.agent.mitigation.MitigationManager;
+import tech.jorn.adrian.core.AuctionProposal;
 import tech.jorn.adrian.core.NodeLink;
 import tech.jorn.adrian.core.eventManager.events.*;
+import tech.jorn.adrian.core.infrastructure.Node;
 import tech.jorn.adrian.core.knowledge.IKnowledgeBase;
 import tech.jorn.adrian.core.knowledge.KnowledgeOrigin;
 import tech.jorn.adrian.core.messaging.IMessageBroker;
 import tech.jorn.adrian.core.messaging.MessageResponse;
+import tech.jorn.adrian.core.mitigations.AttributeChange;
+import tech.jorn.adrian.core.mitigations.Mutation;
+import tech.jorn.adrian.core.mitigations.MutationResults;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.risks.detection.IRiskDetection;
@@ -25,17 +31,19 @@ public class AdrianAgent {
     private final IKnowledgeBase knowledgeBase;
     private final IRiskDetection riskDetection;
     private final AuctionManager auctionManager;
+    private final MitigationManager mitigationManager;
 
-    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IRiskDetection riskDetection) {
-        this(configuration, messageBroker, new KnowledgeBase(), riskDetection);
+    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IRiskDetection riskDetection, MitigationManager mitigationManager) {
+        this(configuration, messageBroker, new KnowledgeBase(), riskDetection, mitigationManager);
     }
 
-    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IKnowledgeBase knowledgeBase, IRiskDetection riskDetection) {
+    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IKnowledgeBase knowledgeBase, IRiskDetection riskDetection, MitigationManager mitigationManager) {
         this.configuration = new ValueDispatcher<>(configuration);
         this.messageBroker = messageBroker;
         this.knowledgeBase = knowledgeBase;
         this.riskDetection = riskDetection;
         this.auctionManager = new AuctionManager(this, messageBroker);
+        this.mitigationManager = mitigationManager;
 
         this.messageBroker.setSender(configuration.getParentNode());
         this.knowledgeBase.upsertNode(configuration.getParentNode(), KnowledgeOrigin.Direct);
@@ -48,6 +56,13 @@ public class AdrianAgent {
 
     private void registerHandlers() {
         this.messageBroker.onMessage(this::messageHandler);
+        this.onConfigurationChange().subscribe(config -> {
+            this.messageBroker.broadcast(new ShareKnowledgeEvent(
+                    config.getParentNode(),
+                    NodeLink.fromList(config.getParentNode(), config.getUpstreamNodes()),
+                    1
+            ));
+        });
         this.knowledgeBase.onKnowledgeUpdate().subscribe(n -> {
             log.info("{} received knowledge from {}",
                     this.configuration.current().getParentNode().getID(),
@@ -95,6 +110,10 @@ public class AdrianAgent {
                 return;
             }
             this.auctionManager.joinAuction(e.getAuction());
+
+            var mutation = this.findMutation(e.getAuction().getRiskReport());
+            var proposal = new AuctionProposal(this.configuration.current().getParentNode(), e.getAuction(), mutation);
+            this.messageBroker.send(e.getAuction().getHost(), new AuctionProposalEvent(proposal));
         } else if (event instanceof JoinAuctionAcceptEvent e) {
             this.auctionManager.auctionJoined(e.getOrigin());
         } else if (event instanceof AuctionProposalEvent e) {
@@ -102,6 +121,7 @@ public class AdrianAgent {
                 log.warn("Received proposal, but is not in an auction");
                 return;
             }
+            log.info("Received a proposal with {} mutations", e.getProposal().getProposal().mutations.size());
             this.auctionManager.receiveProposal(e.getProposal());
         } else if (event instanceof AuctionClosedEvent e) {
             if (this.state.current() != AgentState.Auctioning) {
@@ -109,7 +129,11 @@ public class AdrianAgent {
                 return;
             }
             // TODO: Depending on the proposal go into idle or migrating
-            this.state.setCurrent(AgentState.Idle);
+            if (e.getSelectedProposal().isEmpty()) {
+                this.state.setCurrent(AgentState.Idle);
+                return;
+            }
+            this.applyMutation(e.getSelectedProposal().get().getProposal());
         }
     }
 
@@ -148,6 +172,38 @@ public class AdrianAgent {
 //        var riskSelection = new HighestDamageSelector(); // TODO: Move to constructor
 //        return riskSelection.select(riskReports);
         return Optional.of(riskReports.get(1));
+    }
+
+    public MutationResults findMutation(RiskReport riskReport) {
+        var attackGraph = this.riskDetection.calculateAttackGraph(this.knowledgeBase);
+        var mergedAttackGraph = this.riskDetection.mergeAttackGraph(attackGraph, riskReport);
+        var mutation = this.mitigationManager.getMitigation(mergedAttackGraph);
+        return mutation;
+    }
+    public void applyMutation(MutationResults mutationResults) {
+        this.state.setCurrent(AgentState.Migrating);
+        log.info("Starting to migrate properties");
+
+        var configuration = this.configuration.current();
+        var currentNode = configuration.getParentNode();
+        mutationResults.mutations.forEach(mutation -> {
+            if (mutation instanceof AttributeChange<?> attributeChange) {
+                if (!attributeChange.getNode().getID().equals(currentNode.getID())) return;
+
+                log.info("Mutating property '{}' from '{}' to '{}'",
+                        attributeChange.getAttribute(),
+                        currentNode.getProperty(attributeChange.getAttribute()),
+                        attributeChange.getValue()
+                );
+                currentNode.setProperty(attributeChange.getAttribute(), attributeChange.getValue());
+            }
+            // TODO: Implement Migration
+        });
+        var updatedConfig = new AgentConfiguration(currentNode, configuration.getUpstreamNodes());
+        this.configuration.setCurrent(updatedConfig);
+        this.knowledgeBase.upsertNode(currentNode);
+
+        this.state.setCurrent(AgentState.Idle);
     }
 
     public boolean isAvailable() {

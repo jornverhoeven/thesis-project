@@ -52,4 +52,8 @@ public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
         });
         return risks;
     }
+
+    public String getProperty() {
+        return property;
+    }
 }
