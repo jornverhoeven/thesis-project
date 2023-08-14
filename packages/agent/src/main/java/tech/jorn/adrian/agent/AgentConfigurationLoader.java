@@ -1,6 +1,7 @@
 package tech.jorn.adrian.agent;
 
 import org.yaml.snakeyaml.Yaml;
+import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.infrastructure.Node;
 
 import java.io.InputStream;
@@ -20,10 +21,10 @@ public class AgentConfigurationLoader {
 
         var parent = new Node((String) self.get("id"));
         var neighbours = upstream.stream()
-                .map(info -> new Node((String) info.get("id")))
+                .map(info -> (INode) new Node((String) info.get("id")))
                 .toList();
 
-        var configuration = new AgentConfiguration(parent, neighbours);
+        var configuration = new AgentConfiguration(parent, neighbours, 10000);
         return configuration;
     }
 }

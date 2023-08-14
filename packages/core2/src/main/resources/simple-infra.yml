@@ -1,0 +1,48 @@
+nodes:
+  - id: node-a
+    name: Node A
+    trustedExecutionEnvironment: true
+    isExposed: true
+    hasAgent: true
+  - id: node-b
+    name: Node B
+    trustedExecutionEnvironment: false
+    isExposed: false
+    hasAgent: true
+  - id: node-c
+    name: Node C
+    trustedExecutionEnvironment: false
+    isExposed: true
+    hasAgent: true
+  - id: node-d
+    name: Node D
+    trustedExecutionEnvironment: false
+    isExposed: true
+    hasAgent: true
+    hasFirewall: true
+
+links:
+  - source: node-a
+    target: node-d
+  - source: node-a
+    target: node-c
+  - source: node-b
+    target: node-d
+
+assets:
+  - id: software-1
+    name: Software Component 1
+    type: software
+    isCritical: true
+    damageValue: 100.5
+    host: node-b
+  - id: software-2
+    name: Software Component 2
+    type: software
+    isCritical: false
+    damageValue: 45.5
+    host: node-a
+
+connectors:
+  - source: software-1
+    target: software-2

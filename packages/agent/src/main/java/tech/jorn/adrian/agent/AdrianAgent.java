@@ -6,14 +6,15 @@ import tech.jorn.adrian.agent.auction.AuctionManager;
 import tech.jorn.adrian.agent.mitigation.MitigationManager;
 import tech.jorn.adrian.core.AuctionProposal;
 import tech.jorn.adrian.core.NodeLink;
+import tech.jorn.adrian.core.agent.AgentState;
+import tech.jorn.adrian.core.agent.IAgent;
+import tech.jorn.adrian.core.agent.IAgentConfiguration;
 import tech.jorn.adrian.core.eventManager.events.*;
-import tech.jorn.adrian.core.infrastructure.Node;
 import tech.jorn.adrian.core.knowledge.IKnowledgeBase;
 import tech.jorn.adrian.core.knowledge.KnowledgeOrigin;
 import tech.jorn.adrian.core.messaging.IMessageBroker;
 import tech.jorn.adrian.core.messaging.MessageResponse;
 import tech.jorn.adrian.core.mitigations.AttributeChange;
-import tech.jorn.adrian.core.mitigations.Mutation;
 import tech.jorn.adrian.core.mitigations.MutationResults;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
@@ -22,22 +23,22 @@ import tech.jorn.adrian.core.risks.detection.RiskReport;
 
 import java.util.Optional;
 
-public class AdrianAgent {
+public class AdrianAgent implements IAgent {
     Logger log = LogManager.getLogger(AdrianAgent.class);
 
-    private final ValueDispatcher<AgentConfiguration> configuration;
+    private final ValueDispatcher<IAgentConfiguration> configuration;
     private final ValueDispatcher<AgentState> state = new ValueDispatcher<>(AgentState.Loading);
-    private final IMessageBroker messageBroker;
-    private final IKnowledgeBase knowledgeBase;
-    private final IRiskDetection riskDetection;
-    private final AuctionManager auctionManager;
-    private final MitigationManager mitigationManager;
+    protected final IMessageBroker messageBroker;
+    protected final IKnowledgeBase knowledgeBase;
+    protected final IRiskDetection riskDetection;
+    protected final AuctionManager auctionManager;
+    protected final MitigationManager mitigationManager;
 
-    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IRiskDetection riskDetection, MitigationManager mitigationManager) {
+    public AdrianAgent(IAgentConfiguration configuration, IMessageBroker messageBroker, IRiskDetection riskDetection, MitigationManager mitigationManager) {
         this(configuration, messageBroker, new KnowledgeBase(), riskDetection, mitigationManager);
     }
 
-    public AdrianAgent(AgentConfiguration configuration, IMessageBroker messageBroker, IKnowledgeBase knowledgeBase, IRiskDetection riskDetection, MitigationManager mitigationManager) {
+    public AdrianAgent(IAgentConfiguration configuration, IMessageBroker messageBroker, IKnowledgeBase knowledgeBase, IRiskDetection riskDetection, MitigationManager mitigationManager) {
         this.configuration = new ValueDispatcher<>(configuration);
         this.messageBroker = messageBroker;
         this.knowledgeBase = knowledgeBase;
@@ -48,6 +49,9 @@ public class AdrianAgent {
         this.messageBroker.setSender(configuration.getParentNode());
         this.knowledgeBase.upsertNode(configuration.getParentNode(), KnowledgeOrigin.Direct);
         this.knowledgeBase.upsertLinks(NodeLink.fromList(configuration.getParentNode(), configuration.getUpstreamNodes()));
+        configuration.getParentNode().getSoftwareAssets().forEach(asset -> {
+            this.knowledgeBase.upsertAsset(asset, configuration.getParentNode());
+        });
 
         this.registerHandlers();
 
@@ -141,12 +145,15 @@ public class AdrianAgent {
         return this.state.subscribable;
     }
 
-    public SubscribableValueEvent<AgentConfiguration> onConfigurationChange() {
+    public SubscribableValueEvent<IAgentConfiguration> onConfigurationChange() {
         return this.configuration.subscribable;
     }
 
-    public AgentConfiguration getConfiguration() {
+    public IAgentConfiguration getConfiguration() {
         return this.configuration.current();
+    }
+    public AgentState getState() {
+        return this.state.current();
     }
 
     public IKnowledgeBase getKnowledgeBase() {
@@ -168,10 +175,7 @@ public class AdrianAgent {
 
     public Optional<RiskReport> detectRisks() {
         var attackGraph = this.riskDetection.calculateAttackGraph(this.knowledgeBase);
-        var riskReports = attackGraph.findRisks();
-//        var riskSelection = new HighestDamageSelector(); // TODO: Move to constructor
-//        return riskSelection.select(riskReports);
-        return Optional.of(riskReports.get(1));
+        return this.riskDetection.selectRisk(attackGraph);
     }
 
     public MutationResults findMutation(RiskReport riskReport) {
@@ -199,7 +203,7 @@ public class AdrianAgent {
             }
             // TODO: Implement Migration
         });
-        var updatedConfig = new AgentConfiguration(currentNode, configuration.getUpstreamNodes());
+        var updatedConfig = new AgentConfiguration(currentNode, configuration.getUpstreamNodes(), configuration.getAuctionTimeout());
         this.configuration.setCurrent(updatedConfig);
         this.knowledgeBase.upsertNode(currentNode);
 

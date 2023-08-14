@@ -1,6 +1,7 @@
 package tech.jorn.adrian.risks.rules;
 
 import tech.jorn.adrian.core.knowledge.IKnowledgeBase;
+import tech.jorn.adrian.core.knowledge.KnowledgeEntry;
 import tech.jorn.adrian.core.risks.Risk;
 import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.core.risks.RiskType;
@@ -9,6 +10,8 @@ import tech.jorn.adrian.core.risks.graph.RiskEdge;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
 
@@ -24,7 +27,11 @@ public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
     public List<RiskEdge> evaluate(IKnowledgeBase knowledgeBase, AttackGraph attackGraph) {
         var risks = new ArrayList<RiskEdge>();
 
-        knowledgeBase.getNodes().forEach(node -> {
+        List<KnowledgeEntry> nodes = new ArrayList<>();
+        if (this.includeNodes()) nodes.addAll(knowledgeBase.getNodes());
+        if (this.includeAssets()) nodes.addAll(knowledgeBase.getAssets());
+
+        nodes.forEach(node -> {
             var parents = knowledgeBase.getParents(node);
 
             parents.forEach(parent -> {
@@ -55,5 +62,13 @@ public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
 
     public String getProperty() {
         return property;
+    }
+
+
+    protected boolean includeAssets() {
+        return true;
+    }
+    protected boolean includeNodes() {
+        return true;
     }
 }

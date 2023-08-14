@@ -1,0 +1,15 @@
+nodes:
+  - id: node-a
+    name: Node A
+    trustedExecutionEnvironment: true
+    isExposed: true
+    hasAgent: true
+    hasFirewall: false
+
+assets:
+  - id: software-1
+    name: Software Component 1
+    type: software
+    isCritical: true
+    damageValue: 45.5
+    host: node-a

@@ -8,20 +8,12 @@ import tech.jorn.adrian.core.risks.detection.RiskReport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 public class AttackGraph extends AbstractGraph<RiskNode, RiskEdge> {
-    private final IDamageProbabilityCalculator damageProbabilityCalculator;
-    private final float damageThreshold;
 
-    // TODO: Get the damageThreshold and calculator from the constructor
     public AttackGraph() {
-        this.damageProbabilityCalculator = new IDamageProbabilityCalculator() {
-            @Override
-            public float calculate(List<RiskNode> riskPath) {
-                return 0;
-            }
-        };
-        this.damageThreshold = 0.f;
     }
 
     public Optional<RiskHardwareNode> findNode(IIdentifiable node) {
@@ -60,40 +52,9 @@ public class AttackGraph extends AbstractGraph<RiskNode, RiskEdge> {
         this.edges.setCurrent(edges);
     }
 
-    // TODO: Move this to BasicRiskDetector
-    public List<RiskReport> findRisks() {
-        List<RiskSoftwareNode> criticalSoftwareList = this.nodes.current().stream()
-                .filter(n -> n instanceof RiskSoftwareNode && (Boolean) n.getProperty("isCritical").orElse(false))
-                .map(n -> (RiskSoftwareNode) n)
-                .toList();
-
-        List<RiskHardwareNode> exposedNodes = this.nodes.current().stream()
-                .filter(n -> n instanceof RiskHardwareNode && (Boolean) n.getProperty("isExposed").orElse(false))
-                .map(n -> (RiskHardwareNode) n)
-                .toList();
-
-        var riskReports = new ArrayList<RiskReport>();
-
-        exposedNodes.forEach(hardwareNode -> {
-            criticalSoftwareList.forEach(criticalSoftware -> {
-                var riskPath = this.depthFirstSearch(hardwareNode, criticalSoftware);
-
-                var damageProbability = this.damageProbabilityCalculator.calculate(riskPath);
-                var damageValue = criticalSoftware.getProperty("damageValue")
-                        .map(p -> ((Double) p).floatValue())
-                        .orElse(0.0f);
-
-                if (damageProbability * damageValue >= this.damageThreshold) {
-                    var riskReport = new RiskReport(riskPath, this.pathRepresentation(riskPath), damageProbability, damageValue, damageProbability * damageValue);
-                    riskReports.add(riskReport);
-                }
-            });
-        });
-
-        return riskReports;
-    }
-
-    private String pathRepresentation(List<RiskNode> path) {
-        return "path-representation";
+    public String pathRepresentation(List<RiskNode> path) {
+        return path.stream()
+                .map(p -> p.getID())
+                .collect(Collectors.joining("->"));
     }
 }

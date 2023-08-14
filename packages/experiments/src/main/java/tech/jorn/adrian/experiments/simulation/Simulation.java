@@ -1,7 +1,9 @@
 package tech.jorn.adrian.experiments.simulation;
 
 import tech.jorn.adrian.agent.AdrianAgent;
+import tech.jorn.adrian.core.agent.IAgent;
 import tech.jorn.adrian.core.infrastructure.Infrastructure;
+import tech.jorn.adrian.experiments.ExperimentalAgent;
 import tech.jorn.adrian.experiments.utils.MessageQueue;
 
 import java.util.List;
@@ -9,10 +11,10 @@ import java.util.List;
 public class Simulation {
 
     private final Infrastructure infrastructure;
-    private final List<AdrianAgent> agents;
+    private final List<ExperimentalAgent> agents;
     private final MessageQueue messageQueue;
 
-    public Simulation(Infrastructure infrastructure, List<AdrianAgent> agents, MessageQueue messageQueue) {
+    public Simulation(Infrastructure infrastructure, List<ExperimentalAgent> agents, MessageQueue messageQueue) {
         this.infrastructure = infrastructure;
         this.agents = agents;
         this.messageQueue = messageQueue;
@@ -22,7 +24,7 @@ public class Simulation {
         return this.infrastructure;
     }
 
-    public List<AdrianAgent> getAgents() {
+    public List<ExperimentalAgent> getAgents() {
         return agents;
     }
 

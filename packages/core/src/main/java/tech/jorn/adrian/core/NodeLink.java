@@ -1,24 +1,25 @@
 package tech.jorn.adrian.core;
 
+import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.infrastructure.Node;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class NodeLink {
-    private final Node source;
+    private final INode source;
     private final String target;
 
-    public NodeLink(Node node, Node target) {
+    public NodeLink(INode node, INode target) {
         this(node, target.getID());
     }
 
-    public NodeLink(Node node, String target) {
+    public NodeLink(INode node, String target) {
         this.source = node;
         this.target = target;
     }
 
-    public Node getSource() {
+    public INode getSource() {
         return source;
     }
 
@@ -26,7 +27,7 @@ public class NodeLink {
         return target;
     }
 
-    public static List<NodeLink> fromList(Node parent, List<Node> nodes) {
+    public static List<NodeLink> fromList(INode parent, List<INode> nodes) {
         return nodes.stream()
                 .map(n -> new NodeLink(parent, n))
                 .collect(Collectors.toList());

@@ -58,7 +58,7 @@ public class AuctionManager {
                 manager.finalizeAuction(auction);
             }
         };
-        timer.schedule(this.timeout, this.agent.getConfiguration().getAuctionDuration());
+        timer.schedule(this.timeout, this.agent.getConfiguration().getAuctionTimeout());
 
         participants.forEach(p -> this.broker.send(p, new JoinAuctionRequestEvent(auction)));
 

@@ -2,7 +2,6 @@ package tech.jorn.adrian.experiments;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.core.eventManager.events.IdentifyRisksEvent;
 import tech.jorn.adrian.core.messaging.Message;
 import tech.jorn.adrian.experiments.simulation.SimulationGenerator;
@@ -12,7 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ExperimentManager {
     public static void main(String[] args) {
         Logger log = LogManager.getLogger(ExperimentManager.class);
-        var simulation = SimulationGenerator.fromFile("./simple-infra.yml");
+        var generator = new SimulationGenerator();
+        var simulation = generator.fromFile("./simple-infra.yml");
 
         var messageCount = new AtomicInteger();
         var messageQueue = simulation.getMessageQueue();

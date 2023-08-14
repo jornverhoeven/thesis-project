@@ -1,6 +1,7 @@
 package tech.jorn.adrian.experiments;
 
 import tech.jorn.adrian.core.IIdentifiable;
+import tech.jorn.adrian.core.graph.INode;
 import tech.jorn.adrian.core.infrastructure.Node;
 import tech.jorn.adrian.core.messaging.IMessageBroker;
 import tech.jorn.adrian.core.messaging.Message;
@@ -12,12 +13,12 @@ import java.util.function.Consumer;
 
 public class ExperimentMessageBroker implements IMessageBroker {
 
-    private final List<Node> neighbours;
+    private final List<INode> neighbours;
     private final MessageQueue messageQueue;
 
-    private Node sender;
+    private INode sender;
 
-    public ExperimentMessageBroker(List<Node> neighbours, MessageQueue messageQueue) {
+    public ExperimentMessageBroker(List<INode> neighbours, MessageQueue messageQueue) {
         this.neighbours = neighbours;
         this.messageQueue = messageQueue;
     }
@@ -69,7 +70,7 @@ public class ExperimentMessageBroker implements IMessageBroker {
     }
 
     @Override
-    public void setSender(Node sender) {
+    public void setSender(INode sender) {
         this.sender = sender;
     }
 }

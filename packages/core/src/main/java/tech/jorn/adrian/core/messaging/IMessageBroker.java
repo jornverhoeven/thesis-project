@@ -1,7 +1,7 @@
 package tech.jorn.adrian.core.messaging;
 
 import tech.jorn.adrian.core.IIdentifiable;
-import tech.jorn.adrian.core.infrastructure.Node;
+import tech.jorn.adrian.core.graph.INode;
 
 import java.util.function.Consumer;
 
@@ -12,6 +12,6 @@ public interface IMessageBroker {
 
     <M> void onMessage(Consumer<MessageResponse<M>> message);
 
-    void setSender(Node node);
+    void setSender(INode node);
 }
 
