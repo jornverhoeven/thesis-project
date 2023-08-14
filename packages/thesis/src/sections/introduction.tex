@@ -1,11 +1,38 @@
 \section{Introduction}
 \label{sec:introduction}
+The exponential growth of the internet has revolutionized several aspects of our modern life, such as communication, entertainment, and the way we work. Not only in the form of computers and phones, but also devices such as smart home assistants, wearables, and industrial sensors. They have enabled us to gather more data and automate many tasks, leading to increased efficiency and convenience. However, this increasing level of connectivity also brings inherent security risks and breaches \cite{khandelwal2016friday, wei2018casino}. \add{Find citations to back the statement below} These can have harmful effects on individuals and organizations, as they can compromise sensitive information, and cause substantial financial and reputational damage. \add{Find citations to back the statement below} As a result, there is a growing need for effective and possibly automated risk management and network security measures to mitigate security risks.
+
+\comment{Zoltan}{I find it a bit strange that there is so much focus on IoT. I think the thesis is not specific to IoT}
+\comment{Zoltan}{These are valid problems, but i'm afraid the thesis will not solve them. By describing the problem, you create expectations that you will not fulfill}
+\comment{Zoltan}{It's questionable if that's good enough. The undetected 1\% can cause more than enough trouble}
+
+Users of smart devices such as Smart Thermometers, WiFi-connected switches, and IP Cameras are often not aware of any security vulnerabilities and their impact on their privacy and security. Where the online presence of users is receiving more and more focus these days, in the form of Multi-Factor Authentication and strong random passwords through the aid of Password Managers, IoT devices are still seemingly \emph{unprotected}. Most devices have no significant security but passwords that the user never changes. This leaves them vulnerable to a plethora of attacks \cite{hamza2019detecting, paudel2019detecting}. 
+
+Vulnerabilities that are found are usually registered in the Common Vulnerabilities and Exposures (CVEs), a system for publicly known vulnerabilities. This list allows software vendors to use static code analysis tools to quickly and cost-effectively find vulnerable pieces of software in their products and mitigate them. However, smart home devices are often hard (if not impossible) for end-users to update, leaving the older devices vulnerable to attacks. Some devices have the possibility to actively trigger a firmware update, but more often than not these updates are received in plain text \cite{wurm2016security}. This makes it impossible to guarantee that a smart home device stays secure over time.
+
+In recent years, much research has been done into detecting security risks and intrusions within a network, specifically for IoT devices. Some researchers have investigated if machine learning could prove useful for the task of risks and intrusion detection \cite{canedo2016using, doshi2018machine, hamza2019detecting, sivanathan2018classifying}. This approach seems very accurate, to a point where 99 percent of the anomalies in a network could be detected. However, these Machine Learning models require full access to network packets to properly function which might not always be possible. These network packets would contain information such as protocol, packet size, port numbers, cipher suites, and other detailed information about the traffic. Next to leveraging the power of machine learning more research has been performed to investigate more preventative methods \cite{miettinen2017iot, hamza2019detecting, paudel2019detecting}.
+
+Zarpelao et al. performed a survey to investigate and classify different types of intrusion detection \cite{zarpelao2017survey}. As they mention in their paper, it is not evident which method is best suited for intrusion detection in IoT Systems. This is the stepping stone through which Mann and Smolka want to enter the debate and propose another approach to the problem \cite{mann2023ADRIAN}. \comment{Zoltan}{Not mentioned so far}Similar to Paudel et al. leveraging a graph of nodes to tackle the problem, but instead of inspecting network traffic they propose looking at the properties of the infrastructure. By using RiskRules based on CVE's Attack Graphs are created, which help to further reason about the risk of a network. More on this in Section \ref{ssec:problem-statement}.
 
 \subsection{Motivation}
 \label{ssec:motivation}
 
 \subsection{Problem Statement}
 \label{ssec:problem-statement}
+This research aims to bridge the scientific knowledge gap by implementing the protocol to do \ADRIAN (ADRIAN in short). This protocol has been conceptualized by Z.A. Mann and S. Smolka \cite{mann2023ADRIAN}. This research builds upon their ideas and concepts, implementing and experimenting with a Proof of Concept (PoC) to verify and potentially suggest improvements for further research. 
+
+
 
 \subsection{Research Questions}
 \label{ssec:research-questions}
+
+The main research question this thesis will answer is the following question;
+
+\vspace{0.5em}
+\textbf{Research Question}\label{rq} \emph{Can the ADRIAN protocol be implemented and used for effective Risk Assessment and mitigation?}\vspace{1em}
+
+We envision that we can answer this overarching question by extracting two sub-questions from it:
+
+\researchquestion{assessment}{(Identification) Can we use the ADRIAN protocol to do automated risk identification within a network of nodes with a (imperfect) local knowledge base? }
+
+\researchquestion{mitigation}{(Mitigation) Can the ADRIAN protocol be used to decrease the overall risk, by applying adaptation patterns over time?}
