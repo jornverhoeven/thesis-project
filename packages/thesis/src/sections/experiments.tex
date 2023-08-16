@@ -1,7 +1,5 @@
 \section{Experiments}
 \label{sec:experiments}
-\comment{Zoltan}{The above section 3.4 should be part of this section}
-
 To fully verify the implementation of the proposed architecture, a number of experiments have been conducted. The experiments are designed to test and validate the following aspects of the architecture: 
 
 \begin{description}
@@ -28,6 +26,31 @@ Each of the experiments is performed on the same infrastructure, but with differ
 \end{figure}
 \comment{Zoltan}{What do the arrows mean? I think they might have different meaning, depending on whether they connect two nodes or a node and a SW Component}
 
+\subsection{Metrics and Evaluation}
+\label{ssec:metrics}
+\begin{quote}\textcolor{red}{
+    Define the metrics or criteria used to evaluate the success of your software implementation and proof of concept. Explain why these metrics were chosen and how they relate to the research objectives.
+}\end{quote}
+
+% As mentioned above the \code{ExperimentManager} is responsible for measuring metrics. These metrics are measured for each epoch, and is repeated for each experiment. 
+\comment{Zoltan}{Idea: These metrics could be categorized as effectiveness metrics and efficiency metrics. The first and the last measure efficiency, while the others measure effectiveness.}
+The metrics are defined as follows:
+
+\begin{description}
+    \item[Total number of messages exchanged] The total number of messages exchanged between agents during the epoch.
+    \item[Total number of risks identified] The total number of risks identified by the agents during the epoch.
+    \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch.
+    \item[Sum of the damage for remaining risks] The sum of the damage for the risks that have not been mitigated by the agents during the epoch.
+    \comment{Zoltan}{I think this should be weighted by the probability of those risks}
+    \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
+\end{description}
+
+\subsection{Controls and Variables}
+\label{ssec:controls-variables}
+\begin{quote}\textcolor{red}{
+    Discuss any controls or variables that were taken into account to ensure the validity and reliability of your results. This could include experimental controls, randomization, and addressing potential confounding factors.
+}\end{quote}
+
 \subsection{Baseline Experiment}
 % - No communication, no cooperation
 % - Predefined Infrastructure, same as other experiments
@@ -52,7 +75,7 @@ When the experiment has started, the agents are allowed to adapt their own prope
 \end{figure}
 \comment{Zoltan}{It's not fully clear what this figure conveys. What do the individual symbols mean? In general, it is a good idea to explain all figures in the text, because they are often not as self-explanatory as you might think.}
 
-\subsection{Experiment 1: Risk Analysis (communication)}
+\subsection{Experiment 1: Risk Analysis}
 % - Communication, no cooperation
 % - Predefined Infrastructure, same as other experiments
 % - Measure:
@@ -76,7 +99,7 @@ When the experiment has started, the agents are allowed to adapt their own prope
 
 This experiment is repeated multiple times, with different values for \( D_{knowledge} \). The values for \( D_{knowledge} \) are 1, 2, and 3. The results of this experiment are compared to the results of the baseline experiment.
 
-\subsection{Experiment 2: Risk Mitigation (cooperation)}
+\subsection{Experiment 2: Risk Mitigation}
 % - Communication, cooperation
 % - Predefined Infrastructure, same as other experiments
 % - Measure:

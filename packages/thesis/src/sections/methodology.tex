@@ -1,50 +1,27 @@
 \comment{Zoltan}{This section looks strange to me. For me, methodology would be a short section giving an overview about your research and the methods you use. The description of the actual software design, implementation and validation should be described in a separate section in my optinion.}
 \section{Methodology}
 \label{sec:methodology}
+The initial phase of this research involves the development and realization of a POC implementation of the ADRIAN Protocol, of which the latter is designed by Mann and Smolka in \cite{mann2023ADRIAN}. This POC is then used to run multiple simulations in a controlled environment, which allow the generation of metrics as described in Section \ref{sec:experiments}. These metrics, of which the results are in Section \ref{sec:results}, are then used to validate the POC implementation in a quantitative manner. 
 
+% \subsection{Research Approach and Design}
+% \label{ssec:research-approach}
+% \begin{quote}\textcolor{red}{
+%     Describe the overall strategy used to tackle the problem. Is it an experimental, theoretical, or a combination of both? Explain why this approach is appropriate for the research.
+% }\end{quote}
 
-\subsection{Research Approach and Design}
-\label{ssec:research-approach}
-\begin{quote}\textcolor{red}{
-    Describe the overall strategy used to tackle the problem. Is it an experimental, theoretical, or a combination of both? Explain why this approach is appropriate for the research.
-}\end{quote}
+\subsection{Research Questions}
+\label{ssec:research-questions}
 
-\subsection{Software Implementation}
-\label{ssec:software-implementation}
-\begin{quote}\textcolor{red}{
-    Provide a detailed explanation of how the software was designed, developed, and implemented. Discuss the programming languages, tools, frameworks, and technologies used. Include code snippets or pseudocode if relevant.
-}\end{quote}
+The main research question this thesis will answer is the following question;
 
-\subsection{Proof of Concept (POC)}
-\label{ssec:proof-of-concept}
-\begin{quote}\textcolor{red}{
-    Explain the proof of concept you're validating using the software. Clearly state the objectives of the proof of concept and how it aligns with the problem you're addressing.
-}\end{quote}
+\vspace{0.5em}
+\textbf{Research Question}\label{rq} \emph{Can the ADRIAN protocol be implemented and used for effective Risk Assessment and mitigation?}\vspace{1em}
 
-\subsection{Metrics and Evaluation}
-\label{ssec:metrics}
-\begin{quote}\textcolor{red}{
-    Define the metrics or criteria used to evaluate the success of your software implementation and proof of concept. Explain why these metrics were chosen and how they relate to the research objectives.
-}\end{quote}
+We envision that we can answer this overarching question by extracting two sub-questions from it:
 
-% As mentioned above the \code{ExperimentManager} is responsible for measuring metrics. These metrics are measured for each epoch, and is repeated for each experiment. 
-\comment{Zoltan}{Idea: These metrics could be categorized as effectiveness metrics and efficiency metrics. The first and the last measure efficiency, while the others measure effectiveness.}
-The metrics are defined as follows:
+\researchquestion{assessment}{(Identification) Can we use the ADRIAN protocol to do automated risk identification within a network of nodes with a (imperfect) local knowledge base? }
 
-\begin{description}
-    \item[Total number of messages exchanged] The total number of messages exchanged between agents during the epoch.
-    \item[Total number of risks identified] The total number of risks identified by the agents during the epoch.
-    \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch.
-    \item[Sum of the damage for remaining risks] The sum of the damage for the risks that have not been mitigated by the agents during the epoch.
-    \comment{Zoltan}{I think this should be weighted by the probability of those risks}
-    \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
-\end{description}
-
-\subsection{Controls and Variables}
-\label{ssec:controls-variables}
-\begin{quote}\textcolor{red}{
-    Discuss any controls or variables that were taken into account to ensure the validity and reliability of your results. This could include experimental controls, randomization, and addressing potential confounding factors.
-}\end{quote}
+\researchquestion{mitigation}{(Mitigation) Can the ADRIAN protocol be used to decrease the overall risk, by applying adaptation patterns over time?}
 
 \subsection{Scope and Limitations}
 \label{ssec:scope-limitations}
