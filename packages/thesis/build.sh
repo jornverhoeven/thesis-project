@@ -16,4 +16,4 @@ for i in $DIRECTORY/content/*png; do
     cp $i $DIRECTORY/_content/${xpref%.*}.png
 done
 
-docker run --rm -t --user="$(id -u):$(id -g)" --net=none -v "$(pwd):/tmp" leplusorg/latex latexmk -outdir=/tmp/dist -pdf -cd -jobname=thesis /tmp/src/main.tex
+docker run --rm -t --user="$(id -u):$(id -g)" --net=none -v "$(pwd):/tmp" leplusorg/latex latexmk -outdir=/tmp/dist -pdf -cd -jobname=thesis -halt-on-error /tmp/src/main.tex

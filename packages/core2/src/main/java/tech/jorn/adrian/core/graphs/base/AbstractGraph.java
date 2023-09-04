@@ -1,5 +1,8 @@
 package tech.jorn.adrian.core.graphs.base;
 
+import tech.jorn.adrian.core.graphs.traversal.BreathFirstIterator;
+import tech.jorn.adrian.core.graphs.traversal.IGraphSearch;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,8 +12,12 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
 
     @Override
     public void upsertNode(N node) {
+        if (nodes.contains(node)) nodes.remove(node);
         nodes.add(node); // This might be a bit extra ash we are updating the keys of the map
-        adjacent.put(node, adjacent.getOrDefault(node, new ArrayList<>()));
+
+        var links = adjacent.getOrDefault(node, new ArrayList<>());
+        if (adjacent.containsKey(node)) adjacent.remove(node);
+        adjacent.put(node, links);
     }
 
     @Override
@@ -58,7 +65,9 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
     public List<N> getParents(N node) {
         var parents = new ArrayList<N>();
         this.adjacent.forEach((key, children) -> {
-            if (children.contains(node)) parents.add(key);
+            var found = children.stream().filter(link -> link.equals(node))
+                    .findAny();
+            if (found.isPresent()) parents.add(key);
         });
         return parents;
     }
@@ -73,5 +82,12 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
     public Set<N> getNodes() {
         return this.nodes;
     }
-}
 
+    public List<List<N>> findPathsTo(N from, N to) {
+        return this.findPathsTo(from, to, new BreathFirstIterator<>(this));
+    }
+
+    public List<List<N>> findPathsTo(N from, N to, IGraphSearch<N> strategy) {
+        return strategy.findAllPathsTo(from, to);
+    }
+}

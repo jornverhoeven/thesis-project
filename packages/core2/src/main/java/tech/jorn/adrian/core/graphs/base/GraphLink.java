@@ -10,4 +10,10 @@ public class GraphLink<N extends INode> {
     public N getNode() {
         return this.node;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof INode) return this.node.equals(obj);
+        return super.equals(obj);
+    }
 }

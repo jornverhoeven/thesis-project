@@ -1,6 +1,7 @@
 package tech.jorn.adrian.core.auction;
 
 import tech.jorn.adrian.core.graphs.base.INode;
+import tech.jorn.adrian.core.risks.RiskReport;
 
 import java.util.Date;
 import java.util.List;
@@ -9,10 +10,10 @@ public class Auction {
     private final String id;
     private final Date startDate;
     private final INode host;
-    private final List<INode> participants;
+    private final List<String> participants;
     private final RiskReport riskReport;
 
-    public Auction(String id, INode host, List<INode> participants, RiskReport riskReport) {
+    public Auction(String id, INode host, List<String> participants, RiskReport riskReport) {
         this.id = id;
         this.host = host;
         this.participants = participants;
@@ -32,7 +33,7 @@ public class Auction {
         return host;
     }
 
-    public List<INode> getParticipants() {
+    public List<String> getParticipants() {
         return participants;
     }
 
@@ -41,6 +42,3 @@ public class Auction {
     }
 }
 
-record RiskReport () { }
-
-record Mutation () { }

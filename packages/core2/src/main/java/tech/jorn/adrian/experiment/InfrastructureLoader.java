@@ -26,7 +26,10 @@ public class InfrastructureLoader {
                 var node = new InfrastructureNode((String) info.get("id"));
                 info.remove("id");
                 info.remove("name");
-                info.forEach(node::setProperty);
+                info.forEach((key, value) -> {
+                    if (value instanceof Double) node.setProperty(key, ((Double) value).floatValue());
+                    else node.setProperty(key, value);
+                });
                 nodes.add(node);
             });
         }
@@ -38,7 +41,10 @@ public class InfrastructureLoader {
                 var asset = new SoftwareAsset((String) info.get("id"));
                 info.remove("id");
                 info.remove("name");
-                info.forEach(asset::setProperty);
+                info.forEach((key, value) -> {
+                    if (value instanceof Double) asset.setProperty(key, ((Double) value).floatValue());
+                    else asset.setProperty(key, value);
+                });
                 assets.add(asset);
             });
         }

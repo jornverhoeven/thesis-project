@@ -4,7 +4,13 @@ import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.risks.RiskReport;
 
 public class FoundRiskEvent extends Event {
-    public FoundRiskEvent(RiskReport risk) {
+    private final RiskReport risk;
 
+    public FoundRiskEvent(RiskReport risk) {
+        this.risk = risk;
+    }
+
+    public RiskReport getRiskReport() {
+        return risk;
     }
 }

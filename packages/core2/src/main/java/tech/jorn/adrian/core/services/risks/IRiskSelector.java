@@ -1,4 +1,4 @@
-package tech.jorn.adrian.core.services;
+package tech.jorn.adrian.core.services.risks;
 
 import tech.jorn.adrian.core.risks.RiskReport;
 

@@ -1,0 +1,3 @@
+- Should the agent remember the information it gets from the RiskReport
+- Should a adaptation pattern be applied on ALL nodes or just a single one in 1 auction.
+    - If all nodes, should there be some kind of multiplier to the cost function as multiple things can go wrong?

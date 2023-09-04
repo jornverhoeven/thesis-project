@@ -1,35 +1,35 @@
 package tech.jorn.adrian.risks.rules;
 
-import tech.jorn.adrian.core.Pair;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
-import tech.jorn.adrian.core.graphs.risks.AttackGraph;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.risks.Risk;
 import tech.jorn.adrian.core.risks.RiskEdge;
 import tech.jorn.adrian.core.risks.RiskRule;
-import tech.jorn.adrian.core.risks.RiskType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
+public abstract class PropertyBasedRule extends RiskRule {
 
     private final String property;
-    private final Class<R> riskClass;
+    private final String ruleId;
+    private final float mitigatedFactor;
+    private final float unmitigatedFactor;
 
-    protected PropertyBasedRule(String property, Class<R> riskClass) {
+    protected PropertyBasedRule(String property, String ruleId, float mitigatedFactor, float unmitigatedFactor) {
         this.property = property;
-        this.riskClass = riskClass;
+        this.ruleId = ruleId;
+        this.mitigatedFactor = mitigatedFactor;
+        this.unmitigatedFactor = unmitigatedFactor;
     }
 
     @Override
-    public List<RiskEdge> evaluate(KnowledgeBase knowledgeBase, AttackGraph attackGraph) {
-        var risks = new ArrayList<RiskEdge>();
-
+    public void evaluate(KnowledgeBase knowledgeBase, Consumer<RiskEdge> dispatchRisk) {
         List<KnowledgeBaseEntry<?>> nodes = new ArrayList<>();
+
         knowledgeBase.getNodes().forEach(node -> {
             if (this.includeNodes() && node instanceof KnowledgeBaseNode) nodes.add(node);
             if (this.includeAssets() && node instanceof KnowledgeBaseSoftwareAsset) nodes.add(node);
@@ -39,29 +39,27 @@ public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
             var parents = knowledgeBase.getParents(node);
 
             parents.forEach(parent -> {
+                // Break if the node and parent are equal somehow
                 if (parent.getID().equals(node.getID())) return;
+
+                // If the parent is a software asset, and it is ignored, we skip it
+                if (parent instanceof KnowledgeBaseSoftwareAsset && !this.allowAssetParent()) return;
+                // If the parent is a node, and it is ignored, we skip it
+                if (parent instanceof KnowledgeBaseNode && !this.allowNodeParent()) return;
 
                 Risk risk;
                 try {
-                    var riskType = this.riskClass.getDeclaredConstructor().newInstance();
-                    var hasProperty = (boolean) node.getProperty(this.property)
+                    var hasProperty = (Boolean) node.getProperty(this.property)
                             .orElse(false);
-                    if (hasProperty) {
-                        risk = new Risk(riskType, riskType.getMitigatedRiskFactor());
-                    } else
-                        risk = new Risk(riskType, riskType.getUnmitigatedRiskFactor());
+                    if (hasProperty) risk = new Risk(this.ruleId, this.mitigatedFactor);
+                    else risk = new Risk(this.ruleId, this.unmitigatedFactor);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                var edge = new RiskEdge(
-                        attackGraph.findById(node.getID()).get(), // TODO: Do some actual checking before calling
-                        attackGraph.findById(parent.getID()).get(),
-                        risk
-                );
-                risks.add(edge);
+                var riskEdge = new RiskEdge(parent, node, risk);
+                dispatchRisk.accept(riskEdge);
             });
         });
-        return risks;
     }
 
     public String getProperty() {
@@ -74,4 +72,7 @@ public abstract class PropertyBasedRule<R extends RiskType> extends RiskRule {
     protected boolean includeNodes() {
         return true;
     }
+
+    protected boolean allowAssetParent() { return true; }
+    protected boolean allowNodeParent() { return true; }
 }

@@ -1,11 +1,10 @@
 package tech.jorn.adrian.core.risks;
 
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
-import tech.jorn.adrian.core.graphs.risks.AttackGraph;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class RiskRule {
-    public abstract List<RiskEdge> evaluate(KnowledgeBase knowledgeBase, AttackGraph attackGraph);
+    public abstract void evaluate(KnowledgeBase knowledgeBase, Consumer<RiskEdge> attackGraph);
 }
 

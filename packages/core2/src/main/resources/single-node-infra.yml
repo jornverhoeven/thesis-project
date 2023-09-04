@@ -2,9 +2,27 @@ nodes:
   - id: node-a
     name: Node A
     trustedExecutionEnvironment: true
+    isExposed: false
+    hasAgent: true
+    hasFirewall: false
+  - id: node-b
+    name: Node B
+    trustedExecutionEnvironment: true
+    isExposed: false
+    hasAgent: true
+    hasFirewall: false
+  - id: node-c
+    name: Node C
+    trustedExecutionEnvironment: true
     isExposed: true
     hasAgent: true
     hasFirewall: false
+
+links:
+  - source: node-a
+    target: node-b
+  - source: node-b
+    target: node-c
 
 assets:
   - id: software-1

@@ -1,4 +1,4 @@
-package tech.jorn.adrian.experiment;
+package tech.jorn.adrian.experiment.instruments;
 
 import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.events.IdentifyRiskEvent;
@@ -9,6 +9,7 @@ import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExperimentalAgent extends AdrianAgent {
@@ -25,6 +26,7 @@ public class ExperimentalAgent extends AdrianAgent {
         var event = new ShareKnowledgeEvent(
                 this.getConfiguration().getParentNode(),
                 this.getConfiguration().getNeighbours(),
+                this.getConfiguration().getAssets(),
                 1
         );
         this.messageBroker.broadcast(new EventMessage<>(event));

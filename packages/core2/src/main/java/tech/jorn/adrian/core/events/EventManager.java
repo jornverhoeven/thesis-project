@@ -8,16 +8,21 @@ import tech.jorn.adrian.core.observables.EventDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class EventManager {
-    Logger log = LogManager.getLogger(EventManager.class);
+public class EventManager implements AutoCloseable {
+    protected Logger log = LogManager.getLogger(EventManager.class);
 
     private final IEventQueue queue;
     private final List<EventHandler<Event>> eventHandlers;
     private boolean processing = false;
     private final EventDispatcher<Void> finishedEvent = new EventDispatcher<>();
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public EventManager() {
         this(new InMemoryQueue());
@@ -40,10 +45,14 @@ public class EventManager {
     }
 
     public <E extends Event> void registerEventHandler(Class<E> event, Consumer<E> handler) {
+        this.registerEventHandler(event, handler, false);
+    }
+    public <E extends Event> void registerEventHandler(Class<E> event, Consumer<E> handler, boolean strict) {
 //        log.debug("Registering event handler for event \033[4m{}\033[0m", event.getSimpleName());
         this.eventHandlers.add(new EventHandler<>(
                 (Class<Event>) event,
-                (Consumer<Event>) handler)
+                (Consumer<Event>) handler,
+                strict)
         );
     }
 
@@ -57,20 +66,31 @@ public class EventManager {
 
         var processed = new AtomicBoolean(false);
 
-        this.eventHandlers.forEach(handler -> {
-            if (!event.getClass().isAssignableFrom(handler.eventType())) return;
-            handler.handler().accept(event);
-            processed.set(true);
-        });
+//        this.scheduler.schedule(() -> {
+            this.eventHandlers.forEach(handler -> {
+                if (handler.strict() && !handler.eventType().equals(event.getClass())) return;
+                if (!handler.strict() && !event.getClass().isAssignableFrom(handler.eventType())) return;
 
-        if (!processed.get()) {
-            log.warn("No event handler for event {}", event.getClass().getSimpleName());
-        }
+                handler.handler().accept(event);
+                processed.set(true);
+                try { Thread.sleep(1); }
+                catch (InterruptedException e ) { this.log.warn("Could not sleep"); }
+            });
 
-        this.processing = false;
-        this.finishedEvent.dispatch(null);
+            if (!processed.get()) {
+                log.warn("No event handler for event \033[4m{}\033[0m", event.getClass().getSimpleName());
+            }
+
+            this.processing = false;
+            this.finishedEvent.dispatch(null);
+//        }, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.scheduler.shutdown();
     }
 }
 
-record EventHandler<E extends Event>(Class<E> eventType, Consumer<E> handler) {
+record EventHandler<E extends Event>(Class<E> eventType, Consumer<E> handler, boolean strict) {
 }

@@ -5,6 +5,7 @@ import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.observables.SubscribableEvent;
 import tech.jorn.adrian.core.properties.AbstractProperty;
 import tech.jorn.adrian.core.properties.IDetailed;
+import tech.jorn.adrian.core.properties.NodeProperty;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,10 @@ public abstract class AbstractDetailedNode<P extends AbstractProperty<?>> extend
         return Optional.empty();
     }
 
+    @Override
+    public void setFromProperty(String key, AbstractProperty<?> property) {
+        this.setProperty(key, property.getValue());
+    }
     @Override
     public <T> void setProperty(String property, T value) {
         var p = this.makeProperty(property, value);

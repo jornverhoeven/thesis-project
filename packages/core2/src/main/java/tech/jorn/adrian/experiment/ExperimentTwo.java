@@ -2,6 +2,7 @@ package tech.jorn.adrian.experiment;
 
 
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 public class ExperimentTwo {
