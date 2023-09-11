@@ -12,7 +12,6 @@ import tech.jorn.adrian.core.observables.SubscribableEvent;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class InMemoryBroker implements MessageBroker, AutoCloseable {
     private final Logger log = LogManager.getLogger(InMemoryBroker.class);
@@ -50,6 +49,11 @@ public class InMemoryBroker implements MessageBroker, AutoCloseable {
         this.neighbours.forEach(neighbour ->
                 this.scheduleDispatch(new Envelope(this.node, neighbour, message))
         );
+    }
+
+    @Override
+    public void addRecipient(INode recipient) {
+        this.neighbours.add(recipient.getID());
     }
 
     @Override

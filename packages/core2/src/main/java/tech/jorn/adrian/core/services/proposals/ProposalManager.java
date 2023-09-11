@@ -60,6 +60,7 @@ public class ProposalManager {
         var mutations = this.generateMutations(knowledgeBase, riskReport);
         var proposals = new ArrayList<AuctionProposal>();
         mutations.forEach(mutation -> {
+            this.log.debug("Evaluating mutation {}", mutation.toString());
             KnowledgeBase clonedKnowledgeBase = knowledgeBase.clone();
             var nodeToMutate = clonedKnowledgeBase.findById(mutation.getNode().getID()).get();
             mutation.apply(nodeToMutate);
@@ -100,7 +101,7 @@ public class ProposalManager {
         var node = knowledgeBase.findById(this.configuration.getNodeID()).get();
         mutators.forEach(mutator -> {
             var mutation = (Mutation<N>) mutator.mutate(node);
-            if (mutation != null) mutations.add(mutation);
+            if (mutation != null && mutation.isApplicable((N) node)) mutations.add(mutation);
         });
         return mutations;
     }
@@ -120,7 +121,14 @@ public class ProposalManager {
 
     public void applyProposal(AuctionProposal proposal) {
         var node = this.configuration.getParentNode();
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         proposal.mutation().apply(node);
+        this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
+        this.log.debug("Done applying proposal");
     }
 }
 

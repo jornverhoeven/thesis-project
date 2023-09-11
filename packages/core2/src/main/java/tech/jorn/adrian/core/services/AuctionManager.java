@@ -61,9 +61,10 @@ public class AuctionManager {
             this.messageBroker.send(node, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
             this.participants.add(node);
         });
-//        this.eventManager.emit(new SearchForProposalEvent(auction));
 
         this.auction.setCurrent(auction);
+        this.eventManager.emit(new SearchForProposalEvent(auction));
+        this.participants.add(this.configuration.getParentNode());
         return auction;
     }
 
@@ -81,19 +82,17 @@ public class AuctionManager {
     }
 
     public void receiveProposal(AuctionProposal proposal, INode participant) {
-        if (proposal == null) {
-            this.log.info("Node {} did not send a proposal", participant.getID());
-            return;
-        }
-
         var auction = this.auction.current();
         if (!auction.getId().equals(proposal.auction().getId())) {
             this.log.warn("Should not have received a proposal when not the auctioneer node");
             return;
         }
-        // TODO: Maybe check for double biddings
 
-        this.log.info("Received proposal {} {} from {}", proposal.mutation().getCosts(), proposal.newDamage(), participant.getID());
+        if (proposal.mutation() == null) {
+            this.log.info("Node {} did not send a proposal", participant.getID());
+        } else {
+            this.log.info("Received proposal {} {} from {}", proposal.mutation().getCosts(), proposal.newDamage(), participant.getID());
+        }
 
         this.proposals.put(participant, proposal);
 
@@ -108,7 +107,7 @@ public class AuctionManager {
     }
 
     public void cancelProposal(Auction auction) {
-        var event = new AuctionBidEvent(this.configuration.getParentNode(), null);
+        var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(this.configuration.getParentNode(), auction, null, Float.MAX_VALUE));
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
     }
 
@@ -126,7 +125,9 @@ public class AuctionManager {
         this.log.info("Finalizing auction {}", auction.getId());
         this.log.debug("Received proposals from: \n{}", proposals.values()
                 .stream()
-                .map(p -> String.format("- proposal from %s: reducing to %.2f by %s", p.origin().getID(), p.newDamage(), p.mutation().toString()))
+                .map(p -> p.mutation() != null
+                        ? String.format("- proposal from %s: reducing to %.2f by %s", p.origin().getID(), p.newDamage(), p.mutation())
+                        : String.format("- proposal from %s: nothing", p.origin().getID()))
                 .collect(Collectors.joining("\n")));
         this.timeout.cancel();
 
@@ -144,11 +145,12 @@ public class AuctionManager {
 
         this.participants.forEach(node -> {
             if (node.equals(this.configuration.getNodeID())) return;
+            // TODO: If no proposal was sent, we might not want to sent this event
             var event = new EventMessage<>(new AuctionFinalizedEvent(auction, proposal.get()));
             this.messageBroker.send(node, event);
         });
 
-        this.auction.setCurrent(null);
+        this.reset();
     }
 
     public boolean isAuctioning() {
@@ -162,5 +164,12 @@ public class AuctionManager {
     private boolean isSaturated() {
         return this.proposals.size() == participants.size()
                 && proposals.values().stream().allMatch(Objects::nonNull);
+    }
+
+    public void reset() {
+        this.auction.setCurrent(null);
+        this.proposals = new HashMap<>();
+        this.participants = new ArrayList<>();
+        this.log.debug("reset auctioning state");
     }
 }

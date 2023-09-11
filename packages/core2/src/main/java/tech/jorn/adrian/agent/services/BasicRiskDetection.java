@@ -77,6 +77,8 @@ public class BasicRiskDetection implements RiskDetection {
             });
         });
 
+        System.out.println("Exposed Nodes: " + exposedNodes.size() + "; " + exposedNodes.stream().map(n -> n.getID()));
+
         // 4. Calculate the risk reports based on the critical paths.
         List<RiskReport> riskReports = criticalPaths.stream().map(criticalPath -> {
             var path = criticalPath.stream().map(n -> (INode) n).toList();

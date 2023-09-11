@@ -64,6 +64,7 @@ public class AuctionController extends AbstractController {
 
     private void onAuctionFinalized(AuctionFinalizedEvent event) {
         // TODO: Remove auction from AuctionManager so we are able to join another auction
+        this.auctionManager.reset();
         // If we are not the one on the proposal ignore it
         if (!event.getProposal().origin().equals(this.configuration.getParentNode())) return;
         this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));

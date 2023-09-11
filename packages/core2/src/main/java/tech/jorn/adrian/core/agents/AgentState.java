@@ -1,7 +1,8 @@
 package tech.jorn.adrian.core.agents;
 
 public enum AgentState {
-    Loading,
+    Initializing,
+    Ready,
     Idle,
     Auctioning,
     Migrating

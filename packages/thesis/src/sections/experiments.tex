@@ -1,30 +1,33 @@
 \section{Experiments}
 \label{sec:experiments}
-To fully verify the implementation of the proposed architecture, a number of experiments have been conducted. The experiments are strategically designed to test the effect of a set of features within a specific scenario. All experiments are executed in a simulated environment, from here-on called scenario. These scenarios allow us to reproduce the experiments in a controlled and predictable environment. The features were chosen in such a way that they would individually help reason about their impact on the research questions from Subsection \ref{ssec:research-questions}.
+To fully verify the implementation of the proposed architecture, a number of experiments have been conducted. The experiments are strategically designed to test the effect of a set of features within a specific scenario. All experiments are executed in a simulated environment, from here-on called scenario. These scenarios allow us to reproduce the experiments in a controlled and predictable environment. The feature-sets were chosen in such a way that they would individually help reason about their impact on the research questions from Subsection \ref{ssec:research-questions}. Figure \ref{fig:experiments} shows a reference of the experiments that are executed, and how the scenarios and feature-sets are combined.
 
 \begin{figure}[H]
-    \begin{adjustwidth}{-2cm}{}
+    \begin{adjustwidth}{-1cm}{}
         \centering
         % \begin{table}[]
-        \begin{tabular}{l|llll}
-            \textbf{Features \textbackslash Scenarios} & \textbf{No interaction} & \textbf{Growing Infrastructure} & \textbf{Unstable Infrastructure} & \textbf{Mixed} \\ \hline
+        \begin{tabularx}{1.2\textwidth}{l|l|X|X|l}
+            \textbf{Features \textbackslash Scenarios} & \textbf{No changess} & \textbf{Growing \newline Infrastructure} & \textbf{Unstable \newline Infrastructure} & \textbf{Mixed} \\ \hline
             \textbf{Local}                             & A.1            & A.2                    & A.3                     & A.4   \\
             \textbf{Knowledge-Sharing only}            & B.1            & B.2                    & B.3                     & B.4   \\
             \textbf{Auctioning}                        & C.1            & C.2                    & C.3                     & C.4     
-        \end{tabular}
-        \caption{\label{fig:experiments}Overview of the experiments that are conducted. Each scenario is conducted with a different set of features, to test the effect of the features on the results.}
-        % \end{table}
+        \end{tabularx}
+        
     \end{adjustwidth}
+    \caption{\label{fig:experiments}Overview of the experiments that are conducted. Each scenario is conducted with a different set of features, to test the effect of the features on the results.}
 \end{figure}
 
 \subsection*{Features}
+Even though it would be interesting to test each feature individually, creating feature sets allowed us to focus on specific aspects of the implementation and reduce the number of experiments that needed to be conducted to a manageable number. 
 
+The feature sets were chosen in a way that they relate to the research questions from Subsection \ref{ssec:research-questions}. The features are defined as follows:
 
+\comment{Jorn}{I am not sure which representation to go for, either the table or the enumeration. The table is more clear in my opinion, but it feels more like a marketing thing. The enumeration is more scientific, but it is harder to read and easier to confuse maybe.}
 \begin{figure}[H]
     % \begin{table}[]
         \centering
         \begin{tabular}{l|l|l|l}
-            \textbf{Feature \textbackslash Name} & \textbf{Local} & \textbf{Knowledge-Sharing} & \textbf{Auctioning} \\ \hline
+            \textbf{Feature \textbackslash Set name} & \textbf{Local} & \textbf{Knowledge-Sharing} & \textbf{Auctioning} \\ \hline
             \textbf{Inspect host properties}     & yes            & yes                        & yes                 \\
             \textbf{Adapt host properties}       & yes            & yes                        & yes                 \\
             \textbf{Risk analysis}               & yes            & yes                        & yes                 \\
@@ -32,7 +35,7 @@ To fully verify the implementation of the proposed architecture, a number of exp
             \textbf{Initiate \& Join auctions}   & no             & no                         & yes                 \\
             \textbf{Migrate Software}            & no             & no                         & yes                            
         \end{tabular}
-        \caption{\label{fig:experiment-features}Overview of the actions that are allowed in each feature set. }
+        \caption{\label{fig:experiment-features}Overview of the actions that are allowed in each feature set. The headers of the table represent the names of the feature sets. The rows represent the actions that are allowed in each feature set.}
     % \end{table}
 \end{figure}
 
@@ -45,7 +48,7 @@ To fully verify the implementation of the proposed architecture, a number of exp
 {\small \textit{*The adaptations at this point only include the ability to make attribute changes. Software migrations are excluded as an agent has insufficient knowledge and capabilities to perform the migration to a node that is not its own.}}
 
 \subsection*{Scenarios}
-As mentioned before, each of the feature sets are executed in a specific scenario. A scenario is defined by an infrastructure and a set of events that will happen over time. These events could be new nodes joining the infrastructure, or nodes leaving the infrastructure. Because of the scenarios it was possible to repeat the experiments over-and-over again without having to manually change the infrastructure. This allowed for better reason about and compare the results of each individual experiment. Additionally it allowed for a more realistic approach to the experiments, as the infrastructure is not static and is changing over time.
+As mentioned before, each of the feature sets are executed in a specific scenario. A scenario is defined by an infrastructure and a set of events that will happen over time. These events could be new nodes joining the infrastructure, or nodes leaving the infrastructure. Because of the scenarios it was possible to repeat the experiments over-and-over again without having to manually change the infrastructure. This allowed for better reasoning about- and comparing the results of each individual experiment. Additionally it allowed for a more realistic approach to the experiments, as the infrastructure is not static and is changing over time.
 
 Four scenarios have been defined, each with a different set of characteristics. These characteristics are defined as follows:
 
@@ -56,39 +59,19 @@ Four scenarios have been defined, each with a different set of characteristics. 
     \item[Mixed]                      A more realistic scenario where nodes are added and removed from the infrastructure over time.
 \end{description}
 
-
-% The experiments are conducted in a simulated environment, where the agents are connected to a \code{ExperimentManager} which is responsible for creating the infrastructure, \comment{Zoltan}{is this really done by the ExperimentManager}managing the communication between agents, starting the experiment, and stopping the experiment after a predefined number of epochs\footnote{Epochs are further explained in REFERENCE}. The \code{ExperimentManager} is also responsible for measuring metrics as explained in Section \ref{ssec:metrics}. \comment{Zoltan}{I think that shouldn't matter}The experiments are conducted in the following order:
-
-% \begin{enumerate}
-%     \item Baseline experiment
-%     \item Experiment 1: Risk Analysis 
-%     \item Experiment 2: Risk Mitigation 
-% \end{enumerate}
-
-% \comment{Zoltan}{It's worth emphasizing that the experiments are conducted in a simulated environment.}
-% Each of the experiments is performed on the same infrastructure, but with different configurations. \tocheck{Update this depending on the final infrastructure} The infrastructure is a simple network consisting of 4 nodes, where each node has 4 software components. The nodes are connected as shown in Figure \ref{fig:infrastructure}. The infrastructure is created by the \code{ExperimentManager} and is the same for all experiments.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{_content/infrastructure}
-%     \caption{Experiment Infrastructure.}
-%     \label{fig:infrastructure}
-% \end{figure}
-% \comment{Zoltan}{What do the arrows mean? I think they might have different meaning, depending on whether they connect two nodes or a node and a SW Component}
-
 \subsection{Metrics and Evaluation}
 \label{ssec:metrics}
+During each of the experiments a number of metrics are measured. These metrics are used to evaluate the results of the experiments and help answer the research question. 
 
-% As mentioned above the \code{ExperimentManager} is responsible for measuring metrics. These metrics are measured for each epoch, and is repeated for each experiment. 
-% \comment{Zoltan}{Idea: These metrics could be categorized as effectiveness metrics and efficiency metrics. The first and the last measure efficiency, while the others measure effectiveness.}
+The metrics we've defined can be categorized by effectiveness and efficiency. Effectiveness metrics measure how well the system is able to identify and mitigate risks. Efficiency metrics measure how well the system is able to do this with the least amount of resources. The metrics that are measured are shown in Figure \ref{fig:metrics-groups}.
 
 \begin{figure}[H]
     \centering
     \begin{tabular}{l|l}
-        \textbf{Effectiveness}            & \textbf{Efficiency}            \\ \hline
+        \textbf{Effectiveness}            & \textbf{Efficiency}            \\
         Total \# of risk identified       & Total \# of messages exchanged \\
         \# of remaining risks             & \# of adaptations              \\
-        Weighted damage of remaining risk &                               
+        Weighted sum of damages of remaining risk &                               
     \end{tabular}
     \caption{\label{fig:metrics-groups}Overview of the metrics that are measured, grouped by their category.}
 \end{figure}
@@ -100,16 +83,30 @@ The metrics are defined as follows:
     \item[Total number of messages exchanged] The total number of messages exchanged between agents during the epoch.
     \item[Total number of risks identified] The total number of risks identified by the agents during the epoch.
     \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch.
-    \item[Sum of the damage for remaining risks] The sum of the damage for the risks that have not been mitigated by the agents during the epoch.
-    \comment{Zoltan}{I think this should be weighted by the probability of those risks}
+    \item[Weighted sum of damages for remaining risks] The weighted sum of the damage for the risks that have not been mitigated by the agents during the epoch.
+    % \comment{Zoltan}{I think this should be weighted by the probability of those risks}
     \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
 \end{description}
 
 \subsection{Controls and Variables}
 \label{ssec:controls-variables}
-\begin{quote}\textcolor{red}{
-    Discuss any controls or variables that were taken into account to ensure the validity and reliability of your results. This could include experimental controls, randomization, and addressing potential confounding factors.
-}\end{quote}
+% \begin{quote}\textcolor{red}{
+%     Discuss any controls or variables that were taken into account to ensure the validity and reliability of your results. This could include experimental controls, randomization, and addressing potential confounding factors.
+% }\end{quote}
+
+When implementing the experiments, a number of controls and variables have been taken into account to ensure the validity and reliability of the results.
+
+% Talk about:
+% - Fake timeouts/delays
+% - Knowledge sharing depth/distance
+
+One of the things that were taken into account is the fact that for the simulation we are able to control the time that passes. This means that we are able to simulate a number of events that would take a long time in real life, in a matter of seconds. This is especially useful for the experiments where the infrastructure is growing over time. In real life, this would take a long time, but in the simulation we are able to simulate this in a matter of seconds. This allows us to test the system in a more realistic scenario, without having to wait for a long time.
+
+There is a limit to the speed-up that can be achieved in the simulation as the processing of certain events is not instantaneous. For example, doing the risk assessment of a nodes takes time. In a real-world scenario this processing time (sub milliseconds) is negligible compared to the time messages take to travel over the network (100-1000 milliseconds) and the execution of adaptations (can take several hours to complete). However, in our simulation this processing time stays constant, and thus this processing time becomes more significant. To counter this, configurable delays were implemented to get a more realistic simulation. 
+Places where these delays are implemented are for example the delivery of network-messages and the execution of adaptations. 
+
+The second variable that can be controlled is the depth of knowledge sharing. This means that we can control how far agents are able to share their knowledge. This is done by setting a maximum distance between agents. This distance is defined as the number of hops between agents. This means that if the distance is set to 1, agents are only able to share knowledge with their direct neighbors. If the distance is set to 2, agents are able to share knowledge with their direct neighbors and the neighbors of their neighbors. This allows us to test the effect of knowledge sharing on the results of the experiments.
+
 
 % \subsection{Baseline Experiment}
 % % - No communication, no cooperation

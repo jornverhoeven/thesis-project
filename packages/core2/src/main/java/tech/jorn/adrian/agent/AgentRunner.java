@@ -4,7 +4,9 @@ import tech.jorn.adrian.agent.controllers.AuctionController;
 import tech.jorn.adrian.agent.controllers.KnowledgeController;
 import tech.jorn.adrian.agent.controllers.ProposalController;
 import tech.jorn.adrian.agent.controllers.RiskController;
+import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
 import tech.jorn.adrian.agent.services.BasicRiskDetection;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.IController;
 import tech.jorn.adrian.core.events.Event;
@@ -52,6 +54,16 @@ public class AgentRunner {
         messageBroker.onNewMessage().subscribe(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
+        agent.onStateChange().subscribe(state -> {
+            if (state != AgentState.Ready) return;
+            var event = new ShareKnowledgeEvent(
+                    configuration.getParentNode(),
+                    configuration.getNeighbours(),
+                    configuration.getAssets(),
+                    1
+            );
+            messageBroker.broadcast(new EventMessage<>(event));
+        });
     }
 }
 
@@ -69,6 +81,11 @@ class InMemoryBroker implements MessageBroker {
 
     @Override
     public void broadcast(Message message) {
+
+    }
+
+    @Override
+    public void addRecipient(INode recipient) {
 
     }
 

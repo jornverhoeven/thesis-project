@@ -47,7 +47,10 @@ public class RiskController extends AbstractController {
         var risk = this.riskSelector.select(risks);
 
         risks.forEach(r -> this.eventManager.emit(new FoundRiskEvent(r)));
-        risk.ifPresent(r -> this.eventManager.emit(new SelectedRiskEvent(r)));
+//        risk.ifPresent(r -> this.eventManager.emit(new SelectedRiskEvent(r)));
+        risk.ifPresentOrElse(
+                r -> this.eventManager.emit(new SelectedRiskEvent(r)),
+                () -> this.log.warn("No risk was found with the given constraints"));
     }
 
     protected void foundRiskEvent(FoundRiskEvent event) {

@@ -14,6 +14,11 @@ public class Migration<N extends AbstractDetailedNode<SoftwareProperty<?>>> exte
     }
 
     @Override
+    public boolean isApplicable(N node) {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "Migration";
     }

@@ -21,6 +21,8 @@ public abstract class Mutation<N extends AbstractDetailedNode<?>> {
 
     public abstract void apply(N node);
 
+    public abstract boolean isApplicable(N node);
+
     public abstract String toString();
 }
 

@@ -30,12 +30,15 @@ public class ProposalController extends AbstractController {
         proposals.forEach(p -> eventManager.emit(new FoundProposalEvent(p)));
         proposal.ifPresentOrElse(
                 p -> eventManager.emit(new SelectedProposalEvent(p)),
-                () -> eventManager.emit(new CancelProposalEvent(event.getAuction()))
+                () -> {
+                    this.log.warn("No proposal was found with the given constrains");
+                    eventManager.emit(new CancelProposalEvent(event.getAuction()));
+                }
         );
     }
 
     protected void applyProposal(ApplyProposalEvent event) {
-        this.log.debug("Applying proposal: {}", event.getProposal().mutation().toString());
+        this.log.info("Applying proposal: {}", event.getProposal().mutation().toString());
         proposalManager.applyProposal(event.getProposal());
     }
 }

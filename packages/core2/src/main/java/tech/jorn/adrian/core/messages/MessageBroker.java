@@ -11,6 +11,8 @@ public interface MessageBroker {
     void broadcast(Message message);
 //    void handleMessage(Consumer<Message> messageHandler);
 
+    void addRecipient(INode recipient);
+
     SubscribableEvent<Message> onNewMessage();
 }
 
