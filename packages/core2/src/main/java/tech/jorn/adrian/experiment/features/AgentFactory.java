@@ -1,4 +1,4 @@
-package tech.jorn.adrian.experiment;
+package tech.jorn.adrian.experiment.features;
 
 import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.AgentConfiguration;
@@ -17,7 +17,6 @@ import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.*;
 import tech.jorn.adrian.core.messages.EventMessage;
-import tech.jorn.adrian.core.messages.Message;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
 import tech.jorn.adrian.core.services.AuctionManager;
@@ -95,11 +94,13 @@ public class AgentFactory {
 
         riskDetection.setAgent(agent);
 
-        messageBroker.onNewMessage().subscribe(message -> {
+        messageBroker.onMessage(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
         agent.onStateChange().subscribe(state -> {
+            // Once an agent is ready to send/receive events, we will send neighbours our information
             if (state != AgentState.Ready) return;
+            System.out.println(configuration.getNodeID());
             var event = new ShareKnowledgeEvent(
                     configuration.getParentNode(),
                     configuration.getNeighbours(),

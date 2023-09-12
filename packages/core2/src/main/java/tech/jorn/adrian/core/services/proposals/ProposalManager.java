@@ -27,10 +27,9 @@ import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ProposalManager {
-    Logger log = LogManager.getLogger(ProposalManager.class);
+    Logger log;
 
     private final KnowledgeBase knowledgeBase;
     private final RiskDetection riskDetection;
@@ -42,6 +41,8 @@ public class ProposalManager {
         this.riskDetection = riskDetection;
         this.proposalSelector = proposalSelector;
         this.configuration = configuration;
+
+        this.log = LogManager.getLogger(String.format("[%s] %s", this.configuration.getNodeID(), ProposalManager.class.getSimpleName()));
     }
 
     public List<AuctionProposal> findProposals(Auction auction) {

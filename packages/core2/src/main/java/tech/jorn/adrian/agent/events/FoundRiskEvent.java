@@ -13,4 +13,9 @@ public class FoundRiskEvent extends Event {
     public RiskReport getRiskReport() {
         return risk;
     }
+
+    @Override
+    public boolean isDebugEvent() {
+        return true;
+    }
 }

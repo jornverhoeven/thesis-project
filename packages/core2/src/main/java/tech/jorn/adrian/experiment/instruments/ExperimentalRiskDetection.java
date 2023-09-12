@@ -33,7 +33,7 @@ public class ExperimentalRiskDetection extends BasicRiskDetection {
         var original = super.createRiskDispatcher(attackGraph);
         return e -> {
             // TODO: Measure the risk edges!
-            this.log.debug("Found a risk edge: {} {} {} {}", e.from().getID(), e.to().getID(), e.risk().type(), e.risk().factor());
+            this.log.trace("Found a risk edge: \033[4m{}\033[0m \033[4m{}\033[0m \033[1m{}\033[0m \033[1m{}\033[0m", e.from().getID(), e.to().getID(), e.risk().type(), e.risk().factor());
             original.accept(e);
         };
     }

@@ -123,7 +123,7 @@ public class AuctionManager {
     }
 
     private void finalizeAuction(Auction auction) {
-        this.log.info("Finalizing auction {}", auction.getId());
+        this.log.info("Finalizing auction {}, trying to reduce damage value {}", auction.getId(), auction.getRiskReport().damage());
         this.log.debug("Received proposals from: \n{}", proposals.values()
                 .stream()
                 .map(p -> p.mutation() != null
@@ -131,6 +131,12 @@ public class AuctionManager {
                         : String.format("- proposal from %s: nothing", p.origin().getID()))
                 .collect(Collectors.joining("\n")));
         this.timeout.cancel();
+
+        if (proposals.isEmpty()) {
+            this.log.warn("Auction did not yield any applicable proposals, ignoring auction results");
+            this.log.error("-- Auction Stopped!! {}", auction.getId());
+            this.reset();
+        }
 
         var proposal = this.proposalSelector.select(proposals.values().stream().toList());
         if (proposal.isEmpty()) {
@@ -153,7 +159,6 @@ public class AuctionManager {
 
 
         this.log.error("-- Auction Stopped!! {}", auction.getId());
-
         this.reset();
     }
 

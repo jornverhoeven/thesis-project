@@ -62,7 +62,8 @@ public class EventManager implements AutoCloseable {
 
     private <E extends Event> void nextEvent(E event) {
         this.processing = true;
-        log.debug("Processing event \033[4m{}\033[0m", event.getClass().getSimpleName());
+        if (event.isDebugEvent()) log.trace("Processing event \033[4m{}\033[0m", event.getClass().getSimpleName());
+        else log.debug("Processing event \033[4m{}\033[0m", event.getClass().getSimpleName());
 
         var processed = new AtomicBoolean(false);
 

@@ -16,4 +16,5 @@ public abstract class Event implements Serializable {
     public Date getTime() {
         return this.time;
     }
+    public boolean isDebugEvent() { return false; }
 }

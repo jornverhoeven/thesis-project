@@ -39,7 +39,7 @@ assets:
   - id: software-2
     name: Software Component 2
     type: software
-    isCritical: false
+    isCritical: true
     damageValue: 45.5
     host: node-a
 

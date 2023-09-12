@@ -14,5 +14,7 @@ public interface MessageBroker {
     void addRecipient(INode recipient);
 
     SubscribableEvent<Message> onNewMessage();
+
+    void onMessage(Consumer<Message> messageHandler);
 }
 

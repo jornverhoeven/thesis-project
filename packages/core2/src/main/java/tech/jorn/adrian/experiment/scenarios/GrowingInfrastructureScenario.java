@@ -17,7 +17,7 @@ public class GrowingInfrastructureScenario extends Scenario {
     private final Function<InfrastructureNode, AdrianAgent> agentFactory;
 
     public GrowingInfrastructureScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, Function<InfrastructureNode, AdrianAgent> agentFactory) {
-        super(infrastructure, messageDispatcher, 4 * 60 * 1000);
+        super(infrastructure, messageDispatcher, 10 * 60 * 1000);
         this.agentFactory = agentFactory;
     }
 
@@ -32,9 +32,14 @@ public class GrowingInfrastructureScenario extends Scenario {
 
             this.log.info("Adding new node + agent");
             infrastructure.upsertNode(node);
-            var neighbour = infrastructure.findById("node-b").get();
-            infrastructure.addEdge(node, neighbour);
-
+            {
+                var neighbour = infrastructure.findById("node-a").get();
+                infrastructure.addEdge(node, neighbour);
+            }
+            {
+                var neighbour = infrastructure.findById("node-b").get();
+                infrastructure.addEdge(node, neighbour);
+            }
             var agent = this.agentFactory.apply(node);
             agent.start();
 

@@ -34,6 +34,7 @@ public class KnowledgeController extends AbstractController {
     protected void processKnowledge(ShareKnowledgeEvent event) {
         if (knowledgeBase.findById(event.getOrigin().getID()).isEmpty() && event.getDistance() == 1) {
             this.messageBroker.addRecipient(event.getOrigin());
+            this.log.info("Added a new neighbour {}", event.getOrigin().getID());
         }
 
         this.knowledgeBase.processNewInformation(event.getOrigin(), event.getLinks(), event.getAssets());

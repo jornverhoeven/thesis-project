@@ -28,6 +28,7 @@ import tech.jorn.adrian.core.services.proposals.LowestDamage;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AgentRunner {
     public static void main(String[] args) {
@@ -92,5 +93,10 @@ class InMemoryBroker implements MessageBroker {
     @Override
     public SubscribableEvent<Message> onNewMessage() {
         return null;
+    }
+
+    @Override
+    public void onMessage(Consumer<Message> messageHandler) {
+
     }
 }
