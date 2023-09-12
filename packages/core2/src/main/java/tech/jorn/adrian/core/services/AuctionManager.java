@@ -43,6 +43,7 @@ public class AuctionManager {
 
     public Auction startAuction(RiskReport riskReport) {
         var auction = new Auction(new IDGenerator().getID(), this.configuration.getParentNode(), new ArrayList<>(), riskReport);
+        this.log.error("-- Auction Started!! {}", auction.getId());
 
         var timer = new Timer();
         var manager = this;
@@ -150,11 +151,14 @@ public class AuctionManager {
             this.messageBroker.send(node, event);
         });
 
+
+        this.log.error("-- Auction Stopped!! {}", auction.getId());
+
         this.reset();
     }
 
     public boolean isAuctioning() {
-        return this.auction.current() == null;
+        return this.auction.current() != null;
     }
 
     public SubscribableValueEvent<Auction> onAuctionChanged() {

@@ -34,12 +34,16 @@ public class AuctionController extends AbstractController {
     }
 
     private void initiateAuction(InitiateAuctionEvent event) {
+        if (this.auctionManager.isAuctioning()) {
+            this.log.warn("Agent was already participating in an auction");
+            return;
+        }
         this.auctionManager.startAuction(event.getReport());
     }
 
     private void joinAuctionRequest(JoinAuctionRequestEvent event) {
-        boolean shouldJoin = this.auctionManager.isAuctioning();
-        if (shouldJoin) this.auctionManager.joinAuction(event.getAuction());
+        boolean canJoin = !this.auctionManager.isAuctioning();
+        if (canJoin) this.auctionManager.joinAuction(event.getAuction());
         else this.auctionManager.rejectAuction(event.getAuction());
     }
 

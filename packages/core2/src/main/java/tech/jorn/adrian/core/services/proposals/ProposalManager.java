@@ -7,12 +7,18 @@ import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
+import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.properties.NodeProperty;
+import tech.jorn.adrian.core.properties.SoftwareProperty;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.core.services.RiskDetection;
@@ -21,6 +27,7 @@ import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProposalManager {
     Logger log = LogManager.getLogger(ProposalManager.class);
@@ -44,16 +51,33 @@ public class ProposalManager {
             var node = riskReport.path().get(i);
             var next = riskReport.path().get(i + 1);
 
-            var exists = knowledgeBase.findById(node.getID()).isPresent();
-            if (exists) continue;
-
-            var knowledgeNode = KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) node);
-            var knowledgeNext = knowledgeBase.findById(next.getID())
-                    .orElse(KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) next));
-
-            knowledgeBase.upsertNode(knowledgeNode);
-            knowledgeBase.upsertNode(knowledgeNext);
-            knowledgeBase.addEdge(knowledgeNode, knowledgeNext);
+            var updated = false;
+            KnowledgeBaseEntry<?> knowledgeNode;
+            KnowledgeBaseEntry<?> knowledgeNext;
+            {
+                var exists = knowledgeBase.findById(node.getID()).isPresent();
+                if (!exists) {
+                    knowledgeNode = KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) node);
+                    knowledgeBase.upsertNode(knowledgeNode);
+                    updated = true;
+                } else {
+                    knowledgeNode = knowledgeBase.findById(node.getID()).get();
+                }
+            }
+            {
+                var exists = knowledgeBase.findById(next.getID()).isPresent();
+                if (!exists) {
+                    knowledgeNext = knowledgeBase.findById(next.getID())
+                            .orElse(next instanceof AttackGraphNode
+                                    ? KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) next)
+                                    : KnowledgeBaseSoftwareAsset.fromNode((AbstractDetailedNode<SoftwareProperty<?>>) next));
+                    knowledgeBase.upsertNode(knowledgeNext);
+                    updated = true;
+                } else {
+                    knowledgeNext = knowledgeBase.findById(next.getID()).get();
+                }
+            }
+            if (updated) knowledgeBase.addEdge(knowledgeNode, knowledgeNext);
         }
 
         // Figure out all possible mutations
@@ -68,6 +92,16 @@ public class ProposalManager {
             // TODO: Figure out how to substitute it properly
 
             var attackGraph = this.riskDetection.createAttackGraph(clonedKnowledgeBase);
+            riskReport.graph().getNodes().forEach(node -> {
+                var riskEdges = riskReport.graph().getNeighboursWithRisks(node);
+                var existingEdges = attackGraph.getNeighboursWithRisks(node).stream()
+                        .map(AttackGraphLink::getRisk).toList();
+
+                riskEdges.forEach(edge -> {
+                    var exists = existingEdges.stream().filter(link -> link.type().equals(edge.getRisk().type())).findAny();
+                    if (exists.isEmpty()) attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
+                });
+            });
             List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
 
             riskReport.path().forEach(node -> {

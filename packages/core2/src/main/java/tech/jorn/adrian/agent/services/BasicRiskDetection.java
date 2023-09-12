@@ -77,12 +77,10 @@ public class BasicRiskDetection implements RiskDetection {
             });
         });
 
-        System.out.println("Exposed Nodes: " + exposedNodes.size() + "; " + exposedNodes.stream().map(n -> n.getID()));
-
         // 4. Calculate the risk reports based on the critical paths.
         List<RiskReport> riskReports = criticalPaths.stream().map(criticalPath -> {
             var path = criticalPath.stream().map(n -> (INode) n).toList();
-            var graph = attackGraph.getGraphForPath(criticalPath, this.probabilityCalculator);
+            var graph = attackGraph.getGraphForPath(criticalPath);
             var probability = attackGraph.getProbabilityForPath(criticalPath, this.probabilityCalculator);
             var software = criticalPath.get(criticalPath.size() - 1);
             var damage = (float) software.getProperty("damageValue").orElse(0.0f);
@@ -98,7 +96,7 @@ public class BasicRiskDetection implements RiskDetection {
             var from = attackGraph.findById(e.from().getID()).get();
             var to = attackGraph.findById(e.to().getID()).get();
 
-            attackGraph.addEdge(from, to, e.risk().factor());
+            attackGraph.addEdge(from, to, e.risk());
         };
     }
 }

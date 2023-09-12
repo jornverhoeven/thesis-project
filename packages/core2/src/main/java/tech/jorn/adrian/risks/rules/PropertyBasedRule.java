@@ -51,8 +51,8 @@ public abstract class PropertyBasedRule extends RiskRule {
                 try {
                     var hasProperty = (Boolean) node.getProperty(this.property)
                             .orElse(false);
-                    if (hasProperty) risk = new Risk(this.ruleId, this.mitigatedFactor);
-                    else risk = new Risk(this.ruleId, this.unmitigatedFactor);
+                    if (hasProperty) risk = new Risk(this.ruleId, this.mitigatedFactor, true);
+                    else risk = new Risk(this.ruleId, this.unmitigatedFactor, false);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
