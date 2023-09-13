@@ -34,8 +34,8 @@ public class ExperimentRunner {
     private static final String infrastructureFile = "./simple-infra.yml";
 
     public static void main(String[] args) throws InterruptedException {
-//        a1();
-        b1();
+        a1();
+//        b1();
 //        c1();
     }
 

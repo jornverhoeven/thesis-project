@@ -10,12 +10,12 @@ public class NoChangeScenario extends Scenario {
     Logger log = LogManager.getLogger(NoChangeScenario.class);
 
     public NoChangeScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher) {
-        super(infrastructure, messageDispatcher, 20 * 60 * 1000 /* Two Minutes */);
+        super(infrastructure, messageDispatcher, 20 * 60 * 1000 /* Twenty Minutes */);
     }
 
     @Override
     public void onScheduleEvents() {
-        this.after(1 * 60 * 1000, () -> {
+        this.after(10 * 60 * 1000, () -> {
             this.log.debug("Waiting for silence");
             this.waitForSilence(10 * 1000, this.finished::raise);
         });

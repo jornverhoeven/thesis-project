@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.events.*;
 import tech.jorn.adrian.core.controllers.AbstractController;
+import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
@@ -14,6 +15,8 @@ import tech.jorn.adrian.core.services.risks.HighestRisk;
 import tech.jorn.adrian.core.services.risks.IRiskSelector;
 import tech.jorn.adrian.core.services.RiskDetection;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 
@@ -38,6 +41,8 @@ public class RiskController extends AbstractController {
         this.proposalManager = proposalManager;
         this.riskSelector = riskSelector;
         this.proposalSelector = proposalSelector;
+
+        this.scheduleRiskAssessment();
 
         this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::identifyRisk);
         this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent, true);
@@ -73,5 +78,30 @@ public class RiskController extends AbstractController {
         this.eventManager.emit(new InitiateAuctionEvent(event.getRiskReport()));
     }
 
+    private TimerTask createScheduledRiskAssessmentTask() {
+        var log = this.log;
+        var eventManager = this.eventManager;
+        return new TimerTask() {
+            @Override
+            public void run() {
+                log.warn("Searching for risks due to inactivity");
+                eventManager.emit(new IdentifyRiskEvent());
+                scheduleRiskAssessment();
+            }
+        };
+    }
+    private void scheduleRiskAssessment() {
+        var timer = new Timer();
+        var task = createScheduledRiskAssessmentTask();
+
+        var interval = 30 * 1000;
+        timer.schedule(task, interval);
+
+        this.eventManager.registerEventHandler(Event.class, e -> {
+            timer.cancel();
+            timer.purge();
+            this.scheduleRiskAssessment();
+        });
+    }
 }
 
