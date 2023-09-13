@@ -1,29 +1,29 @@
 \section{Experiments}
 \label{sec:experiments}
-To fully verify the implementation of the proposed architecture, a number of experiments have been conducted. The experiments are strategically designed to test the effect of a set of features within a specific scenario. All experiments are executed in a simulated environment, from here-on called scenario. These scenarios allow us to reproduce the experiments in a controlled and predictable environment. The feature-sets were chosen in such a way that they would individually help reason about their impact on the research questions from Subsection \ref{ssec:research-questions}. Figure \ref{fig:experiments} shows a reference of the experiments that are executed, and how the scenarios and feature-sets are combined.
+To fully verify the implementation of the proposed architecture, a number of experiments have been conducted. The experiments are strategically designed to test the effect of a set of features within a specific scenario. All experiments are executed in a simulated environment, from here-on called scenario. These scenarios allow us to reproduce the experiments in a controlled and predictable environment. The feature sets were chosen in such a way that they would individually help reason about their impact on the research questions from Subsection \ref{ssec:research-questions}. 
 
-\begin{figure}[H]
-    \begin{adjustwidth}{-1cm}{}
-        \centering
-        % \begin{table}[]
-        \begin{tabularx}{1.2\textwidth}{l|l|X|X|l}
-            \textbf{Features \textbackslash Scenarios} & \textbf{No changess} & \textbf{Growing \newline Infrastructure} & \textbf{Unstable \newline Infrastructure} & \textbf{Mixed} \\ \hline
-            \textbf{Local}                             & A.1            & A.2                    & A.3                     & A.4   \\
-            \textbf{Knowledge-Sharing only}            & B.1            & B.2                    & B.3                     & B.4   \\
-            \textbf{Auctioning}                        & C.1            & C.2                    & C.3                     & C.4     
-        \end{tabularx}
+% Table \ref{table:experiments} shows a reference of the experiments that are executed, and how the scenarios and feature sets are combined.
+% \begin{table}[H]
+%     \begin{adjustwidth}{-1cm}{}
+%         \centering
+%         % \begin{table}[]
+%         \begin{tabularx}{1.2\textwidth}{l|l|X|X|l}
+%             \textbf{Feature sets \textbackslash Scenarios} & \textbf{No changes} & \textbf{Growing \newline Infrastructure} & \textbf{Unstable \newline Infrastructure} & \textbf{Mixed} \\ \hline
+%             \textbf{Local}                             & A.1            & A.2                    & A.3                     & A.4   \\
+%             \textbf{Knowledge-Sharing only}            & B.1            & B.2                    & B.3                     & B.4   \\
+%             \textbf{Auctioning}                        & C.1            & C.2                    & C.3                     & C.4     
+%         \end{tabularx}
         
-    \end{adjustwidth}
-    \caption{\label{fig:experiments}Overview of the experiments that are conducted. Each scenario is conducted with a different set of features, to test the effect of the features on the results.}
-\end{figure}
+%     \end{adjustwidth}
+%     \caption{\label{table:experiments}Overview of the experiments that are conducted. Each scenario is conducted with a different set of features, to test the effect of the features on the results.}
+% \end{table}
 
-\subsection*{Features}
+\subsection{Feature Sets}
 Even though it would be interesting to test each feature individually, creating feature sets allowed us to focus on specific aspects of the implementation and reduce the number of experiments that needed to be conducted to a manageable number. 
 
-The feature sets were chosen in a way that they relate to the research questions from Subsection \ref{ssec:research-questions}. The features are defined as follows:
+The feature sets were chosen in a way that they relate to the research questions from Subsection \ref{ssec:research-questions}. The feature sets are defined as follows:
 
-\comment{Jorn}{I am not sure which representation to go for, either the table or the enumeration. The table is more clear in my opinion, but it feels more like a marketing thing. The enumeration is more scientific, but it is harder to read and easier to confuse maybe.}
-\begin{figure}[H]
+\begin{table}[H]
     % \begin{table}[]
         \centering
         \begin{tabular}{l|l|l|l}
@@ -35,46 +35,62 @@ The feature sets were chosen in a way that they relate to the research questions
             \textbf{Initiate \& Join auctions}   & no             & no                         & yes                 \\
             \textbf{Migrate Software}            & no             & no                         & yes                            
         \end{tabular}
-        \caption{\label{fig:experiment-features}Overview of the actions that are allowed in each feature set. The headers of the table represent the names of the feature sets. The rows represent the actions that are allowed in each feature set.}
+        \caption{\label{table:experiment-features}Overview of the actions that are allowed in each feature set. The headers of the table represent the names of the feature sets. The rows represent the actions that are allowed in each feature set.}
     % \end{table}
-\end{figure}
+\end{table}
 
-\begin{description}
-    \item[Local*]             Agents are able to inspect, and adapt their own properties and software components. They are also allowed to do risk analysis on their knowledge base. 
-    \item[Knowledge-Sharing*] Agents are able to do all of the above, and they are able to share knowledge with other agents to update their own knowledge base.
-    \item[Auctioning]         Agents are able to do all of the above, and they are able to cooperate with other agents to mitigate risks through auctions. Only in this stage are agents able to join and initiate auctions.
-\end{description}
+As shown in Table \ref{table:experiment-features}, the feature sets become increasingly complex. In the Local feature set, agents are only allowed to inspect and adapt their own properties and software components. In the Knowledge-Sharing feature set, agents are allowed to share knowledge with other agents. In the Auctioning feature set, agents are allowed to cooperate with other agents to mitigate risks through auctions.
 
-{\small \textit{*The adaptations at this point only include the ability to make attribute changes. Software migrations are excluded as an agent has insufficient knowledge and capabilities to perform the migration to a node that is not its own.}}
+From the table it should also be visible that migrations of software can only be performed in the Auctioning feature set. This is because an agent on its own has insufficient knowledge and capabilities to perform a migration.
 
-\subsection*{Scenarios}
+\subsection{Scenarios}
 As mentioned before, each of the feature sets are executed in a specific scenario. A scenario is defined by an infrastructure and a set of events that will happen over time. These events could be new nodes joining the infrastructure, or nodes leaving the infrastructure. Because of the scenarios it was possible to repeat the experiments over-and-over again without having to manually change the infrastructure. This allowed for better reasoning about- and comparing the results of each individual experiment. Additionally it allowed for a more realistic approach to the experiments, as the infrastructure is not static and is changing over time.
 
 Four scenarios have been defined, each with a different set of characteristics. These characteristics are defined as follows:
 
-\begin{description}
-    \item[No interaction]             No infrastructure changes are made overtime.
-    \item[Growing Infrastructure]     The infrastructure is slowly growing over time.
-    \item[Unstable Infrastructure]    Some nodes in the infrastructure are unstable and are disconnected from the network from time to time.
-    \item[Mixed]                      A more realistic scenario where nodes are added and removed from the infrastructure over time.
-\end{description}
+% \begin{description}
+%     \item[No Changes]                 No infrastructure changes are made overtime.
+%     \item[Growing Infrastructure]     The infrastructure is slowly growing over time.
+%     \item[Unstable Infrastructure]    Some nodes in the infrastructure are unstable and are disconnected from the network from time to time.
+%     \item[Mixed]                      A more realistic scenario where nodes are added and removed from the infrastructure over time.
+% \end{description}
+
+\paragraph*{No Changes}
+This scenario is the simplest scenario. In this scenario the infrastructure is static and does not change over time. This means that no infrastructure nodes or software is added, and no links between them are removed. This scenario makes it possible to reason about the outcome of the experiments without having to take into account the changes in the infrastructure. 
+
+\textit{This scenario runs for a maximum of 20 minutes, or until no messages have been send for 1 minute. This means that the scenario will end when the agents have stopped communicating with each other. This is done to prevent the scenario from running indefinitely.}
+
+\paragraph*{Growing Infrastructure}
+A more realistic scenario is one where the infrastructure is growing over time. This means that nodes are added to the infrastructure over time. The scenario has been hardcoded to add a new node to the infrastructure every 30 seconds\footnote{\label{footnote:simulation-time}These seconds are simulation time, see Section \ref{sssec:simulation-time} how this relates in real time.} for 10 minutes, for a total of 20 nodes added. When a node is added an existing node is picked semi-randomly, and an edge is made between the two. By using a random function that uses a seed-value, nodes will always be picked in the same sequence. This allows us to reproduce the experiments in a predictable way.
+
+\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been send for 2 minutes, or when it has run for a maximum of 20 minutes. This is done to prevent the scenario from running indefinitely.}
+
+\paragraph*{Unstable Infrastructure}
+Another realistic scenario is one where the infrastructure is unstable. This means that nodes are removed from the infrastructure, but reappear after some time. The scenario has been hardcoded to remove a random node from the infrastructure every 30 seconds\footnote{See footnote [\ref{footnote:simulation-time}.} and adding it back after 10 seconds. This means that the infrastructure is flickering with the availability of nodes. This scenario is used to test the robustness of the system, and how it is able to deal with nodes that are not always available.
+
+\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been send for 2 minutes, or when it has run for a maximum of 20 minutes. This is done to prevent the scenario from running indefinitely.}
+
+\paragraph*{Mixed}
+The last scenario is a combination of the previous scenarios. This means that nodes are added and removed from the infrastructure over time. 
+\add{Update the definition of the mixed scenario}
 
 \subsection{Metrics and Evaluation}
 \label{ssec:metrics}
 During each of the experiments a number of metrics are measured. These metrics are used to evaluate the results of the experiments and help answer the research question. 
 
-The metrics we've defined can be categorized by effectiveness and efficiency. Effectiveness metrics measure how well the system is able to identify and mitigate risks. Efficiency metrics measure how well the system is able to do this with the least amount of resources. The metrics that are measured are shown in Figure \ref{fig:metrics-groups}.
+The metrics we've defined can be categorized by effectiveness, efficiency, and timing. Effectiveness metrics measure how well the system is able to identify and mitigate risks. Efficiency metrics measure how well the system is able to do this with the least amount of resources. The timing metrics measure the time spent in a certain state. The metrics that are measured are shown in Table \ref{table:metrics-groups}.
 
-\begin{figure}[H]
+\add{Fix the width of the table}
+\begin{table}[H]
     \centering
-    \begin{tabular}{l|l}
-        \textbf{Effectiveness}            & \textbf{Efficiency}            \\
-        Total \# of risk identified       & Total \# of messages exchanged \\
-        \# of remaining risks             & \# of adaptations              \\
+    \begin{tabular}{l|l|l}
+        \textbf{Effectiveness}            & \textbf{Efficiency}            & \textbf{Timing}          \\
+        Total \# of risk identified       & Total \# of messages exchanged & Time spent auctioning      \\
+        \# of remaining risks             & \# of adaptations              & Time spent adapting   \\
         Weighted sum of damages of remaining risk &                               
     \end{tabular}
-    \caption{\label{fig:metrics-groups}Overview of the metrics that are measured, grouped by their category.}
-\end{figure}
+    \caption{\label{table:metrics-groups}Overview of the metrics that are measured, grouped by their category.}
+\end{table}
 
 
 The metrics are defined as follows:
@@ -86,6 +102,8 @@ The metrics are defined as follows:
     \item[Weighted sum of damages for remaining risks] The weighted sum of the damage for the risks that have not been mitigated by the agents during the epoch.
     % \comment{Zoltan}{I think this should be weighted by the probability of those risks}
     \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
+    \item[Time spent auctioning] The time spent by the agents on auctioning.
+    \item[Time spent adapting] The time spent by the agents applying adaptations.
 \end{description}
 
 \subsection{Controls and Variables}
@@ -94,13 +112,16 @@ The metrics are defined as follows:
 %     Discuss any controls or variables that were taken into account to ensure the validity and reliability of your results. This could include experimental controls, randomization, and addressing potential confounding factors.
 % }\end{quote}
 
-When implementing the experiments, a number of controls and variables have been taken into account to ensure the validity and reliability of the results.
+When implementing the experiments, a number of controls and variables have been taken into account to ensure the validity and reliability of the results. The first and foremost is the infrastructure that was chosen. It has been based on the infrastructure as used by Paudel et al. \cite{paudel2019detecting} with slight alterations to the properties of each infrastructure node. This exact infrastructure is used at the beginning of each experiment. It is important to note that the infrastructure is not static, and could change overtime depending on the scenario.
+
+Secondly, each scenario and feature set on its own can be seen as a bundle of variables, as they each heavily influence the characteristics of the experiments. 
 
 % Talk about:
 % - Fake timeouts/delays
 % - Knowledge sharing depth/distance
 
-One of the things that were taken into account is the fact that for the simulation we are able to control the time that passes. This means that we are able to simulate a number of events that would take a long time in real life, in a matter of seconds. This is especially useful for the experiments where the infrastructure is growing over time. In real life, this would take a long time, but in the simulation we are able to simulate this in a matter of seconds. This allows us to test the system in a more realistic scenario, without having to wait for a long time.
+\label{sssec:simulation-time}
+One of the less trivial variables is the simulation time. During the simulation we are (to some extend) in control over the time in the simulation that passes. This means that we are able to simulate a number of events that would take a long time in real life, in a matter of seconds. This is especially useful for the experiments where the infrastructure is growing over time. In real life, this would take a long time, but in the simulation we are able to simulate this in a matter of seconds. This allows us to test the system in a more realistic scenario, without having to wait for a long time.
 
 There is a limit to the speed-up that can be achieved in the simulation as the processing of certain events is not instantaneous. For example, doing the risk assessment of a nodes takes time. In a real-world scenario this processing time (sub milliseconds) is negligible compared to the time messages take to travel over the network (100-1000 milliseconds) and the execution of adaptations (can take several hours to complete). However, in our simulation this processing time stays constant, and thus this processing time becomes more significant. To counter this, configurable delays were implemented to get a more realistic simulation. 
 Places where these delays are implemented are for example the delivery of network-messages and the execution of adaptations. 
