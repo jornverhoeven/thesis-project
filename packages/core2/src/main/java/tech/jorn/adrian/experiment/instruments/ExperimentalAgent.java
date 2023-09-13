@@ -39,4 +39,7 @@ public class ExperimentalAgent extends AdrianAgent {
     public EventManager getEventManager() {
         return this.eventManager;
     }
+    public MessageBroker getMessageBroker() {
+        return this.messageBroker;
+    }
 }
