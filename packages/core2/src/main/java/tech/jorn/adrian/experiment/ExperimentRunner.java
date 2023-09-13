@@ -5,15 +5,22 @@ import org.apache.logging.log4j.LogManager;
 import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.events.ApplyProposalEvent;
 import tech.jorn.adrian.agent.events.FoundRiskEvent;
+import tech.jorn.adrian.agent.services.BasicRiskDetection;
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
+import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.risks.RiskReport;
+import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.experiment.features.*;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 import tech.jorn.adrian.experiment.scenarios.NoChangeScenario;
 import tech.jorn.adrian.experiment.scenarios.Scenario;
+import tech.jorn.adrian.risks.RiskLoader;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,6 +42,9 @@ public class ExperimentRunner {
 
     public static void runTest(Infrastructure infrastructure, FeatureSet featureSet, Scenario scenario) {
         var log = LogManager.getLogger(ExperimentRunner.class);
+
+        calculateRisksInInfrastructure(infrastructure);
+
         var startTime = new Date().getTime();
 
         var agentFactory = new AgentFactory(featureSet);
@@ -44,8 +54,8 @@ public class ExperimentRunner {
         log.debug("Creating agents");
         var agents = agentFactory.fromInfrastructure(infrastructure);
 
-        var csv = new HashMap<String, List<Integer>>();
-        var task = registerMetricCollection(agents, csv);
+        var csv = new HashMap<String, List<Object>>();
+        var task = registerMetricCollection(agents, infrastructure, csv);
         var timer = new Timer();
         timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
 
@@ -54,13 +64,14 @@ public class ExperimentRunner {
 
         scenario.onFinished().subscribe(() -> {
             log.info("Finished scenario in {}ms", new Date().getTime() - startTime);
-            task.run();
+            task.run(); // Collect the final measurements
 
             try {
                 var scenarioName = scenario.getClass().getSimpleName();
                 var featureName = featureSet.getClass().getSimpleName();
                 var testIdentifier = scenarioName + "-" + featureName;
                 writeToCSV(testIdentifier, agents, csv, new Date().getTime() - startTime);
+                calculateRisksInInfrastructure(infrastructure);
             } catch (IOException e) {
                 log.error("Could not write measures");
             }
@@ -68,48 +79,68 @@ public class ExperimentRunner {
         });
     }
 
-    public static void writeToCSV(String testIdentifier, List<ExperimentalAgent> agents, Map<String, List<Integer>> data, long endTime) throws IOException {
+    public static void writeToCSV(String testIdentifier, List<ExperimentalAgent> agents, Map<String, List<Object>> data, long endTime) throws IOException {
         var fileWriter = new FileWriter("./output/" + testIdentifier + ".csv");
         var writer = new PrintWriter(fileWriter);
 
-        writer.printf("timestamps,%s,%s\n", IntStream.range(0, (int) (endTime / 5000)).mapToObj(i -> String.valueOf(5 * (i+1) * 1000)).collect(Collectors.joining(",")), endTime);
-        writer.printf("messages-total,%s\n", data.get("messages-total").stream()
+        writer.printf("timestamps;%s;%s\n", IntStream.range(0, (int) (endTime / 5000)).mapToObj(i -> String.valueOf(5 * (i + 1) * 1000)).collect(Collectors.joining(";")), endTime);
+        writer.printf("messages-total;%s\n", data.get("messages-total").stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(";")));
         agents.forEach(agent -> {
             var id = agent.getConfiguration().getNodeID();
-            writer.printf("messages-%s,%s\n", id, data.get("messages-" + id).stream()
+            writer.printf("messages-%s;%s\n", id, data.get("messages-" + id).stream()
                     .map(Object::toString)
-                    .collect(Collectors.joining(",")));
+                    .collect(Collectors.joining(";")));
         });
 
-        writer.printf("proposals-total,%s\n", data.get("proposals-total").stream()
+        writer.printf("proposals-total;%s\n", data.get("proposals-total").stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(";")));
         agents.forEach(agent -> {
             var id = agent.getConfiguration().getNodeID();
-            writer.printf("proposals-%s,%s\n", id, data.get("proposals-" + id).stream()
+            writer.printf("proposals-%s;%s\n", id, data.get("proposals-" + id).stream()
                     .map(Object::toString)
-                    .collect(Collectors.joining(",")));
+                    .collect(Collectors.joining(";")));
         });
 
-        writer.printf("riskCount-total,%s\n", data.get("riskCount-total").stream()
+        writer.printf("riskCount-global;%s\n", data.get("riskCount-global").stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(";")));
+        writer.printf("riskCount-total;%s\n", data.get("riskCount-total").stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(";")));
         agents.forEach(agent -> {
             var id = agent.getConfiguration().getNodeID();
-            writer.printf("riskCount-%s,%s\n", id, data.get("riskCount-" + id).stream()
+            writer.printf("riskCount-%s;%s\n", id, data.get("riskCount-" + id).stream()
                     .map(Object::toString)
-                    .collect(Collectors.joining(",")));
+                    .collect(Collectors.joining(";")));
         });
 
-        writer.printf("riskUnique-total,%s\n", data.get("riskUnique-total").stream()
+        writer.printf("riskUnique-global;%s\n", data.get("riskUnique-global").stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(";")));
+        writer.printf("riskUnique-total;%s\n", data.get("riskUnique-total").stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(";")));
+
+        writer.printf("riskDamage-global;%s\n", data.get("riskDamage-global").stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(";")));
+        agents.forEach(agent -> {
+            var id = agent.getConfiguration().getNodeID();
+            writer.printf("riskDamage-%s;%s\n", id, data.get("riskDamage-" + id).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(";")));
+            writer.printf("riskDamage-%%-%s;%s\n", id, data.get("riskDamage-%-" + id).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(";")));
+        });
+
         writer.close();
     }
 
-    public static TimerTask registerMetricCollection(List<ExperimentalAgent> agents, HashMap<String, List<Integer>> csv) {
+    public static TimerTask registerMetricCollection(List<ExperimentalAgent> agents, Infrastructure infrastructure, HashMap<String, List<Object>> csv) {
         var messageCount = new HashMap<IAgent, AtomicInteger>();
         var proposalCount = new HashMap<IAgent, AtomicInteger>();
         var riskCount = new HashMap<IAgent, AtomicInteger>();
@@ -136,12 +167,17 @@ public class ExperimentRunner {
         csv.put("messages-total", new ArrayList<>());
         csv.put("proposals-total", new ArrayList<>());
         csv.put("riskCount-total", new ArrayList<>());
+        csv.put("riskCount-global", new ArrayList<>());
         csv.put("riskUnique-total", new ArrayList<>());
+        csv.put("riskUnique-global", new ArrayList<>());
+        csv.put("riskDamage-global", new ArrayList<>());
         agents.forEach(agent -> {
             var id = agent.getConfiguration().getNodeID();
             csv.put("messages-" + id, new ArrayList<>());
             csv.put("proposals-" + id, new ArrayList<>());
             csv.put("riskCount-" + id, new ArrayList<>());
+            csv.put("riskDamage-" + id, new ArrayList<>());
+            csv.put("riskDamage-%-" + id, new ArrayList<>());
 //            csv.put("riskUnique-" + id, new ArrayList<>());
         });
 
@@ -165,6 +201,25 @@ public class ExperimentRunner {
                     list.add(riskUnique.size());
                     return list;
                 });
+
+                var risks = calculateRisksInInfrastructure(infrastructure);
+                var riskSet = new HashSet<String>();
+                var riskDamageGlobal = risks.stream().mapToDouble(RiskReport::damage).sum();
+                risks.forEach(risk -> riskSet.add(risk.toString()));
+
+                csv.compute("riskCount-global", (k, list) -> {
+                    list.add(risks.size());
+                    return list;
+                });
+                csv.compute("riskUnique-global", (k, list) -> {
+                    list.add(riskSet.size());
+                    return list;
+                });
+                csv.compute("riskDamage-global", (k, list) -> {
+                    list.add(String.format("%.2f", riskDamageGlobal));
+                    return list;
+                });
+
                 agents.forEach(agent -> {
                     var id = agent.getConfiguration().getNodeID();
                     csv.compute("messages-" + id, (k, list) -> {
@@ -176,12 +231,49 @@ public class ExperimentRunner {
                         return list;
                     });
                     csv.compute("riskCount-" + id, (k, list) -> {
-                        list.add(riskCount.getOrDefault(agent, new AtomicInteger(0)).get());
+                        list.add(riskCount.getOrDefault(agent,new AtomicInteger(0)).get());
+                        return list;
+                    });
+
+                    var attackGraph = agent.getRiskDetection().createAttackGraph(agent.getKnowledgeBase());
+                    var agentRisks = agent.getRiskDetection().identifyRisks(attackGraph);
+                    var riskDamage = agentRisks.stream().mapToDouble(RiskReport::damage).sum();
+                    csv.compute("riskDamage-" + id, (k, list) -> {
+                        list.add(String.format("%.2f", riskDamage));
+                        return list;
+                    });
+                    csv.compute("riskDamage-%-" + id, (k, list) -> {
+                        list.add(String.format("%.4f", riskDamage / riskDamageGlobal));
                         return list;
                     });
                 });
             }
         };
+    }
+
+    private static List<RiskReport> calculateRisksInInfrastructure(Infrastructure infrastructure) {
+        var knowledgeBase = new KnowledgeBase();
+        infrastructure.listNodes().forEach(node -> {
+            var knowledge = KnowledgeBaseNode.fromNode(node);
+            knowledgeBase.upsertNode(knowledge);
+        });
+        infrastructure.listSoftwareAssets().forEach(asset -> {
+            var knowledge = KnowledgeBaseSoftwareAsset.fromNode(asset);
+            knowledgeBase.upsertNode(knowledge);
+        });
+        knowledgeBase.getNodes().forEach(node -> {
+            var neighbours = infrastructure.getNeighbours(node.getID());
+            neighbours.forEach(neighbour -> {
+                var knowledgeNeighbour = knowledgeBase.findById(neighbour.getID()).get();
+                knowledgeBase.addEdge(node, knowledgeNeighbour);
+            });
+        });
+
+        var riskDetection = new BasicRiskDetection(RiskLoader.listRisks(), new ProductRiskProbability());
+        var attackGraph = riskDetection.createAttackGraph(knowledgeBase);
+        var risks = riskDetection.identifyRisks(attackGraph);
+//        risks.forEach(risk -> System.out.println(risk.toString()));
+        return risks;
     }
 
 

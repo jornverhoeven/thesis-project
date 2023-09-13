@@ -6,8 +6,10 @@ import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.IController;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
+import tech.jorn.adrian.core.services.RiskDetection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +17,15 @@ import java.util.List;
 public class ExperimentalAgent extends AdrianAgent {
     private final MessageBroker messageBroker;
     private final EventManager eventManager;
+    private final RiskDetection riskDetection;
+    private final KnowledgeBase knowledgeBase;
 
-    public ExperimentalAgent(MessageBroker messageBroker, EventManager eventManager, List<IController> controllers, IAgentConfiguration configuration) {
+    public ExperimentalAgent(MessageBroker messageBroker, EventManager eventManager, RiskDetection riskDetection, KnowledgeBase knowledgeBase, List<IController> controllers, IAgentConfiguration configuration) {
         super(controllers, configuration);
         this.messageBroker = messageBroker;
         this.eventManager = eventManager;
+        this.riskDetection = riskDetection;
+        this.knowledgeBase = knowledgeBase;
     }
 
     public void shareKnowledge() {
@@ -41,5 +47,11 @@ public class ExperimentalAgent extends AdrianAgent {
     }
     public MessageBroker getMessageBroker() {
         return this.messageBroker;
+    }
+    public RiskDetection getRiskDetection() {
+        return this.riskDetection;
+    }
+    public KnowledgeBase getKnowledgeBase() {
+        return this.knowledgeBase;
     }
 }

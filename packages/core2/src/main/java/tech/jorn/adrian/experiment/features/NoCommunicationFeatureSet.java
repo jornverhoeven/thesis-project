@@ -52,7 +52,7 @@ public class NoCommunicationFeatureSet extends FeatureSet {
                 new ProposalController(proposalManager, eventManager)
         );
 
-        var agent = new ExperimentalAgent(messageBroker, eventManager, controllers, configuration);
+        var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration);
 
         this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
 
