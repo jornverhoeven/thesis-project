@@ -2,12 +2,10 @@ package tech.jorn.adrian.core.services.proposals;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tech.jorn.adrian.agent.controllers.RiskController;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
-import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
@@ -20,7 +18,6 @@ import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
 import tech.jorn.adrian.core.risks.RiskReport;
-import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.core.services.RiskDetection;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 

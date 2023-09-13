@@ -3,6 +3,7 @@ package tech.jorn.adrian.experiment.scenarios;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.AdrianAgent;
+import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.observables.*;
 import tech.jorn.adrian.experiment.messages.Envelope;
@@ -20,8 +21,8 @@ public abstract class Scenario {
 
 
     protected final FlagDispatcher finished = new FlagDispatcher();
-    protected final EventDispatcher<AdrianAgent> newAgent = new EventDispatcher<>();
-    protected final EventDispatcher<AdrianAgent> removeAgent = new EventDispatcher<>();
+    protected final EventDispatcher<IAgent> newAgent = new EventDispatcher<>();
+    protected final EventDispatcher<IAgent> removeAgent = new EventDispatcher<>();
     private Timer timeoutHandle = null;
 
     public Scenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, int maxExecutionTime) {
@@ -84,10 +85,10 @@ public abstract class Scenario {
         return this.finished.isRaised();
     }
 
-    public SubscribableEvent<AdrianAgent> onNewAgent() {
+    public SubscribableEvent<IAgent> onNewAgent() {
         return this.newAgent.subscribable;
     }
-    public SubscribableEvent<AdrianAgent> onAgentRemoved() {
+    public SubscribableEvent<IAgent> onAgentRemoved() {
         return this.removeAgent.subscribable;
     }
 }

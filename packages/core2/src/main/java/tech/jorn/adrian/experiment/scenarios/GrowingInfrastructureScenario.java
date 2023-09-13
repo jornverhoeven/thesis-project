@@ -3,6 +3,7 @@ package tech.jorn.adrian.experiment.scenarios;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.AdrianAgent;
+import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.observables.EventDispatcher;
@@ -14,9 +15,9 @@ import java.util.function.Supplier;
 public class GrowingInfrastructureScenario extends Scenario {
     Logger log = LogManager.getLogger(GrowingInfrastructureScenario.class);
 
-    private final Function<InfrastructureNode, AdrianAgent> agentFactory;
+    private final Function<InfrastructureNode, IAgent> agentFactory;
 
-    public GrowingInfrastructureScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, Function<InfrastructureNode, AdrianAgent> agentFactory) {
+    public GrowingInfrastructureScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, Function<InfrastructureNode, IAgent> agentFactory) {
         super(infrastructure, messageDispatcher, 10 * 60 * 1000);
         this.agentFactory = agentFactory;
     }

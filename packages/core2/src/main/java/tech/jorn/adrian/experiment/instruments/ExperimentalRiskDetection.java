@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.services.BasicRiskDetection;
+import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.graphs.risks.AttackGraph;
 import tech.jorn.adrian.core.risks.RiskEdge;
 import tech.jorn.adrian.core.risks.RiskRule;
@@ -14,18 +15,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ExperimentalRiskDetection extends BasicRiskDetection {
-    Logger log = LogManager.getLogger(ExperimentalRiskDetection.class);
+    Logger log;
 
-    private AdrianAgent agent;
-
-    public ExperimentalRiskDetection(List<RiskRule> riskRules, IRiskProbabilityCalculator probabilityCalculator) {
+    public ExperimentalRiskDetection(List<RiskRule> riskRules, IRiskProbabilityCalculator probabilityCalculator, IAgentConfiguration configuration) {
         super(riskRules, probabilityCalculator);
-    }
-
-    public void setAgent(AdrianAgent agent) {
-
-        this.agent = agent;
-        this.log = LogManager.getLogger(String.format("[%s] %s", agent.getConfiguration().getNodeID(), RiskDetection.class.getSimpleName()));
+        this.log = LogManager.getLogger(String.format("[%s] %s", configuration.getNodeID(), RiskDetection.class.getSimpleName()));
     }
 
     @Override
