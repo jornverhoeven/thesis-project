@@ -31,6 +31,7 @@ public class AuctionController extends AbstractController {
         this.eventManager.registerEventHandler(SelectedProposalEvent.class, this::selectedProposal);
         this.eventManager.registerEventHandler(CancelProposalEvent.class, this::cancelProposal);
         this.eventManager.registerEventHandler(AuctionFinalizedEvent.class, this::onAuctionFinalized);
+        this.eventManager.registerEventHandler(AuctionCancelledEvent.class, this::onAuctionCancelled);
     }
 
     private void initiateAuction(InitiateAuctionEvent event) {
@@ -72,5 +73,8 @@ public class AuctionController extends AbstractController {
         // If we are not the one on the proposal ignore it
         if (!event.getProposal().origin().equals(this.configuration.getParentNode())) return;
         this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));
+    }
+    private void onAuctionCancelled(AuctionCancelledEvent e) {
+        this.auctionManager.reset();
     }
 }

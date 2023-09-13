@@ -35,8 +35,8 @@ public class ExperimentRunner {
 
     public static void main(String[] args) throws InterruptedException {
 //        a1();
-//        b1();
-        c1();
+        b1();
+//        c1();
     }
 
 
@@ -57,6 +57,7 @@ public class ExperimentRunner {
         var csv = new HashMap<String, List<Object>>();
         var task = registerMetricCollection(agents, infrastructure, csv);
         var timer = new Timer();
+//        timer.schedule(task, 2000); // get one measurement out at startup
         timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
 
         log.debug("Starting agents");

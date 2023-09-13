@@ -6,7 +6,7 @@ import tech.jorn.adrian.agent.events.*;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
-import tech.jorn.adrian.agent.events.AuctionCancelled;
+import tech.jorn.adrian.agent.events.AuctionCancelledEvent;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.base.INode;
@@ -119,7 +119,10 @@ public class AuctionManager {
     public void onAuctionRejected(Auction auction, INode participant) {
         this.log.debug("Agent {} rejected auction", participant.getID());
         this.participants.remove(participant);
-        // TODO: If all nodes have rejected, finalize
+
+        if (this.isSaturated()) {
+            this.finalizeAuction(auction);
+        }
     }
 
     private void finalizeAuction(Auction auction) {
@@ -140,7 +143,9 @@ public class AuctionManager {
 
         var proposal = this.proposalSelector.select(proposals.values().stream().toList());
         if (proposal.isEmpty()) {
-            this.participants.forEach(node -> this.messageBroker.send(node, new EventMessage<>(new AuctionCancelled(auction))));
+            this.participants.forEach(node -> this.messageBroker.send(node, new EventMessage<>(new AuctionCancelledEvent(auction))));
+            this.log.error("-- Auction Stopped!! {}", auction.getId());
+            this.reset();
             return;
         }
 
