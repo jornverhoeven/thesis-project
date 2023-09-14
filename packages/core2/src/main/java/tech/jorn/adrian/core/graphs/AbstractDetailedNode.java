@@ -26,8 +26,11 @@ public abstract class AbstractDetailedNode<P extends AbstractProperty<?>> extend
 
     @Override
     public <T> Optional<T> getProperty(String property) {
-        if (this.properties.containsKey(property))
-            return Optional.of((T) this.properties.get(property).getValue());
+        if (this.properties.containsKey(property)) {
+            var p = this.properties.get(property);
+            var value = (T) p.getValue();
+            return Optional.of(value);
+        }
         return Optional.empty();
     }
 

@@ -17,10 +17,10 @@ import java.util.List;
 public class ExperimentalAgent extends AdrianAgent {
     private final MessageBroker messageBroker;
     private final EventManager eventManager;
-    private final RiskDetection riskDetection;
+    private final ExperimentalRiskDetection riskDetection;
     private final KnowledgeBase knowledgeBase;
 
-    public ExperimentalAgent(MessageBroker messageBroker, EventManager eventManager, RiskDetection riskDetection, KnowledgeBase knowledgeBase, List<IController> controllers, IAgentConfiguration configuration) {
+    public ExperimentalAgent(MessageBroker messageBroker, EventManager eventManager, ExperimentalRiskDetection riskDetection, KnowledgeBase knowledgeBase, List<IController> controllers, IAgentConfiguration configuration) {
         super(controllers, configuration);
         this.messageBroker = messageBroker;
         this.eventManager = eventManager;
@@ -48,7 +48,7 @@ public class ExperimentalAgent extends AdrianAgent {
     public MessageBroker getMessageBroker() {
         return this.messageBroker;
     }
-    public RiskDetection getRiskDetection() {
+    public ExperimentalRiskDetection getRiskDetection() {
         return this.riskDetection;
     }
     public KnowledgeBase getKnowledgeBase() {

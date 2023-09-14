@@ -92,7 +92,7 @@ public class AuctionManager {
         if (proposal.mutation() == null) {
             this.log.info("Node {} did not send a proposal", participant.getID());
         } else {
-            this.log.info("Received proposal {} {} from {}", proposal.mutation().getCosts(), proposal.newDamage(), participant.getID());
+            this.log.info("Received proposal {} {} from {}", proposal.mutation().getCost(), proposal.newDamage(), participant.getID());
         }
 
         this.proposals.put(participant, proposal);

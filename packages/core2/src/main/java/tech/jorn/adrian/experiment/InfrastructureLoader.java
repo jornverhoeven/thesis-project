@@ -28,6 +28,7 @@ public class InfrastructureLoader {
                 info.remove("name");
                 info.forEach((key, value) -> {
                     if (value instanceof Double) node.setProperty(key, ((Double) value).floatValue());
+                    if (value instanceof String) node.setProperty(key, (String) value);
                     else node.setProperty(key, value);
                 });
                 nodes.add(node);

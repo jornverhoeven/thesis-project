@@ -29,6 +29,8 @@ public class RiskController extends AbstractController {
     private final IProposalSelector proposalSelector;
     private final KnowledgeBase knowledgeBase;
 
+    private Timer riskAssessmentTimer;
+
     public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, ProposalManager proposalManager, EventManager eventManager) {
         this(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f));
     }
@@ -91,15 +93,15 @@ public class RiskController extends AbstractController {
         };
     }
     private void scheduleRiskAssessment() {
-        var timer = new Timer();
+        riskAssessmentTimer = new Timer();
         var task = createScheduledRiskAssessmentTask();
 
         var interval = 30 * 1000;
-        timer.schedule(task, interval);
+        riskAssessmentTimer.schedule(task, interval);
 
         this.eventManager.registerEventHandler(Event.class, e -> {
-            timer.cancel();
-            timer.purge();
+            riskAssessmentTimer.cancel();
+            riskAssessmentTimer.purge();
             this.scheduleRiskAssessment();
         });
     }

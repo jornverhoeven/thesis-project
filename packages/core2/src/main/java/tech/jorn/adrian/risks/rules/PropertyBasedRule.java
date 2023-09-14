@@ -4,12 +4,15 @@ import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.properties.AbstractProperty;
+import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.risks.Risk;
 import tech.jorn.adrian.core.risks.RiskEdge;
 import tech.jorn.adrian.core.risks.RiskRule;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class PropertyBasedRule extends RiskRule {
@@ -49,10 +52,9 @@ public abstract class PropertyBasedRule extends RiskRule {
 
                 Risk risk;
                 try {
-                    var hasProperty = (Boolean) node.getProperty(this.property)
-                            .orElse(false);
-                    if (hasProperty) risk = new Risk(this.ruleId, this.mitigatedFactor, true);
-                    else risk = new Risk(this.ruleId, this.unmitigatedFactor, false);
+                    var check = this.isMitigated(node.getProperty(property));
+                    if (check) risk = new Risk(this.ruleId, this.mitigatedFactor, true, this);
+                    else risk = new Risk(this.ruleId, this.unmitigatedFactor, false, this);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -75,4 +77,10 @@ public abstract class PropertyBasedRule extends RiskRule {
 
     protected boolean allowAssetParent() { return true; }
     protected boolean allowNodeParent() { return true; }
+
+    public boolean isMitigated(Optional<?> property) {
+        return property
+                .map(p -> (Boolean) p)
+                .orElse(Boolean.FALSE);
+    }
 }

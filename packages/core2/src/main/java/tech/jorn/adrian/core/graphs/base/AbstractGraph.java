@@ -78,6 +78,10 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
         return this.getParents(node.get());
     }
 
+    public List<L> getLinks(N node) {
+        return this.adjacent.get(node);
+    }
+
     @Override
     public Set<N> getNodes() {
         return this.nodes;

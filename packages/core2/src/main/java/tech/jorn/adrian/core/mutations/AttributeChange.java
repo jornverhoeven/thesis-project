@@ -2,12 +2,13 @@ package tech.jorn.adrian.core.mutations;
 
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.properties.AbstractProperty;
+import tech.jorn.adrian.core.risks.RiskRule;
 
 public class AttributeChange<N extends AbstractDetailedNode<?>, P extends AbstractProperty<?>> extends Mutation<N> {
     private final P newValue;
 
-    public AttributeChange(N node, P newValue) {
-        super(node, 0f);
+    public AttributeChange(N node, P newValue, RiskRule riskRule) {
+        super(node, 0f, riskRule);
         this.newValue = newValue;
     }
 

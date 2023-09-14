@@ -7,11 +7,16 @@ import tech.jorn.adrian.agent.events.ApplyProposalEvent;
 import tech.jorn.adrian.agent.events.FoundRiskEvent;
 import tech.jorn.adrian.agent.services.BasicRiskDetection;
 import tech.jorn.adrian.core.agents.IAgent;
+import tech.jorn.adrian.core.agents.IAgentConfiguration;
+import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.graphs.risks.AttackGraph;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
@@ -32,11 +37,12 @@ import java.util.stream.IntStream;
 
 public class ExperimentRunner {
     private static final String infrastructureFile = "./simple-infra.yml";
+    private static int tick = 0;
 
     public static void main(String[] args) throws InterruptedException {
-        a1();
+//        a1();
 //        b1();
-//        c1();
+        c1();
     }
 
 
@@ -236,7 +242,9 @@ public class ExperimentRunner {
                         return list;
                     });
 
-                    var attackGraph = agent.getRiskDetection().createAttackGraph(agent.getKnowledgeBase());
+                    var attackGraph = agent.getRiskDetection().getLastAttackGraph();
+                    if (attackGraph == null) attackGraph = agent.getRiskDetection().createAttackGraph(agent.getKnowledgeBase());
+
                     var agentRisks = agent.getRiskDetection().identifyRisks(attackGraph);
                     var riskDamage = agentRisks.stream().mapToDouble(RiskReport::damage).sum();
                     csv.compute("riskDamage-" + id, (k, list) -> {
@@ -247,7 +255,11 @@ public class ExperimentRunner {
                         list.add(String.format("%.4f", riskDamage / riskDamageGlobal));
                         return list;
                     });
+
+                    renderAttackGraph(agent.getConfiguration(), attackGraph, tick);
                 });
+
+                tick++;
             }
         };
     }
@@ -275,6 +287,20 @@ public class ExperimentRunner {
         var risks = riskDetection.identifyRisks(attackGraph);
 //        risks.forEach(risk -> System.out.println(risk.toString()));
         return risks;
+    }
+
+    private static void renderAttackGraph(IAgentConfiguration configuration, AttackGraph graph, int graphCount) {
+        var filename = String.format("./output/graphs/attackGraph-%s-%d.mmd", configuration.getNodeID(), graphCount);
+        try {
+            var writer = new FileWriter(filename);
+            var graphRender = new MermaidGraphRenderer<AttackGraphEntry<?>, AttackGraphLink<AttackGraphEntry<?>>>();
+            var mmdGraph = graphRender.render(graph);
+            writer.write(mmdGraph);
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("SOMETHING WENT WRONG OUTPUTTNG GRAPH " + e.toString());
+            throw new RuntimeException(e);
+        }
     }
 
 
