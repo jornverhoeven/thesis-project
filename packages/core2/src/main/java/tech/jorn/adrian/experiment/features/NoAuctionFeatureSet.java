@@ -14,6 +14,7 @@ import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
@@ -54,19 +55,24 @@ public class NoAuctionFeatureSet extends FeatureSet {
 
         var messageBroker = new InMemoryBroker(node, neighbours, this.messageDispatcher);
 
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
+
         List<IController> controllers = List.of(
-                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration),
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f)),
-                new ProposalController(proposalManager, eventManager),
-                new ProposalImplementationController(eventManager, configuration)
+                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
+                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f), agentState.subscribable),
+                new ProposalController(proposalManager, eventManager, agentState.subscribable),
+                new ProposalImplementationController(eventManager, configuration, agentState.subscribable)
         );
 
-        var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration);
+        var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration, agentState);
 
         this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
 
         messageBroker.onMessage(message -> {
-            if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
+            if (message instanceof EventMessage<?> m){
+                System.out.printf("New message %s received, event queue size %d ", m.getEvent().getClass().getSimpleName(), eventManager.size());
+                eventManager.emit(m.getEvent());
+            }
         });
         agent.onStateChange().subscribe(state -> {
             // Once an agent is ready to send/receive events, we will send neighbours our information
