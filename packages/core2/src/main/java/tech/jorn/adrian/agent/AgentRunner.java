@@ -19,6 +19,7 @@ import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.observables.SubscribableEvent;
+import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
 import tech.jorn.adrian.core.messages.Message;
 import tech.jorn.adrian.core.messages.MessageBroker;
@@ -38,21 +39,22 @@ public class AgentRunner {
         var messageBroker = new InMemoryBroker();
 
         var knowledgeBase = new KnowledgeBase();
-        var riskDetection = new BasicRiskDetection(List.of(), new ProductRiskProbability());
+        var riskDetection = new BasicRiskDetection(List.of(), new ProductRiskProbability(), configuration);
         var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(2.0f), configuration);
 
         KnowledgeBaseNode parent = KnowledgeBaseNode.fromNode(configuration.getParentNode(), KnowledgeOrigin.DIRECT);
         knowledgeBase.upsertNode(parent);
 
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
         List<IController> controllers = Arrays.asList(
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager),
-                new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration),
-                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration),
-                new ProposalController(proposalManager, eventManager)
+                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, agentState.subscribable),
+                new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration, agentState.subscribable),
+                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
+                new ProposalController(proposalManager, eventManager, agentState.subscribable)
         );
-        var agent = new AdrianAgent(controllers, configuration);
+        var agent = new AdrianAgent(controllers, configuration, agentState);
 
-        messageBroker.onNewMessage().subscribe(message -> {
+        messageBroker.onMessage(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
         agent.onStateChange().subscribe(state -> {
@@ -88,11 +90,6 @@ class InMemoryBroker implements MessageBroker {
     @Override
     public void addRecipient(INode recipient) {
 
-    }
-
-    @Override
-    public SubscribableEvent<Message> onNewMessage() {
-        return null;
     }
 
     @Override

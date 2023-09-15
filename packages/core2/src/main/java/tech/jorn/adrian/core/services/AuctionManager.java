@@ -43,7 +43,7 @@ public class AuctionManager {
 
     public Auction startAuction(RiskReport riskReport) {
         var auction = new Auction(new IDGenerator().getID(), this.configuration.getParentNode(), new ArrayList<>(), riskReport);
-        this.log.error("-- Auction Started!! {}", auction.getId());
+        this.log.info("-- Auction Started!! {}", auction.getId());
 
         var timer = new Timer();
         var manager = this;
@@ -62,6 +62,16 @@ public class AuctionManager {
             this.messageBroker.send(node, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
             this.participants.add(node);
         });
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            log.warn("could not sleep");
+        }
+        if (this.auction.current() != null) {
+            this.log.warn("A new auction was started in the meantime");
+            return null;
+        }
 
         this.auction.setCurrent(auction);
         this.eventManager.emit(new SearchForProposalEvent(auction));
@@ -163,7 +173,7 @@ public class AuctionManager {
         });
 
 
-        this.log.error("-- Auction Stopped!! {}", auction.getId());
+        this.log.info("-- Auction Stopped!! {}", auction.getId());
         this.reset();
     }
 

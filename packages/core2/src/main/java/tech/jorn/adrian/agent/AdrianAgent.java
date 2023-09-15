@@ -13,16 +13,17 @@ public class AdrianAgent implements IAgent {
 
     protected final List<IController> controllers;
     private final IAgentConfiguration configuration;
-    private final ValueDispatcher<AgentState> agentState = new ValueDispatcher<>(AgentState.Initializing);
+    private final ValueDispatcher<AgentState> agentState;
 
-    public AdrianAgent(List<IController> controllers, IAgentConfiguration configuration) {
+    public AdrianAgent(List<IController> controllers, IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState) {
         this.controllers = controllers;
         this.configuration = configuration;
+        this.agentState = agentState;
     }
 
     public void start() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -38,6 +39,11 @@ public class AdrianAgent implements IAgent {
     @Override
     public SubscribableValueEvent<AgentState> onStateChange() {
         return this.agentState.subscribable;
+    }
+
+    @Override
+    public AgentState getState() {
+        return this.agentState.current();
     }
 
     public IAgentConfiguration getConfiguration() {

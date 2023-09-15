@@ -3,19 +3,24 @@ package tech.jorn.adrian.agent.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.events.*;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
+import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.services.AuctionManager;
+
+import java.util.List;
 
 public class AuctionController extends AbstractController {
     Logger log = LogManager.getLogger(AuctionController.class);
     private final AuctionManager auctionManager;
     private final IAgentConfiguration configuration;
 
-    public AuctionController(AuctionManager auctionManager, EventManager eventManager, IAgentConfiguration configuration) {
-        super(eventManager);
+    public AuctionController(AuctionManager auctionManager, EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
+        super(eventManager, agentState);
         this.auctionManager = auctionManager;
         this.configuration = configuration;
         this.registerEvents();

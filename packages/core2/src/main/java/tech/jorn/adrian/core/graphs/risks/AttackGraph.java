@@ -10,8 +10,14 @@ import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AttackGraph extends AbstractGraph<AttackGraphEntry<?>, AttackGraphLink<AttackGraphEntry<?>>> {
+
+    public AttackGraph() {
+        super();
+        this.upsertNode(VoidNode.getIncoming());
+    }
 
     public void addEdge(AttackGraphEntry<?> from, AttackGraphEntry<?> to, Risk risk) {
         var adj = this.adjacent.getOrDefault(from, new ArrayList<>());
@@ -19,8 +25,23 @@ public class AttackGraph extends AbstractGraph<AttackGraphEntry<?>, AttackGraphL
         this.adjacent.put(from, adj);
     }
 
+    public void addIncoming(AttackGraphEntry<?> to, Risk risk) {
+        this.addEdge(VoidNode.getIncoming(), to, risk);
+    }
+
+    public List<AttackGraphLink<AttackGraphEntry<?>>> getIncoming() {
+        return this.adjacent.get(VoidNode.getIncoming());
+    }
+
     public AttackGraph getGraphForPath(List<AttackGraphEntry<?>> path) {
         AttackGraph result = new AttackGraph();
+
+        var startNode = path.get(0);
+        result.upsertNode(startNode);
+        this.getIncoming().stream()
+                .filter(l -> l.getNode().equals(startNode))
+                .forEach(l -> result.addIncoming(startNode, l.getRisk()));
+
         for (int i=0; i<path.size()-1; i++) {
             var node = path.get(i);
             var next = path.get(i+1);

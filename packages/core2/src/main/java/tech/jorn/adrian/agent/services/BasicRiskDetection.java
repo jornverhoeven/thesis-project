@@ -1,13 +1,13 @@
 package tech.jorn.adrian.agent.services;
 
+import tech.jorn.adrian.core.agents.IAgentConfiguration;
+import tech.jorn.adrian.core.graphs.base.GraphLink;
 import tech.jorn.adrian.core.graphs.base.INode;
+import tech.jorn.adrian.core.graphs.base.VoidNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
-import tech.jorn.adrian.core.graphs.risks.AttackGraph;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphSoftwareAsset;
+import tech.jorn.adrian.core.graphs.risks.*;
 import tech.jorn.adrian.core.risks.RiskEdge;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.risks.RiskRule;
@@ -22,15 +22,18 @@ import java.util.stream.Collectors;
 public class BasicRiskDetection implements RiskDetection {
     private final List<RiskRule> riskRules;
     private final IRiskProbabilityCalculator probabilityCalculator;
+    private final IAgentConfiguration configuration;
 
-    public BasicRiskDetection(List<RiskRule> riskRules, IRiskProbabilityCalculator probabilityCalculator) {
+    public BasicRiskDetection(List<RiskRule> riskRules, IRiskProbabilityCalculator probabilityCalculator, IAgentConfiguration configuration) {
         this.riskRules = riskRules;
         this.probabilityCalculator = probabilityCalculator;
+        this.configuration = configuration;
     }
 
     @Override
     public AttackGraph createAttackGraph(KnowledgeBase knowledgeBase) {
         var attackGraph = new AttackGraph();
+        attackGraph.upsertNode(VoidNode.getIncoming());
 
         knowledgeBase.getNodes().forEach(node -> {
             AttackGraphEntry<?> attackNode;
@@ -52,27 +55,32 @@ public class BasicRiskDetection implements RiskDetection {
     @Override
     public List<RiskReport> identifyRisks(AttackGraph attackGraph) {
         // 1. Collect all the exposed nodes and critical software components to calculate all paths.
-        List<AttackGraphNode> exposedNodes = new ArrayList<>();
+        List<? extends AttackGraphEntry<?>> exposed = attackGraph.getNeighbours(VoidNode.getIncoming());
         List<AttackGraphSoftwareAsset> criticalSoftware = new ArrayList<>();
         attackGraph.getNodes().forEach(node -> {
-            if (node instanceof AttackGraphNode) {
-                if ((boolean) node.getProperty("isExposed").orElse(false))
-                    exposedNodes.add((AttackGraphNode) node);
-            } else if (node instanceof AttackGraphSoftwareAsset) {
-                if ((boolean) node.getProperty("isCritical").orElse(false))
+            if (node instanceof AttackGraphSoftwareAsset) {
+                if ((boolean) node.getProperty("isCritical").orElse(false)) {
                     criticalSoftware.add((AttackGraphSoftwareAsset) node);
+                }
             }
         });
 
         // 2. If there are no nodes to start from or go to, we can exit.
-        if (exposedNodes.isEmpty() || criticalSoftware.isEmpty())
+        if (exposed.isEmpty() || criticalSoftware.isEmpty())
             return new ArrayList<>();
 
         // 3. Get all possible paths between all different start en end nodes.
         List<List<AttackGraphEntry<?>>> criticalPaths = new ArrayList<>();
-        exposedNodes.forEach(node -> {
+        exposed.forEach(node -> {
             criticalSoftware.forEach(asset -> {
-                var newPaths = attackGraph.findPathsTo(node, asset);
+                var newPaths = attackGraph.findPathsTo(node, asset).stream()
+                        .filter(path -> {
+                            // Check if the path contains the current node, otherwise we should not select it
+                            if (this.configuration == null) return true;
+                            var contained = path.stream().filter(n -> n.getID().equals(this.configuration.getNodeID())).findAny();
+                            return contained.isPresent();
+                        })
+                        .toList();
                 criticalPaths.addAll(newPaths);
             });
         });
@@ -92,7 +100,6 @@ public class BasicRiskDetection implements RiskDetection {
 
     public Consumer<RiskEdge> createRiskDispatcher(AttackGraph attackGraph) {
         return e -> {
-            // TODO: Do some checking before `.get()`
             var from = attackGraph.findById(e.from().getID()).get();
             var to = attackGraph.findById(e.to().getID()).get();
 

@@ -27,7 +27,7 @@ public class ExperimentalRiskDetection extends BasicRiskDetection {
 
 
     public ExperimentalRiskDetection(List<RiskRule> riskRules, IRiskProbabilityCalculator probabilityCalculator, IAgentConfiguration configuration) {
-        super(riskRules, probabilityCalculator);
+        super(riskRules, probabilityCalculator, configuration);
         this.log = LogManager.getLogger(String.format("[%s] %s", configuration.getNodeID(), RiskDetection.class.getSimpleName()));
     }
 

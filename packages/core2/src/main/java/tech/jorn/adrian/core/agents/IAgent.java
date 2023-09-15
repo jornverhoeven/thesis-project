@@ -6,5 +6,7 @@ public interface IAgent {
 
     void start();
     SubscribableValueEvent<AgentState> onStateChange();
+    AgentState getState();
+
     IAgentConfiguration getConfiguration();
 }

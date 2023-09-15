@@ -16,6 +16,7 @@ import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
@@ -24,6 +25,7 @@ import tech.jorn.adrian.core.services.risks.HighestRisk;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.instruments.ExperimentalEventManager;
 import tech.jorn.adrian.experiment.instruments.ExperimentalRiskDetection;
+import tech.jorn.adrian.experiment.instruments.ProposalImplementationController;
 import tech.jorn.adrian.experiment.messages.Envelope;
 import tech.jorn.adrian.experiment.messages.InMemoryBroker;
 import tech.jorn.adrian.risks.RiskLoader;
@@ -57,31 +59,24 @@ public class FullFeatureSet extends FeatureSet {
         var messageBroker = new InMemoryBroker(node, neighbours, this.messageDispatcher);
         var auctionManager = new AuctionManager(messageBroker, eventManager, new LowestDamage(100.0f), configuration);
 
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
+
         List<IController> controllers = List.of(
-                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration),
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f)),
-                new ProposalController(proposalManager, eventManager),
-                new AuctionController(auctionManager, eventManager, configuration)
+                new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
+                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f), agentState.subscribable),
+                new ProposalController(proposalManager, eventManager, agentState.subscribable),
+                new AuctionController(auctionManager, eventManager, configuration, agentState.subscribable)
         );
 
-        var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration);
+        var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration, agentState);
 
         this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
 
         messageBroker.onMessage(message -> {
-            if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
-        });
-        agent.onStateChange().subscribe(state -> {
-            // Once an agent is ready to send/receive events, we will send neighbours our information
-            if (state != AgentState.Ready) return;
-            System.out.println(configuration.getNodeID());
-            var event = new ShareKnowledgeEvent(
-                    configuration.getParentNode(),
-                    configuration.getNeighbours(),
-                    configuration.getAssets(),
-                    1
-            );
-            messageBroker.broadcast(new EventMessage<>(event));
+            if (message instanceof EventMessage<?> m){
+                System.out.printf("New message %s received, event queue size %d\n", m.getEvent().getClass().getSimpleName(), eventManager.size());
+                eventManager.emit(m.getEvent());
+            }
         });
 
         return agent;

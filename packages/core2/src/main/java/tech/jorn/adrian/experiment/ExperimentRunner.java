@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -67,7 +68,14 @@ public class ExperimentRunner {
         timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
 
         log.debug("Starting agents");
-        agents.forEach(AdrianAgent::start);
+
+        var executor = Executors.newFixedThreadPool(4);
+        agents.forEach(a -> executor.execute(() -> a.start()));
+
+//        agents.get(1).start();
+//        agents.get(2).start();
+//        agents.get(0).start();
+//        agents.get(3).start();
 
         scenario.onFinished().subscribe(() -> {
             log.info("Finished scenario in {}ms", new Date().getTime() - startTime);
@@ -237,15 +245,16 @@ public class ExperimentRunner {
                         list.add(proposalCount.getOrDefault(agent, new AtomicInteger(0)).get());
                         return list;
                     });
-                    csv.compute("riskCount-" + id, (k, list) -> {
-                        list.add(riskCount.getOrDefault(agent,new AtomicInteger(0)).get());
-                        return list;
-                    });
 
                     var attackGraph = agent.getRiskDetection().getLastAttackGraph();
                     if (attackGraph == null) attackGraph = agent.getRiskDetection().createAttackGraph(agent.getKnowledgeBase());
 
                     var agentRisks = agent.getRiskDetection().identifyRisks(attackGraph);
+
+                    csv.compute("riskCount-" + id, (k, list) -> {
+                        list.add(agentRisks.size());
+                        return list;
+                    });
                     var riskDamage = agentRisks.stream().mapToDouble(RiskReport::damage).sum();
                     csv.compute("riskDamage-" + id, (k, list) -> {
                         list.add(String.format("%.2f", riskDamage));
@@ -282,7 +291,7 @@ public class ExperimentRunner {
             });
         });
 
-        var riskDetection = new BasicRiskDetection(RiskLoader.listRisks(), new ProductRiskProbability());
+        var riskDetection = new BasicRiskDetection(RiskLoader.listRisks(), new ProductRiskProbability(), null);
         var attackGraph = riskDetection.createAttackGraph(knowledgeBase);
         var risks = riskDetection.identifyRisks(attackGraph);
 //        risks.forEach(risk -> System.out.println(risk.toString()));
