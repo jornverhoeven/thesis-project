@@ -3,9 +3,11 @@ package tech.jorn.adrian.agent.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.events.*;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.controllers.AbstractEventController;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 
 public class ProposalController extends AbstractController {
@@ -13,8 +15,8 @@ public class ProposalController extends AbstractController {
 
     private final ProposalManager proposalManager;
 
-    public ProposalController(ProposalManager proposalManager, EventManager eventManager) {
-        super(eventManager);
+    public ProposalController(ProposalManager proposalManager, EventManager eventManager, SubscribableValueEvent<AgentState> agentState) {
+        super(eventManager, agentState);
 
         this.proposalManager = proposalManager;
 
@@ -31,7 +33,7 @@ public class ProposalController extends AbstractController {
         proposal.ifPresentOrElse(
                 p -> eventManager.emit(new SelectedProposalEvent(p)),
                 () -> {
-                    this.log.warn("No proposal was found with the given constrains");
+                    this.log.warn("No proposal was found with the given constrains, tried {} proposals", proposals.size());
                     eventManager.emit(new CancelProposalEvent(event.getAuction()));
                 }
         );

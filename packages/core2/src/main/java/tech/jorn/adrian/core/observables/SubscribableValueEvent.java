@@ -15,4 +15,8 @@ public class SubscribableValueEvent<T> extends Subscribable<T, Consumer<T>> {
         return ((ValueDispatcher<T>)this.dispatcher)
                 .subscribe(handler, dispatchImmediately);
     }
+
+    public T current() {
+        return ((ValueDispatcher<T>)this.dispatcher).current();
+    }
 }

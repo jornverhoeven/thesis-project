@@ -2,25 +2,21 @@ nodes:
   - id: node-a
     name: Node A
     trustedExecutionEnvironment: true
-    isExposed: true
     hasAgent: true
     os-contiki-ng/contiki-ng-version: 4.3.1
   - id: node-b
     name: Node B
     trustedExecutionEnvironment: false
-    isExposed: false
     hasAgent: true
     os-contiki-ng/contiki-ng-version: 4.3.1
   - id: node-c
     name: Node C
     trustedExecutionEnvironment: false
-    isExposed: true
     hasAgent: true
     os-contiki-ng/contiki-ng-version: 4.3.1
   - id: node-d
     name: Node D
     trustedExecutionEnvironment: false
-    isExposed: true
     hasAgent: true
     hasFirewall: true
     os-contiki-ng/contiki-ng-version: 4.3.1

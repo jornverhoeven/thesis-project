@@ -1,11 +1,13 @@
 package tech.jorn.adrian.experiment.instruments;
 
 import tech.jorn.adrian.agent.events.*;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.services.IDGenerator;
 
 import java.util.ArrayList;
@@ -14,8 +16,8 @@ public class ProposalImplementationController extends AbstractController {
 
     private final IAgentConfiguration configuration;
 
-    public ProposalImplementationController(EventManager eventManager, IAgentConfiguration configuration) {
-        super(eventManager);
+    public ProposalImplementationController(EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
+        super(eventManager, agentState);
         this.configuration = configuration;
 
         this.registerEvents();

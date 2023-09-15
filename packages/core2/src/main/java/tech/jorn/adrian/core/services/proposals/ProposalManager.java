@@ -157,7 +157,8 @@ public class ProposalManager {
         if (n.isPresent()) {
             var risks = riskReport.graph().getNeighboursWithRisks(n.get())
                     .stream().map(AttackGraphLink::getRisk)
-                    .toList();
+                    .collect(Collectors.toList());
+            risks.addAll(riskReport.graph().getIncoming().stream().map(AttackGraphLink::getRisk).toList());
             risks.forEach(risk -> {
                 if (!(risk.rule() instanceof CveRule<?>)) return;
                 var adaptation = ((CveRule<?>) risk.rule()).getAdaptation(node);

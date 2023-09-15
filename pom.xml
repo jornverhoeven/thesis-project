@@ -10,11 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>packages/agent</module>
-        <module>packages/core</module>
         <module>packages/core2</module>
-        <module>packages/experiments</module>
-        <module>packages/risks</module>
     </modules>
 
     <build>

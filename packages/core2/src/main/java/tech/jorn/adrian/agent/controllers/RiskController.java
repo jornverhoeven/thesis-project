@@ -3,11 +3,14 @@ package tech.jorn.adrian.agent.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.events.*;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
+import tech.jorn.adrian.core.observables.SubscribableEvent;
+import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
 import tech.jorn.adrian.core.services.proposals.IProposalSelector;
@@ -31,12 +34,12 @@ public class RiskController extends AbstractController {
 
     private Timer riskAssessmentTimer;
 
-    public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, ProposalManager proposalManager, EventManager eventManager) {
-        this(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f));
+    public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, ProposalManager proposalManager, EventManager eventManager, SubscribableValueEvent<AgentState> agentState) {
+        this(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f), agentState);
     }
 
-    public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, ProposalManager proposalManager, EventManager eventManager, IRiskSelector riskSelector, IProposalSelector proposalSelector) {
-        super(eventManager);
+    public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, ProposalManager proposalManager, EventManager eventManager, IRiskSelector riskSelector, IProposalSelector proposalSelector, SubscribableValueEvent<AgentState> agentState) {
+        super(eventManager, agentState);
 
         this.riskDetection = riskDetection;
         this.knowledgeBase = knowledgeBase;
@@ -52,6 +55,9 @@ public class RiskController extends AbstractController {
     }
 
     protected void identifyRisk(IdentifyRiskEvent event) {
+//        if (this.agentState.current().equals(AgentState.Initializing)
+//                || this.agentState.current().equals(AgentState.Ready)) return;
+
         var attackGraph = this.riskDetection.createAttackGraph(this.knowledgeBase);
         var risks = this.riskDetection.identifyRisks(attackGraph);
         var risk = this.riskSelector.select(risks);
@@ -92,6 +98,7 @@ public class RiskController extends AbstractController {
             }
         };
     }
+
     private void scheduleRiskAssessment() {
         riskAssessmentTimer = new Timer();
         var task = createScheduledRiskAssessmentTask();
