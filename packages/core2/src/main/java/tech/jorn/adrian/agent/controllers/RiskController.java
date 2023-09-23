@@ -47,16 +47,20 @@ public class RiskController extends AbstractController {
         this.riskSelector = riskSelector;
         this.proposalSelector = proposalSelector;
 
-        this.scheduleRiskAssessment();
+        this.agentState.subscribe(state -> {
+            if (state.equals(AgentState.Idle) && this.riskAssessmentTimer == null)
+                this.scheduleRiskAssessment();
+            else if (this.riskAssessmentTimer != null)
+                this.riskAssessmentTimer.cancel();
+        });
 
         this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::identifyRisk);
-        this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent, true);
-        this.eventManager.registerEventHandler(SelectedRiskEvent.class, this::selectedRiskEvent, true);
+        this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent);
+        this.eventManager.registerEventHandler(SelectedRiskEvent.class, this::selectedRiskEvent);
     }
 
     protected void identifyRisk(IdentifyRiskEvent event) {
-//        if (this.agentState.current().equals(AgentState.Initializing)
-//                || this.agentState.current().equals(AgentState.Ready)) return;
+//        if (!this.canDoRiskAssessment()) return;
 
         var attackGraph = this.riskDetection.createAttackGraph(this.knowledgeBase);
         var risks = this.riskDetection.identifyRisks(attackGraph);
@@ -76,6 +80,7 @@ public class RiskController extends AbstractController {
     }
 
     protected void selectedRiskEvent(SelectedRiskEvent event) {
+//        if (!this.canDoRiskAssessment()) return;
         log.info("Selected risk with probability {} and damage value {} (path: {})",
                 event.getRiskReport().probability(),
                 event.getRiskReport().damage(),
@@ -111,6 +116,10 @@ public class RiskController extends AbstractController {
             riskAssessmentTimer.purge();
             this.scheduleRiskAssessment();
         });
+    }
+
+    private boolean canDoRiskAssessment() {
+        return this.agentState.current().equals(AgentState.Idle);
     }
 }
 

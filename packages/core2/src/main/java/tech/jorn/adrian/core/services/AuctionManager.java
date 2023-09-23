@@ -3,6 +3,7 @@ package tech.jorn.adrian.core.services;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.agent.events.*;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
@@ -10,6 +11,7 @@ import tech.jorn.adrian.agent.events.AuctionCancelledEvent;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.base.INode;
+import tech.jorn.adrian.core.graphs.base.VoidNode;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
@@ -17,12 +19,13 @@ import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.proposals.IProposalSelector;
+import tech.jorn.adrian.experiment.messages.InMemoryBroker;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AuctionManager {
-    Logger log = LogManager.getLogger(AuctionManager.class);
+    Logger log;
 
     private final MessageBroker messageBroker;
     private final EventManager eventManager;
@@ -37,6 +40,8 @@ public class AuctionManager {
         this.eventManager = eventManager;
         this.proposalSelector = proposalSelector;
         this.configuration = configuration;
+
+        this.log = LogManager.getLogger(String.format("[%s] %s", configuration.getNodeID(), AuctionManager.class.getSimpleName()));
     }
 
     private final ValueDispatcher<Auction> auction = new ValueDispatcher<>(null);
@@ -59,19 +64,10 @@ public class AuctionManager {
         riskReport.graph().getNodes().forEach(node -> {
             if (!(node instanceof AttackGraphNode)) return;
             if (node.getID().equals(this.configuration.getNodeID())) return;
+            if (node.getID().equals(VoidNode.getIncoming().getID())) return;
             this.messageBroker.send(node, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
             this.participants.add(node);
         });
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException ex) {
-            log.warn("could not sleep");
-        }
-        if (this.auction.current() != null) {
-            this.log.warn("A new auction was started in the meantime");
-            return null;
-        }
 
         this.auction.setCurrent(auction);
         this.eventManager.emit(new SearchForProposalEvent(auction));

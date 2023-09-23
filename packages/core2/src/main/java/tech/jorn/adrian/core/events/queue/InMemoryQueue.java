@@ -6,13 +6,15 @@ import tech.jorn.adrian.core.observables.SubscribableEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class InMemoryQueue implements IEventQueue {
-    private final List<Event> queue;
+    private final Queue<Event> queue;
     private final EventDispatcher<Event> eventDispatcher;
 
     public InMemoryQueue() {
-        this.queue = new ArrayList<>();
+        this.queue = new ConcurrentLinkedQueue<>();
         this.eventDispatcher = new EventDispatcher<>();
     }
 
@@ -25,7 +27,7 @@ public class InMemoryQueue implements IEventQueue {
     @Override
     public Event dequeue() {
         if (this.queue.size() == 0) return null;
-        return this.queue.remove(0);
+        return this.queue.poll();
     }
 
     @Override

@@ -15,6 +15,7 @@ import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Mutation;
+import tech.jorn.adrian.core.mutations.SoftwareAttributeChange;
 import tech.jorn.adrian.core.properties.AbstractProperty;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
@@ -144,7 +145,9 @@ public class ProposalManager {
         var node = (N) knowledgeBase.findById(this.configuration.getNodeID()).get();
         var mutators = this.getMutators(riskReport, node);
         mutators.forEach(mutator -> {
-            if (mutator != null && mutator.isApplicable(node)) mutations.add(mutator);
+            if (mutator != null && mutator.isApplicable(node)) {
+                mutations.add(mutator);
+            }
         });
         return mutations;
     }
@@ -164,6 +167,17 @@ public class ProposalManager {
                 var adaptation = ((CveRule<?>) risk.rule()).getAdaptation(node);
                 adaptation.ifPresent(mutations::add);
             });
+
+            this.configuration.getAssets().forEach(asset -> {
+                var s = attackGraph.findById(asset.getID());
+                if (s.isEmpty()) return;
+
+                risks.forEach(risk -> {
+                    if (!(risk.rule() instanceof CveRule<?>)) return;
+                    var adaptation = ((CveRule<?>) risk.rule()).getAdaptation((N) s.get());
+                    adaptation.ifPresent(mutations::add);
+                });
+            });
         }
 
         if (node instanceof KnowledgeBaseNode) {
@@ -180,6 +194,7 @@ public class ProposalManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        this.log.error("Mutation node type {}", proposal.mutation().getNode().getClass().getSimpleName());
         proposal.mutation().apply(node);
         this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
         this.log.debug("Done applying proposal");

@@ -7,46 +7,44 @@ import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.Message;
 import tech.jorn.adrian.core.messages.MessageBroker;
 import tech.jorn.adrian.core.observables.EventDispatcher;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class InMemoryBroker implements MessageBroker {
-    private final Logger log = LogManager.getLogger(InMemoryBroker.class);
+    private final Logger log;
 
-    private final INode node;
-    private final List<String> neighbours;
+    protected final INode node;
+    protected final Queue<String> neighbours;
     private final EventDispatcher<Envelope> messageDispatcher;
-    private final Executor executor = Executors.newFixedThreadPool(1);
 
-    private final ConcurrentLinkedQueue<Consumer<Message>> messageHandlers = new ConcurrentLinkedQueue<>();
+    protected final Queue<Consumer<Message>> listeners = new ConcurrentLinkedQueue<>();
 
-    /**
-     * @param events Get the event dispatcher from elsewhere for testing purposes.
-     */
-    public InMemoryBroker(INode node, List<String> neighbours, EventDispatcher<Envelope> events) {
+    public InMemoryBroker(INode node, List<String> neighbours, EventDispatcher<Envelope> messageDispatcher) {
         this.node = node;
-        this.neighbours = neighbours;
-        this.messageDispatcher = events;
+        this.neighbours = new ConcurrentLinkedQueue<>(neighbours);
+        this.messageDispatcher = messageDispatcher;
 
-        events.subscribable.subscribe(this::onMessageInner);
+        this.messageDispatcher.subscribable.subscribe(this::handleIncomingEnvelope);
+
+        this.log = LogManager.getLogger(String.format("[%s] %s", node.getID(), InMemoryBroker.class.getSimpleName()));
     }
 
     @Override
     public void send(INode recipient, Message message) {
-        this.scheduleDispatch(new Envelope(this.node, recipient.getID(), message));
+        this.log.debug("Send message to \033[4m{}\033[0m: \033[4m{}\033[0m ", recipient.getID(), ((EventMessage<?>) message).getEvent().getClass().getSimpleName());
+        this.messageDispatcher.dispatch(new Envelope(this.node, recipient.getID(), message));
     }
 
     @Override
     public void broadcast(Message message) {
-        this.neighbours.forEach(neighbour ->
-                this.scheduleDispatch(new Envelope(this.node, neighbour, message))
-        );
+        this.neighbours.forEach(recipient -> {
+            this.log.debug("Send message to \033[4m{}\033[0m: \033[4m{}\033[0m ", recipient, ((EventMessage<?>) message).getEvent().getClass().getSimpleName());
+            this.messageDispatcher.dispatch(new Envelope(this.node, recipient, message));
+        });
     }
 
     @Override
@@ -55,48 +53,15 @@ public class InMemoryBroker implements MessageBroker {
     }
 
     @Override
-    public SubscribableEvent<Message> onNewMessage() {
-        var wrappedDispatcher = new EventDispatcher<Message>();
-        this.messageDispatcher.subscribable.subscribe(e -> {
-            if (e.recipient() == null || e.recipient().equals(this.node.getID())) {
-                log.debug("\033[4m{}\033[0m sent from \033[4m{}\033[0m to \033[4m{}\033[0m (event {})", e.message().getClass().getSimpleName(), e.sender().getID(), e.recipient(), ((EventMessage<?>) e.message()).getEvent().getClass().getSimpleName());
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException ex) {
-                    log.warn("could not sleep");
-                }
-                wrappedDispatcher.dispatch(e.message());
-            }
-        });
-        return wrappedDispatcher.subscribable;
+    public void registerMessageHandler(Consumer<Message> messageHandler) {
+        this.listeners.add(messageHandler);
     }
 
-    @Override
-    public void onMessage(Consumer<Message> messageHandler) {
-        messageHandlers.add(messageHandler);
-    }
+    protected void handleIncomingEnvelope(Envelope envelope) {
+        if (envelope == null) return;
+        if (!envelope.recipient().equals(this.node.getID())) return;
+        this.log.debug("Received message from \033[4m{}\033[0m: \033[4m{}\033[0m ", envelope.sender().getID(), ((EventMessage<?>) envelope.message()).getEvent().getClass().getSimpleName());
 
-    private void scheduleDispatch(Envelope envelope) {
-//        log.debug("Sending from {} to {} (current: {})", envelope.sender().getID(), envelope.recipient(), this.node.getID());
-        this.messageDispatcher.dispatch(envelope);
-    }
-
-    private void onMessageInner(Envelope envelope) {
-//        log.debug("Received from {} to {} (current: {})", envelope.sender().getID(), envelope.recipient(), this.node.getID());
-        if (envelope.recipient() != null && envelope.recipient().equals(this.node.getID())) {
-            log.debug("\033[4m{}\033[0m sent from \033[4m{}\033[0m to \033[4m{}\033[0m (event {})",
-                    envelope.message().getClass().getSimpleName(),
-                    envelope.sender().getID(), envelope.recipient(),
-                    ((EventMessage<?>) envelope.message()).getEvent().getClass().getSimpleName());
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ex) {
-                log.warn("could not sleep");
-            }
-
-            for (Consumer<Message> handler : this.messageHandlers) {
-                this.executor.execute(() -> handler.accept(envelope.message()));
-            }
-        }
+        this.listeners.forEach(listener -> listener.accept(envelope.message()));
     }
 }

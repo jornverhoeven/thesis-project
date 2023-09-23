@@ -11,6 +11,7 @@ import tech.jorn.adrian.core.graphs.risks.AttackGraph;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
 import tech.jorn.adrian.core.risks.RiskEdge;
+import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.risks.RiskRule;
 import tech.jorn.adrian.core.services.RiskDetection;
 import tech.jorn.adrian.core.services.probability.IRiskProbabilityCalculator;
@@ -36,6 +37,16 @@ public class ExperimentalRiskDetection extends BasicRiskDetection {
         var attackGraph = super.createAttackGraph(knowledgeBase);
         this.latestGraph = attackGraph;
         return attackGraph;
+    }
+
+    @Override
+    public List<RiskReport> identifyRisks(AttackGraph attackGraph) {
+        try {
+            Thread.sleep( (int) (Math.random() * 5));
+        } catch (Exception e) {
+        }
+
+        return super.identifyRisks(attackGraph);
     }
 
     @Override

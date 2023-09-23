@@ -2,7 +2,6 @@ package tech.jorn.adrian.experiment;
 
 
 import org.apache.logging.log4j.LogManager;
-import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.agent.events.ApplyProposalEvent;
 import tech.jorn.adrian.agent.events.FoundRiskEvent;
 import tech.jorn.adrian.agent.services.BasicRiskDetection;
@@ -23,27 +22,58 @@ import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.experiment.features.*;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
-import tech.jorn.adrian.experiment.scenarios.NoChangeScenario;
-import tech.jorn.adrian.experiment.scenarios.Scenario;
+import tech.jorn.adrian.experiment.scenarios.*;
 import tech.jorn.adrian.risks.RiskLoader;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ExperimentRunner {
-    private static final String infrastructureFile = "./simple-infra.yml";
     private static int tick = 0;
 
     public static void main(String[] args) throws InterruptedException {
-//        a1();
-//        b1();
-        c1();
+        System.out.println(Arrays.stream(args).collect(Collectors.joining(", ")));
+        var file = args[0];
+        var infrastructure = InfrastructureLoader.loadFromYaml(file);
+        var messageDispatcher = new EventDispatcher<Envelope>();
+        var scenario = getScenario(args[1], infrastructure, messageDispatcher, null);
+        var features = getFeatureSet(args[2], messageDispatcher);
+
+        runTest(infrastructure, features, scenario);
+    }
+
+    public static Scenario getScenario(String input, Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, Function<InfrastructureNode, IAgent> agentFactory) {
+        switch (input) {
+            case "risk-introduction": return new IntroduceRiskScenario(infrastructure, messageDispatcher);
+            case "growing": return new GrowingInfrastructureScenario(infrastructure, messageDispatcher, agentFactory);
+            case "unstable": return new UnstableInfrastructureScenario(infrastructure, messageDispatcher);
+            case "mixed": return new MixedScenario(infrastructure, messageDispatcher);
+            case "no-chance":
+            default:
+                return new NoChangeScenario(infrastructure, messageDispatcher);
+        }
+    }
+
+    public static FeatureSet getFeatureSet(String input, EventDispatcher<Envelope> messageDispatcher) {
+        switch(input) {
+            case "knowledge-sharing":
+                return new NoAuctionFeatureSet(messageDispatcher);
+            case "local":
+                return new NoCommunicationFeatureSet();
+            case "auctioning":
+            case "full":
+            default:
+                return new FullFeatureSet(messageDispatcher);
+        }
     }
 
 
@@ -64,13 +94,11 @@ public class ExperimentRunner {
         var csv = new HashMap<String, List<Object>>();
         var task = registerMetricCollection(agents, infrastructure, csv);
         var timer = new Timer();
-//        timer.schedule(task, 2000); // get one measurement out at startup
         timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
 
         log.debug("Starting agents");
 
-        var executor = Executors.newFixedThreadPool(4);
-        agents.forEach(a -> executor.execute(() -> a.start()));
+        agents.forEach(IAgent::start);
 
 //        agents.get(1).start();
 //        agents.get(2).start();
@@ -156,14 +184,14 @@ public class ExperimentRunner {
     }
 
     public static TimerTask registerMetricCollection(List<ExperimentalAgent> agents, Infrastructure infrastructure, HashMap<String, List<Object>> csv) {
-        var messageCount = new HashMap<IAgent, AtomicInteger>();
+        var messageCount = new ConcurrentHashMap<IAgent, AtomicInteger>();
         var proposalCount = new HashMap<IAgent, AtomicInteger>();
         var riskCount = new HashMap<IAgent, AtomicInteger>();
         var riskUnique = new HashMap<String, RiskReport>();
 
 //        log.debug("Registering metric events");
         agents.forEach(agent -> {
-            agent.getMessageBroker().onMessage(message -> {
+            agent.getMessageBroker().registerMessageHandler(message -> {
                 var count = messageCount.computeIfAbsent(agent, k -> new AtomicInteger());
                 count.incrementAndGet();
             });
@@ -264,8 +292,6 @@ public class ExperimentRunner {
                         list.add(String.format("%.4f", riskDamage / riskDamageGlobal));
                         return list;
                     });
-
-                    renderAttackGraph(agent.getConfiguration(), attackGraph, tick);
                 });
 
                 tick++;
@@ -295,43 +321,24 @@ public class ExperimentRunner {
         var attackGraph = riskDetection.createAttackGraph(knowledgeBase);
         var risks = riskDetection.identifyRisks(attackGraph);
 //        risks.forEach(risk -> System.out.println(risk.toString()));
+
+        renderAttackGraph(null, attackGraph, tick);
         return risks;
     }
 
     private static void renderAttackGraph(IAgentConfiguration configuration, AttackGraph graph, int graphCount) {
-        var filename = String.format("./output/graphs/attackGraph-%s-%d.mmd", configuration.getNodeID(), graphCount);
+        var filename = String.format("./output/graphs/attackGraph-%s-%d.mmd", configuration == null ? "global" : configuration.getNodeID(), graphCount);
         try {
             var writer = new FileWriter(filename);
             var graphRender = new MermaidGraphRenderer<AttackGraphEntry<?>, AttackGraphLink<AttackGraphEntry<?>>>();
             var mmdGraph = graphRender.render(graph);
+            writer.write("%% " + graphCount * 5000);
             writer.write(mmdGraph);
             writer.close();
         } catch (IOException e) {
-            System.err.println("SOMETHING WENT WRONG OUTPUTTNG GRAPH " + e.toString());
+            System.err.println("SOMETHING WENT WRONG OUTPUTTING GRAPH " + e.toString());
             throw new RuntimeException(e);
         }
-    }
-
-
-    public static void a1() {
-        var infrastructure = InfrastructureLoader.loadFromYaml(ExperimentRunner.infrastructureFile);
-        var messageDispatcher = new EventDispatcher<Envelope>();
-
-        ExperimentRunner.runTest(infrastructure, new NoCommunicationFeatureSet(), new NoChangeScenario(infrastructure, messageDispatcher));
-    }
-
-    public static void b1() {
-        var infrastructure = InfrastructureLoader.loadFromYaml(ExperimentRunner.infrastructureFile);
-        var messageDispatcher = new EventDispatcher<Envelope>();
-
-        ExperimentRunner.runTest(infrastructure, new NoAuctionFeatureSet(messageDispatcher), new NoChangeScenario(infrastructure, messageDispatcher));
-    }
-
-    public static void c1() {
-        var infrastructure = InfrastructureLoader.loadFromYaml(ExperimentRunner.infrastructureFile);
-        var messageDispatcher = new EventDispatcher<Envelope>();
-
-        ExperimentRunner.runTest(infrastructure, new FullFeatureSet(messageDispatcher), new NoChangeScenario(infrastructure, messageDispatcher));
     }
 }
 

@@ -18,7 +18,6 @@ import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.observables.EventDispatcher;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
 import tech.jorn.adrian.core.messages.Message;
@@ -48,13 +47,13 @@ public class AgentRunner {
         var agentState = new ValueDispatcher<>(AgentState.Initializing);
         List<IController> controllers = Arrays.asList(
                 new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, agentState.subscribable),
-                new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration, agentState.subscribable),
+                new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration, agentState),
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
                 new ProposalController(proposalManager, eventManager, agentState.subscribable)
         );
         var agent = new AdrianAgent(controllers, configuration, agentState);
 
-        messageBroker.onMessage(message -> {
+        messageBroker.registerMessageHandler(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
         agent.onStateChange().subscribe(state -> {
@@ -93,7 +92,7 @@ class InMemoryBroker implements MessageBroker {
     }
 
     @Override
-    public void onMessage(Consumer<Message> messageHandler) {
+    public void registerMessageHandler(Consumer<Message> messageHandler) {
 
     }
 }

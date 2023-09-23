@@ -10,6 +10,7 @@ import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
+import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
 
 import java.util.List;
@@ -19,11 +20,16 @@ public class AuctionController extends AbstractController {
     private final AuctionManager auctionManager;
     private final IAgentConfiguration configuration;
 
-    public AuctionController(AuctionManager auctionManager, EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
-        super(eventManager, agentState);
+    public AuctionController(AuctionManager auctionManager, EventManager eventManager, IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState) {
+        super(eventManager, agentState.subscribable);
         this.auctionManager = auctionManager;
         this.configuration = configuration;
         this.registerEvents();
+
+        this.auctionManager.onAuctionChanged().subscribe(auction ->  {
+            if (auction == null) agentState.setCurrent(AgentState.Idle);
+            else agentState.setCurrent(AgentState.Auctioning);
+        });
     }
 
     private void registerEvents() {

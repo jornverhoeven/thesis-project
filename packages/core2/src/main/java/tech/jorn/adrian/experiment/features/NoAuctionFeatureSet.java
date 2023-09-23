@@ -68,11 +68,8 @@ public class NoAuctionFeatureSet extends FeatureSet {
 
         this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
 
-        messageBroker.onMessage(message -> {
-            if (message instanceof EventMessage<?> m){
-                System.out.printf("New message %s received, event queue size %d ", m.getEvent().getClass().getSimpleName(), eventManager.size());
-                eventManager.emit(m.getEvent());
-            }
+        messageBroker.registerMessageHandler(message -> {
+            if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
         agent.onStateChange().subscribe(state -> {
             // Once an agent is ready to send/receive events, we will send neighbours our information

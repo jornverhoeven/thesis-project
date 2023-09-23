@@ -76,7 +76,7 @@ public class NoCommunicationFeatureSet extends FeatureSet {
             public void addRecipient(INode recipient) { }
 
             @Override
-            public void onMessage(Consumer<Message> messageHandler) { }
+            public void registerMessageHandler(Consumer<Message> messageHandler) { }
         }
         return new VoidMessageBroker();
     }

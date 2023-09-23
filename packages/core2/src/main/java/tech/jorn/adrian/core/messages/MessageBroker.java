@@ -1,8 +1,6 @@
 package tech.jorn.adrian.core.messages;
 
-import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.graphs.base.INode;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
 
 import java.util.function.Consumer;
 
@@ -13,6 +11,6 @@ public interface MessageBroker {
 
     void addRecipient(INode recipient);
 
-    void onMessage(Consumer<Message> messageHandler);
+    void registerMessageHandler(Consumer<Message> messageHandler);
 }
 

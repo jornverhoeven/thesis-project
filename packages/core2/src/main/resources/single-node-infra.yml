@@ -1,22 +1,10 @@
 nodes:
   - id: node-a
     name: Node A
-    trustedExecutionEnvironment: true
     isExposed: false
     hasAgent: true
-    hasFirewall: false
-  - id: node-b
-    name: Node B
-    trustedExecutionEnvironment: true
-    isExposed: false
-    hasAgent: true
-    hasFirewall: false
-  - id: node-c
-    name: Node C
-    trustedExecutionEnvironment: true
-    isExposed: true
-    hasAgent: true
-    hasFirewall: false
+    hasFirewall: true
+    firmware-qualcomm/apq8096-version: 1.2.3
 
 links:
   - source: node-a
