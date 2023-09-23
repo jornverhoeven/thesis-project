@@ -60,6 +60,11 @@ This scenario is the simplest scenario. In this scenario the infrastructure is s
 
 \textit{This scenario runs for a maximum of 20 minutes, or until no messages have been send for 1 minute. This means that the scenario will end when the agents have stopped communicating with each other. This is done to prevent the scenario from running indefinitely.}
 
+\paragraph{Introduce Risks} 
+In this scenario, risks are slowly introduced into the infrastructure to simulate the discovery of new CVE's. This is done by changing properties of the existing nodes. No new infrastructure nodes or software is added. The properties that are changed to simulate new risks are properties that would trigger a risk rule to be identified. One example would be to set the \code{Contiki-NG OS} version of a property to a version that is known to have a vulnerability. This should trigger a risk rule that would identify a risk.
+
+\textit{This scenario runs for a maximum of 20 minutes, no messages have been send for 1 minute, or when the risk has been identified and mitigated.}
+
 \paragraph*{Growing Infrastructure}
 A more realistic scenario is one where the infrastructure is growing over time. This means that nodes are added to the infrastructure over time. The scenario has been hardcoded to add a new node to the infrastructure every 30 seconds\footnote{\label{footnote:simulation-time}These seconds are simulation time, see Section \ref{sssec:simulation-time} how this relates in real time.} for 10 minutes, for a total of 20 nodes added. When a node is added an existing node is picked semi-randomly, and an edge is made between the two. By using a random function that uses a seed-value, nodes will always be picked in the same sequence. This allows us to reproduce the experiments in a predictable way.
 
@@ -78,16 +83,17 @@ The last scenario is a combination of the previous scenarios. This means that no
 \label{ssec:metrics}
 During each of the experiments a number of metrics are measured. These metrics are used to evaluate the results of the experiments and help answer the research question. 
 
-The metrics we've defined can be categorized by effectiveness, efficiency, and timing. Effectiveness metrics measure how well the system is able to identify and mitigate risks. Efficiency metrics measure how well the system is able to do this with the least amount of resources. The timing metrics measure the time spent in a certain state. The metrics that are measured are shown in Table \ref{table:metrics-groups}.
+The metrics we've defined can be categorized by effectiveness and efficiency. Effectiveness metrics measure how well the system is able to identify and mitigate risks. Efficiency metrics measure how well the system is able to do this with the least amount of resources.The metrics that are measured are shown in Table \ref{table:metrics-groups}.
 
 \add{Fix the width of the table}
 \begin{table}[H]
     \centering
-    \begin{tabular}{l|l|l}
-        \textbf{Effectiveness}            & \textbf{Efficiency}            & \textbf{Timing}          \\
-        Total \# of risk identified       & Total \# of messages exchanged & Time spent auctioning      \\
-        \# of remaining risks             & \# of adaptations              & Time spent adapting   \\
-        Weighted sum of damages of remaining risk &                               
+    \begin{tabular}{l|l}
+        \textbf{Effectiveness}            & \textbf{Efficiency}            \\
+        Total \# of risk identified       & Total \# of messages exchanged \\
+        \# of remaining risks             & \# of adaptations              \\
+        Weighted sum of damages of remaining risk & Time spent auctioning  \\
+                                          & Time spent adapting            \\
     \end{tabular}
     \caption{\label{table:metrics-groups}Overview of the metrics that are measured, grouped by their category.}
 \end{table}
@@ -126,8 +132,13 @@ One of the less trivial variables is the simulation time. During the simulation 
 There is a limit to the speed-up that can be achieved in the simulation as the processing of certain events is not instantaneous. For example, doing the risk assessment of a nodes takes time. In a real-world scenario this processing time (sub milliseconds) is negligible compared to the time messages take to travel over the network (100-1000 milliseconds) and the execution of adaptations (can take several hours to complete). However, in our simulation this processing time stays constant, and thus this processing time becomes more significant. To counter this, configurable delays were implemented to get a more realistic simulation. 
 Places where these delays are implemented are for example the delivery of network-messages and the execution of adaptations. 
 
-The second variable that can be controlled is the depth of knowledge sharing. This means that we can control how far agents are able to share their knowledge. This is done by setting a maximum distance between agents. This distance is defined as the number of hops between agents. This means that if the distance is set to 1, agents are only able to share knowledge with their direct neighbors. If the distance is set to 2, agents are able to share knowledge with their direct neighbors and the neighbors of their neighbors. This allows us to test the effect of knowledge sharing on the results of the experiments.
+\label{sssec:knowledge-depth}
+Another variable that can be controlled is the depth of knowledge sharing. This means that we can control how far agents are able to share their knowledge. This is done by setting a maximum distance between agents. This distance is defined as the number of hops between agents. This means that if the distance is set to 1, agents are only able to share knowledge with their direct neighbors. If the distance is set to 2, agents are able to share knowledge with their direct neighbors and the neighbors of their neighbors. This allows us to test the effect of knowledge sharing on the results of the experiments.
 
+\label{sssec:risk-rules}
+As explained in Section \ref{ssec:adrian}, risk rules are used to identify risks and their probabilities in the infrastructure. These risk rules are what define attack graphs. In the experiments we use the same set of risk rules for each experiment. This means that each experiment is able to identify the same risks.
+
+Each agent allows for a handful of other variables, such as the strategies to select a risk for auctioning, or the best proposal in an auction. These strategies are not changed throughout the experiments, but could be noteworthy for future research.
 
 % \subsection{Baseline Experiment}
 % % - No communication, no cooperation

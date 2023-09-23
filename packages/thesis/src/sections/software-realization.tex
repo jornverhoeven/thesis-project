@@ -18,7 +18,7 @@
 % - The ExperimentalAgent is a subclass of the Agent, which is used to simulate the agents in the experimental setup, exposing the necessary methods to the ExperimentManager.
 % - The ExperimentManager observes messages sent over the MessageBroker, and is able to send messages to the agents through the MessageBroker. This is helpful when measuring metrics and controlling the behavior of agents during the experiment.
 
-\comment{Zoltan}{I think this doesnt belonf here, but rather into a currently missing section between the current sections 3 and 4. In which you describe the design and implementation of your program. (The current section 3 contains some stubs that also belong into this to-be-created section)}
+% \comment{Zoltan}{I think this doesnt belonf here, but rather into a currently missing section between the current sections 3 and 4. In which you describe the design and implementation of your program. (The current section 3 contains some stubs that also belong into this to-be-created section)}
 \comment{Zoltan}{It would be a good to add an overview diagram that shows the structure of the while program on a higher level of abstraction than individual classes.}
 In this section, we present an overview and analysis of a UML Class Diagram for our proposed implementation of the ADRIAN protocol\cite{mann2023ADRIAN} which can be seen in Figures \ref{fig:uml-agent} through \ref{fig:uml-services}. At a quick glance the architecture features multiple controllers, connected through an internal event bus, and a message broker external communication. Additionally, some classes have been extended to support the experimental setup, which is further explained in Section \ref{sec:experiments}.
 
