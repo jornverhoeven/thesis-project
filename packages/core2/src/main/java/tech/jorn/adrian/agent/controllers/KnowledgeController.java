@@ -8,16 +8,19 @@ import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,8 +34,9 @@ public class KnowledgeController extends AbstractController {
     public KnowledgeController(KnowledgeBase knowledgeBase, MessageBroker messageBroker, EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
         super(eventManager, agentState);
         this.messageBroker = messageBroker;
-        this.knowledgeBase = knowledgeBase;
         this.configuration = configuration;
+
+        this.knowledgeBase = this.createKnowledgeBaseFromConfig(knowledgeBase, configuration.getParentNode(), configuration.getNeighbours(), configuration.getAssets());
 
         this.eventManager.registerEventHandler(ShareKnowledgeEvent.class, this::processKnowledge);
         this.configuration.getParentNode().onPropertyChange().subscribe(prop -> this.log.debug("Updated property {} to {}", prop.getName(), prop.getValue()));
@@ -52,7 +56,7 @@ public class KnowledgeController extends AbstractController {
             this.log.info("Added a new neighbour {}", event.getOrigin().getID());
         }
 
-        this.knowledgeBase.processNewInformation(event.getOrigin(), event.getLinks(), event.getAssets());
+        this.knowledgeBase.processNewInformation(event.getOrigin(), event.getKnowledgeBase());
 
         if (event.getDistance() > 1) {
             var next = ShareKnowledgeEvent.reducedDistance(event);
@@ -67,7 +71,6 @@ public class KnowledgeController extends AbstractController {
         var node = this.configuration.getParentNode();
         this.log.debug("Updating property {} from {} to {}", property.getName(), this.knowledgeBase.findById(node.getID()).get().getProperty(property.getName()), property.getValue());
         this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
-        this.log.debug("Updating property {} from {} to {}", property.getName(), this.knowledgeBase.findById(node.getID()).get().getProperty(property.getName()), property.getValue());
 
         this.shareKnowledge();
         if (this.agentState.current().equals(AgentState.Idle))
@@ -84,10 +87,29 @@ public class KnowledgeController extends AbstractController {
     protected void shareKnowledge() {
         var event = new ShareKnowledgeEvent(
                 this.configuration.getParentNode(),
-                this.configuration.getNeighbours(),
-                this.configuration.getAssets(),
+                this.knowledgeBase,
                 1
         );
         this.messageBroker.broadcast(new EventMessage<>(event));
+    }
+
+    private KnowledgeBase createKnowledgeBaseFromConfig(KnowledgeBase knowledgeBase, AbstractDetailedNode<NodeProperty<?>> origin, List<String> links, List<SoftwareAsset> assets) {
+        var originNode = KnowledgeBaseNode.fromNode(origin)
+                        .setKnowledgeOrigin(KnowledgeOrigin.DIRECT);
+        knowledgeBase.upsertNode(originNode);
+        assets.forEach(asset -> {
+            var assetNode = KnowledgeBaseSoftwareAsset.fromNode(asset);
+            knowledgeBase.upsertNode(assetNode);
+            knowledgeBase.addEdge(originNode, assetNode);
+            knowledgeBase.addEdge(assetNode, originNode);
+        });
+        links.forEach(node -> {
+            var neighbourNode = new KnowledgeBaseNode(node)
+                    .setKnowledgeOrigin(KnowledgeOrigin.INFERRED);
+            knowledgeBase.upsertNode(neighbourNode);
+            knowledgeBase.addEdge(originNode, neighbourNode);
+            knowledgeBase.addEdge(neighbourNode, originNode);
+        });
+        return knowledgeBase;
     }
 }

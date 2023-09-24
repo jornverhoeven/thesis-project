@@ -56,16 +56,6 @@ public class AgentRunner {
         messageBroker.registerMessageHandler(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
-        agent.onStateChange().subscribe(state -> {
-            if (state != AgentState.Ready) return;
-            var event = new ShareKnowledgeEvent(
-                    configuration.getParentNode(),
-                    configuration.getNeighbours(),
-                    configuration.getAssets(),
-                    1
-            );
-            messageBroker.broadcast(new EventMessage<>(event));
-        });
     }
 }
 

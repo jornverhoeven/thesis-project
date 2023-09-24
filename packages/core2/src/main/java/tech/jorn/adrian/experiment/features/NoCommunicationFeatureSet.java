@@ -59,8 +59,6 @@ public class NoCommunicationFeatureSet extends FeatureSet {
 
         var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration, agentState);
 
-        this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
-
         return agent;
     }
 

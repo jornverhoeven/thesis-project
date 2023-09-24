@@ -31,20 +31,6 @@ public class ExperimentalAgent extends AdrianAgent {
         this.knowledgeBase = knowledgeBase;
     }
 
-    public void shareKnowledge() {
-        var event = new ShareKnowledgeEvent(
-                this.getConfiguration().getParentNode(),
-                this.getConfiguration().getNeighbours(),
-                this.getConfiguration().getAssets(),
-                1
-        );
-        this.messageBroker.broadcast(new EventMessage<>(event));
-    }
-    public void identifyRisk() {
-        var event = new IdentifyRiskEvent();
-        this.eventManager.emit(event);
-    }
-
     public EventManager getEventManager() {
         return this.eventManager;
     }

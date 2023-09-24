@@ -16,39 +16,39 @@ public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLin
         super();
     }
 
-    public void processNewInformation(AbstractDetailedNode<?> origin, List<String> neighbours, List<SoftwareAsset> assets) {
-        var node = this.findById(origin.getID());
-        if (node.isEmpty()) {
-            // Create a new node in the knowledgebase.
-            var knowledge = new KnowledgeBaseNode(origin.getID());
-            origin.getProperties()
-                    .forEach(knowledge::setFromProperty);
-            node = Optional.of(knowledge);
-        }
+    public void processNewInformation(AbstractDetailedNode<NodeProperty<?>> origin, KnowledgeBase knowledgeBase) {
+        knowledgeBase.getNodes().forEach(node -> {
+            var internalNode = this.findById(node.getID());
 
-        // TODO: If the node was already direct info, dont set the origin
-        this.upsertNode(node.get()
-                .setKnowledgeOrigin(KnowledgeOrigin.INDIRECT)
-        );
-
-        for (var id : neighbours) {
-            var adjacent = this.findById(id);
-            if (adjacent.isEmpty()) {
-                var knowledge = new KnowledgeBaseNode(id)
-                        .setKnowledgeOrigin(KnowledgeOrigin.INFERRED);
-                adjacent = Optional.of(knowledge);
-                this.upsertNode(knowledge);
+            // If we do not yet have the node locally, or it's information is inferred (only had an ID)
+            // We need to add it to the knowledge base. Of it already exist just learn from the node
+            if (internalNode.isEmpty() || internalNode.get().getKnowledgeOrigin().equals(KnowledgeOrigin.INFERRED)) {
+                internalNode = Optional.of(node);
+            } else {
+                internalNode.get().learnFrom(node);
             }
-            this.addEdge(node.get(), adjacent.get());
-            this.addEdge(adjacent.get(), node.get());
-        }
-        for (var asset : assets) {
-            var knowledge = KnowledgeBaseSoftwareAsset.fromNode(asset)
-                    .setKnowledgeOrigin(KnowledgeOrigin.INFERRED);
-            this.upsertNode(knowledge);
-            this.addEdge(node.get(), knowledge);
-            this.addEdge(knowledge, node.get());
-        }
+            // If it's information from the origin, it is direct knowledge
+            internalNode.get().setKnowledgeOrigin(node.getID().equals(origin.getID())
+                    ? KnowledgeOrigin.DIRECT
+                    : node.getKnowledgeOrigin());
+            this.upsertNode(internalNode.get());
+        });
+        knowledgeBase.getNodes().forEach(node -> {
+            var internalNode = this.findById(node.getID());
+
+            // We need to make sure that all links are also updated
+            var internalAdjacent = this.adjacent.get(node);
+            var adjacent = knowledgeBase.adjacent.get(node);
+
+//            internalAdjacent.removeAll(internalAdjacent);
+            for (var link : adjacent) {
+                var dest = this.findById(link.getNode().getID());
+                if (dest.isEmpty()) continue; // Found link to non-existing node
+                internalAdjacent.removeIf(l -> l.getNode().getID().equals(link.getNode().getID()));
+                this.addEdge(internalNode.get(), dest.get());
+                // TODO: Maybe add the inverse too?
+            }
+        });
     }
 
     public KnowledgeBase clone() {

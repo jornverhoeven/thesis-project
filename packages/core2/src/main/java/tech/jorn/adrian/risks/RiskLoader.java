@@ -23,11 +23,11 @@ public class RiskLoader {
                 new EntryCve("CVE-2022-35927", "os-contiki-ng/contiki-ng-version", new BeforeVersion("4.7"), 3.9f, "4.7")
                         .includeNodes(),
                 new EntryCve("CVE-2021-40830", "sdk-amazon/amazon_web_services_iot_device_sdk_v2-version", new BeforeVersion("1.5"), 2.8f, "1.5")
-                        .includeSoftware()
+                        .includeSoftware(),
 
-//                new RuleInfrastructureNodeHasFirewall(),
-//                new RuleInfrastructureNodeIsPhysicallySecured(),
-//                new RuleSoftwareComponentIsEncrypted()
+                new RuleInfrastructureNodeHasFirewall(),
+                new RuleInfrastructureNodeIsPhysicallySecured(),
+                new RuleSoftwareComponentIsEncrypted()
         );
     }
 }

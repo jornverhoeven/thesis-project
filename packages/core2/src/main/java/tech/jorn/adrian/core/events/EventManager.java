@@ -35,6 +35,10 @@ public class EventManager {
     }
 
     public void emit(Event event) {
+        if (event.isImmediate()) {
+            this.log.debug("Executing immediate \033[4m{}\033[0m", event.getClass().getSimpleName());
+            processEvent(event, true);
+        }
         this.log.debug("Added \033[4m{}\033[0m to queue with {} events before it", event.getClass().getSimpleName(), queue.size());
         this.queue.enqueue(event);
     }
@@ -49,12 +53,12 @@ public class EventManager {
         var event = this.queue.dequeue();
         if (event == null) return;
 
-        processEvent(event);
+        processEvent(event, false);
         this.log.trace("Done processing \033[4m{}\033[0m. processing: {}, queue size: {}", event.getClass().getSimpleName(), this.processing, this.queue.size());
     }
 
-    private <E extends Event> void processEvent(E event) {
-        this.processing = true;
+    private <E extends Event> void processEvent(E event, boolean immediate) {
+        if (!immediate) this.processing = true;
         this.log.debug("Processing event \033[4m{}\033[0m", event.getClass().getSimpleName());
 
         var handlers = this.eventHandlers.get(event.getClass());
@@ -63,7 +67,10 @@ public class EventManager {
                 handler.accept(event);
             }
         }
-        this.processing = false;
-        this.finishedProcessing.dispatch(null);
+
+        if (!immediate) {
+            this.processing = false;
+            this.finishedProcessing.dispatch(null);
+        }
     }
 }

@@ -68,8 +68,6 @@ public class FullFeatureSet extends FeatureSet {
 
         var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration, agentState);
 
-        this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
-
         messageBroker.registerMessageHandler(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });

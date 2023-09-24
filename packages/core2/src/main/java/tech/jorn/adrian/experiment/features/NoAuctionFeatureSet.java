@@ -66,22 +66,8 @@ public class NoAuctionFeatureSet extends FeatureSet {
 
         var agent = new ExperimentalAgent(messageBroker, eventManager, riskDetection, knowledgeBase, controllers, configuration, agentState);
 
-        this.learnFromNeighbours(infrastructure, node, configuration, knowledgeBase);
-
         messageBroker.registerMessageHandler(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
-        });
-        agent.onStateChange().subscribe(state -> {
-            // Once an agent is ready to send/receive events, we will send neighbours our information
-            if (state != AgentState.Ready) return;
-            System.out.println(configuration.getNodeID());
-            var event = new ShareKnowledgeEvent(
-                    configuration.getParentNode(),
-                    configuration.getNeighbours(),
-                    configuration.getAssets(),
-                    1
-            );
-            messageBroker.broadcast(new EventMessage<>(event));
         });
 
         return agent;

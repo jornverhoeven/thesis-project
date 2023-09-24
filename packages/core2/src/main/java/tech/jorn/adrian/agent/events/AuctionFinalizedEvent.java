@@ -20,4 +20,9 @@ public class AuctionFinalizedEvent extends Event {
     public AuctionProposal getProposal() {
         return proposal;
     }
+
+    @Override
+    public boolean isImmediate() {
+        return true;
+    }
 }
