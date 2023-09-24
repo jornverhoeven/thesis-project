@@ -8,7 +8,9 @@ import tech.jorn.adrian.agent.services.BasicRiskDetection;
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
+import tech.jorn.adrian.core.graphs.base.GraphLink;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
+import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureEntry;
 import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
@@ -33,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,8 +48,9 @@ public class ExperimentRunner {
         var file = args[0];
         var infrastructure = InfrastructureLoader.loadFromYaml(file);
         var messageDispatcher = new EventDispatcher<Envelope>();
-        var scenario = getScenario(args[1], infrastructure, messageDispatcher, null);
         var features = getFeatureSet(args[2], messageDispatcher);
+        var agentFactory = new AgentFactory(features);
+        var scenario = getScenario(args[1], infrastructure, messageDispatcher, (node) -> agentFactory.fromNode(infrastructure, node));
 
         runTest(infrastructure, features, scenario);
     }
@@ -81,6 +85,7 @@ public class ExperimentRunner {
         var log = LogManager.getLogger(ExperimentRunner.class);
 
         calculateRisksInInfrastructure(infrastructure);
+        renderInfrastructure(infrastructure);
 
         var startTime = new Date().getTime();
 
@@ -98,32 +103,28 @@ public class ExperimentRunner {
 
         log.debug("Starting agents");
 
-        agents.forEach(IAgent::start);
-
-//        agents.get(1).start();
-//        agents.get(2).start();
-//        agents.get(0).start();
-//        agents.get(3).start();
-
-        scenario.onFinished().subscribe(() -> {
+        Runnable onFinished = () ->  {
             log.info("Finished scenario in {}ms", new Date().getTime() - startTime);
             task.run(); // Collect the final measurements
 
             try {
-                var scenarioName = scenario.getClass().getSimpleName();
-                var featureName = featureSet.getClass().getSimpleName();
-                var testIdentifier = scenarioName + "-" + featureName;
-                writeToCSV(testIdentifier, agents, csv, new Date().getTime() - startTime);
+                writeToCSV(agents, csv, new Date().getTime() - startTime);
                 calculateRisksInInfrastructure(infrastructure);
+                renderInfrastructure(infrastructure);
             } catch (IOException e) {
                 log.error("Could not write measures");
             }
             System.exit(0);
-        });
+        };
+        scenario.onFinished().subscribe(onFinished);
+
+        agents.forEach(IAgent::start);
+
+
     }
 
-    public static void writeToCSV(String testIdentifier, List<ExperimentalAgent> agents, Map<String, List<Object>> data, long endTime) throws IOException {
-        var fileWriter = new FileWriter("./output/" + testIdentifier + ".csv");
+    public static void writeToCSV(List<ExperimentalAgent> agents, Map<String, List<Object>> data, long endTime) throws IOException {
+        var fileWriter = new FileWriter("./metrics.csv");
         var writer = new PrintWriter(fileWriter);
 
         writer.printf("timestamps;%s;%s\n", IntStream.range(0, (int) (endTime / 5000)).mapToObj(i -> String.valueOf(5 * (i + 1) * 1000)).collect(Collectors.joining(";")), endTime);
@@ -327,12 +328,27 @@ public class ExperimentRunner {
     }
 
     private static void renderAttackGraph(IAgentConfiguration configuration, AttackGraph graph, int graphCount) {
-        var filename = String.format("./output/graphs/attackGraph-%s-%d.mmd", configuration == null ? "global" : configuration.getNodeID(), graphCount);
+        var filename = String.format("./graphs/attackGraph-%s-%d.mmd", configuration == null ? "global" : configuration.getNodeID(), graphCount);
         try {
             var writer = new FileWriter(filename);
             var graphRender = new MermaidGraphRenderer<AttackGraphEntry<?>, AttackGraphLink<AttackGraphEntry<?>>>();
             var mmdGraph = graphRender.render(graph);
             writer.write("%% " + graphCount * 5000);
+            writer.write(mmdGraph);
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("SOMETHING WENT WRONG OUTPUTTING GRAPH " + e.toString());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void renderInfrastructure(Infrastructure infrastructure) {
+        var filename = String.format("./graphs/infrastructure-%d.mmd", tick * 5000);
+        try {
+            var writer = new FileWriter(filename);
+            var graphRender = new MermaidGraphRenderer<InfrastructureEntry<?>, GraphLink<InfrastructureEntry<?>>>();
+            var mmdGraph = graphRender.render(infrastructure);
+            writer.write("%% " + tick * 5000);
             writer.write(mmdGraph);
             writer.close();
         } catch (IOException e) {

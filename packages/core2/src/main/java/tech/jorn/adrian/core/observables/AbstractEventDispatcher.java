@@ -8,7 +8,7 @@ public abstract class AbstractEventDispatcher<TValue, THandler extends Consumer<
 
     public final Subscribable<TValue, THandler> subscribable = new Subscribable<>(this);
 
-    private Set<THandler> subscribers = new HashSet<>();
+    protected Set<THandler> subscribers = new HashSet<>();
 
     Runnable subscribe(THandler handler) {
         this.subscribers.add(handler);

@@ -22,8 +22,8 @@ public class FlagDispatcher extends AbstractEventDispatcher<Void, Consumer<Void>
     }
 
     public Runnable subscribe(Runnable handler) {
-        var unsubscribe = super.subscribe(nothing -> handler.run());
-        if (this.value) handler.run();
-        return unsubscribe;
+        Consumer<Void> wrapped = nothing -> handler.run();
+        this.subscribers.add(wrapped);
+        return () -> this.unsubscribe(wrapped);
     }
 }

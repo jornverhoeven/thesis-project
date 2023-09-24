@@ -10,7 +10,7 @@ public class NoChangeScenario extends Scenario {
     Logger log = LogManager.getLogger(NoChangeScenario.class);
 
     public NoChangeScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher) {
-        super(infrastructure, messageDispatcher, 20 * 60 * 1000 /* Twenty Minutes */);
+        super(infrastructure, messageDispatcher, 10 * 60 * 1000 /* Twenty Minutes */);
     }
 
     @Override

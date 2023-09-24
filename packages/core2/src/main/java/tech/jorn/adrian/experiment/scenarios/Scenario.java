@@ -33,11 +33,12 @@ public abstract class Scenario {
 
     private void scheduleExecutionTimeout() {
         this.after(this.maxExecutionTime, () -> {
+            this.log.debug("Attempting to stop execution");
             if (this.finished.isRaised()) return;
             this.log.error("The scenario did not executing within the time limit of {}ms", this.maxExecutionTime);
             this.finished.raise();
-            System.exit(1);
         });
+        this.log.debug("Configured max execution timeout {}", this.maxExecutionTime);
     }
 
     protected void waitForSilence(int timeout, Runnable onSilence) {
