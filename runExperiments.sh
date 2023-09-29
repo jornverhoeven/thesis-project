@@ -1,5 +1,6 @@
-infra=simple-infra.yml
-scenarios=(no-change risk-introduction growing)
+infra=complex-infra.yml
+scenarios=(no-change risk-introduction growing unstable)
+# scenarios=(growing)
 features=(local knowledge-sharing auctioning)
 
 CURRENT=$(pwd)

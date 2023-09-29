@@ -1,26 +1,39 @@
 \section{Software Realization}
 \label{sec:software-realization}
+In order to fully understand the ADRIAN protocol \cite{mann2023ADRIAN}, we have to implement a prototype of the protocol. This section describes the design and implementation of the ADRIAN protocol, as well as the experimental setup used to evaluate the protocol. The implementation is done in Java, and the source code can be found on GitHub\footnote{\url{https://github.com/jornverhoeven/thesis-project}}. 
+
 
 \subsection{Overview}
 \label{ssec:overview}
+% \comment{Zoltan}{It would be a good to add an overview diagram that shows the structure of the while program on a higher level of abstraction than individual classes.}
+To start things of we will give a brief overview of the components of the ADRIAN prototype. The component overview can be seen in Figure \ref{fig:adrian-component-overview}, and will be used as a reference throughout this section.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{_content/adrian-component-overview.png}
+    \caption{Overview of the components of the ADRIAN protocol. The \code{MessageBroker} is responsible for interfacing with the external world, while the \code{EventBus} is used for internal communication. The \code{Controllers} are responsible for handling the different aspects of the agent, such as knowledge sharing and auctions. They are each responsible for a specific set of events, and are connected to the event bus.}
+    \label{fig:adrian-component-overview}
+\end{figure}
+
+For the architecture design of the prototype we wanted to create something that is easy to understand, maintain, and instrument. To achieve this, we chose to implement a Event-Driven architecture. This architecture is based on the Observer pattern \cite{gamma1995design}, commonly used in software development. By sending messages through an event bus (See \code{EventBus} in figure \ref{fig:adrian-component-overview}), we can decouple the different components of the system. Next to being able to decouple the components, it also allows us to easily instrument the system. By listening to the events on the event bus during our experiments, we can count the number of events, and the time between events. This allows us to easily collect metrics of the system. More on these metrics in Section \ref{ssec:metrics}.
+
+Each controller in our design is responsible for a specific set of events, and is connected to the event bus. This allows us to easily add new controllers, or replace existing ones during our experiments. The controllers are responsible for handling the different aspects of the agent. 
+
+\begin{enumerate}
+    \item The \code{KnowledgeController} is responsible for receiving and sharing knowledge. 
+    \item The \code{RiskController} is responsible for detecting risks.
+    \item The \code{AuctionController} is responsible for handling auctions. 
+    \item The \code{ProposalController} is responsible for finding and applying proposals.
+\end{enumerate}
+
+We chose to detach the external communication from the internal communication. This allows us to easily replace the external communication with a different implementation. More on this in Section \ref{sssec:message-broker}.
+The \code{MessageBroker} is the layer for interfacing with the external world. The \code{MessageBroker} is responsible for sending and receiving messages from other agents, and dispatching them to the event bus.
 
 \subsection{Class Diagrams}
 \label{ssec:class-diagrams}
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 
-% Talk about:
-% - To increase cohesion and reduce coupling the agent uses multiple controllers to handle the different aspects of the agent.
-%   - The controllers are connected to an event bus, which is used to communicate between the controllers.
-%   - The controllers are the interfacing layer between events and services that perform the actual computations.
-% - The MessageBroker is used to send messages between agents.
-%   - The incoming messages are handled and dispatched to the event bus, which then triggers the appropriate controller.
-%   - The outgoing messages are sent to the MessageBroker, which then sends the message to the appropriate agent. In the Experimental setup there is a single message broker which is used by all agents. In a real world scenario each agent would have their own message broker, communicating over the network through HTTP or some other protocol.
-% - The ExperimentalAgent is a subclass of the Agent, which is used to simulate the agents in the experimental setup, exposing the necessary methods to the ExperimentManager.
-% - The ExperimentManager observes messages sent over the MessageBroker, and is able to send messages to the agents through the MessageBroker. This is helpful when measuring metrics and controlling the behavior of agents during the experiment.
-
-% \comment{Zoltan}{I think this doesnt belonf here, but rather into a currently missing section between the current sections 3 and 4. In which you describe the design and implementation of your program. (The current section 3 contains some stubs that also belong into this to-be-created section)}
-\comment{Zoltan}{It would be a good to add an overview diagram that shows the structure of the while program on a higher level of abstraction than individual classes.}
-In this section, we present an overview and analysis of a UML Class Diagram for our proposed implementation of the ADRIAN protocol\cite{mann2023ADRIAN} which can be seen in Figures \ref{fig:uml-agent} through \ref{fig:uml-services}. At a quick glance the architecture features multiple controllers, connected through an internal event bus, and a message broker external communication. Additionally, some classes have been extended to support the experimental setup, which is further explained in Section \ref{sec:experiments}.
+In this section, we present an overview and analysis of a UML Class Diagram for our proposed implementation of the ADRIAN protocol \cite{mann2023ADRIAN} which can be seen in Figures \ref{fig:uml-agent} through \ref{fig:uml-services}. At a quick glance the architecture features multiple controllers, connected through an internal event bus, and a message broker external communication. Additionally, some classes have been extended to support the experimental setup, which is further explained in Section \ref{sec:experiments}.
 
 \begin{figure}[H]
     \centering
@@ -32,12 +45,10 @@ In this section, we present an overview and analysis of a UML Class Diagram for 
 \subsubsection{Increased Cohesion and Reduced Coupling through Controller Interfaces}
 \label{sssec:reduced-cohesion-coupling}
 The systems architecture uses multiple controllers to handle various aspects of the agent, aiming to reduce both cohesion and coupling between components. Each controller is responsible for a specific set of tasks and the corresponding events, leading to a more modular and flexible design. This separation of functionality allows for easier maintenance, as well as the ability to replace controllers with new implementations, minimizing the impact on other parts of the system.
-\comment{Zoltan}{Will the responsibility of each controller be described somewhere?}
 
 \subsubsection{Event Bus for internal communication}
 \label{sssec:event-bus}
-To enable communication between controllers, an internal event bus is created. The event bus is in essence nothing more than a Observer pattern (also known as \texttt{EventEmitter} or \texttt{Pup/Sub}). This decouples the controllers from one another, as they are not directly aware of each other. Controllers can publish and subscribe to events on the event bus, and the event bus will then notify all subscribers when an event is published. 
-\comment{Zoltan}{Should the eventbus not be visible somewhere in figure 4.}
+To enable communication between controllers, an internal event bus is created. The event bus is in essence nothing more than a Observer pattern (also known as \texttt{EventEmitter} or \texttt{Pup/Sub})\cite{gamma1995design}. This decouples the controllers from one another, as they are not directly aware of each other. Controllers can publish and subscribe to events on the event bus, and the event bus will then notify all subscribers when an event is published. 
 
 \subsubsection{Controllers as an interfacing layer}
 \label{sssec:controllers-interfacing-layer}
@@ -47,7 +58,8 @@ Controllers serve as an interfacing layer, between the event bus and the service
 \label{sssec:message-broker}
 The system uses a \code{MessageBroker} which facilitates communication between agents. It allows for both incoming and outgoing messages to be handled by the agent, while abstracting away the underlying protocol. Incoming messages are processed and dispatched onto the internal event bus, triggering the relevant controllers to handle the message. On the other hand, outgoing messages are sent to the \code{MessageBroker}, which then sends the message to the appropriate agent.
 
-The \code{MessageBroker} as an interface can be concretized by different implementations,\comment{Zoltan}{I dont understand what is meant here}depending on hardware-/software-requirements. In the experimental setup, a single \code{MessageBroker} is used by all agents and works directly in memory. This avoids any additional network complexity and allows \comment{Zoltan}{Compared to what?}a more efficient simulation. In a real world scenario, the \code{MessageBroker} would be a network service, which is used to send messages between agents over the network using HTTP requests or some other protocol such as MQTT. From the agents perspective, the \code{MessageBroker} would be the same, regardless of the implementation, and thus reducing coupling between the agents and the underlying communication protocol.
+\add{Rewrite the following paragraph to be easier to understand}
+The \code{MessageBroker} as an interface can be concretized by different implementations, depending on hardware-/software-requirements. In the experimental setup, a single \code{MessageBroker} is used by all agents and works directly in memory. This avoids any additional network complexity and allows for easier simulation. In a real world scenario, the \code{MessageBroker} would be a network service, which is used to send messages between agents over the network using HTTP requests or some other protocol such as MQTT. From the agents perspective, the \code{MessageBroker} would be the same, regardless of the implementation, and thus reducing coupling between the agents and the underlying communication protocol.
 
 \subsubsection{Similarities in graph data structures}
 \label{sssec:graph-data-structures}
@@ -70,6 +82,7 @@ In the real world the infrastructure is a graph structure, something that it \co
 
 \subsection{Sequence Diagrams}
 \label{ssec:sequence-diagrams}
+\add{Update text or remove section}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{_content/knowledge-sharing}
