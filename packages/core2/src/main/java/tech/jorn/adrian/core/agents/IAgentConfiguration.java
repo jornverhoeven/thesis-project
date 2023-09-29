@@ -19,4 +19,6 @@ public interface IAgentConfiguration {
 
     default int getAuctionTimeout() { return 30 * 1000; }
 
+    default boolean canMigrate() { return true; }
+
 }

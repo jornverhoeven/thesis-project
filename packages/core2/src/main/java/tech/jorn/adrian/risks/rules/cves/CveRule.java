@@ -17,14 +17,19 @@ public abstract class CveRule<T> extends RiskRule {
     private final String property;
     private final float exploitabilityScore;
 
+    protected final float cost;
+    protected final float time;
+
     protected boolean allowAssets = true;
     protected boolean allowNodes = true;
 
-    public CveRule(String cve, String property, PropertyValidator<T> validator, float exploitabilityScore) {
+    public CveRule(String cve, String property, PropertyValidator<T> validator, float exploitabilityScore, float cost, float time) {
         super();
         this.cve = cve;
         this.property = property;
         this.exploitabilityScore = exploitabilityScore;
+        this.cost = cost;
+        this.time = time;
         this.validator = validator;
     }
 

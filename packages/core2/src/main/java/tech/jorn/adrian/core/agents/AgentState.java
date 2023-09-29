@@ -5,5 +5,6 @@ public enum AgentState {
     Ready,
     Idle,
     Auctioning,
-    Migrating
+    Migrating,
+    Shutdown,
 }

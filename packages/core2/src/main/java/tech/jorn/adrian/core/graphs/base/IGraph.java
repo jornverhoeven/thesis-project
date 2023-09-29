@@ -10,6 +10,8 @@ public interface IGraph<N extends INode> {
     void removeNode(String id);
     void addEdge(N from, N to);
 
+    void removeEdge(N from, N to);
+
     Optional<N> findById(String id);
     List<N> getNeighbours(N node);
     List<N> getNeighbours(String id);

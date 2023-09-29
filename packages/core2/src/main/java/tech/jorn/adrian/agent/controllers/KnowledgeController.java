@@ -30,23 +30,28 @@ public class KnowledgeController extends AbstractController {
     private final KnowledgeBase knowledgeBase;
     private final MessageBroker messageBroker;
     private final IAgentConfiguration configuration;
+    private boolean hasSharedInitialKnowledge = false;
+    private boolean triggerRiskIdentificationOnIdle = false;
 
     public KnowledgeController(KnowledgeBase knowledgeBase, MessageBroker messageBroker, EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
         super(eventManager, agentState);
         this.messageBroker = messageBroker;
         this.configuration = configuration;
 
+        log = LogManager.getLogger("[" + configuration.getNodeID() + "] KnowledgeController");
+
         this.knowledgeBase = this.createKnowledgeBaseFromConfig(knowledgeBase, configuration.getParentNode(), configuration.getNeighbours(), configuration.getAssets());
 
         this.eventManager.registerEventHandler(ShareKnowledgeEvent.class, this::processKnowledge);
-        this.configuration.getParentNode().onPropertyChange().subscribe(prop -> this.log.debug("Updated property {} to {}", prop.getName(), prop.getValue()));
         this.configuration.getParentNode().onPropertyChange().subscribe(this::onNodePropertyChange);
         this.configuration.getAssets().forEach(asset -> asset.onPropertyChange().subscribe(() -> this.onAssetPropertyChange(asset)));
 
         agentState.subscribe(state -> {
-            // Once an agent is ready to send/receive events, we will send neighbours our information
-            if (state != AgentState.Ready) return;
-            this.shareKnowledge();
+            if (state == AgentState.Idle && (!this.hasSharedInitialKnowledge || triggerRiskIdentificationOnIdle)) {
+                this.shareKnowledge();
+                this.hasSharedInitialKnowledge = true;
+                this.triggerRiskIdentificationOnIdle = false;
+            }
         });
     }
 
@@ -58,13 +63,13 @@ public class KnowledgeController extends AbstractController {
 
         this.knowledgeBase.processNewInformation(event.getOrigin(), event.getKnowledgeBase());
 
+        if (this.agentState.current().equals(AgentState.Idle))
+            this.eventManager.emit(new IdentifyRiskEvent());
+
         if (event.getDistance() > 1) {
             var next = ShareKnowledgeEvent.reducedDistance(event);
             this.messageBroker.broadcast(new EventMessage<>(next));
         }
-
-        if (this.agentState.current().equals(AgentState.Idle))
-            this.eventManager.emit(new IdentifyRiskEvent());
     }
 
     protected void onNodePropertyChange(NodeProperty<?> property) {
@@ -73,6 +78,8 @@ public class KnowledgeController extends AbstractController {
         this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
 
         this.shareKnowledge();
+
+        this.triggerRiskIdentificationOnIdle = true;
         if (this.agentState.current().equals(AgentState.Idle))
             this.eventManager.emit(new IdentifyRiskEvent());
     }
@@ -80,6 +87,8 @@ public class KnowledgeController extends AbstractController {
         this.knowledgeBase.upsertNode(KnowledgeBaseSoftwareAsset.fromNode(asset));
 
         this.shareKnowledge();
+
+        this.triggerRiskIdentificationOnIdle = true;
         if (this.agentState.current().equals(AgentState.Idle))
             this.eventManager.emit(new IdentifyRiskEvent());
     }

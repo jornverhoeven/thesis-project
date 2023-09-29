@@ -16,9 +16,10 @@ public class SingleNodeInfra {
 
         var agentFactory = new AgentFactory(new FullFeatureSet(messageDispatcher));
 
-        scenario.scheduleEvents();
 
         var agents = agentFactory.fromInfrastructure(infrastructure);
+        scenario.scheduleEvents(agents);
+
         agents.forEach(ExperimentalAgent::start);
 
         scenario.onFinished().subscribe(() -> {

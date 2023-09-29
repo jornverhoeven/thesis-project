@@ -4,7 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
+
+import java.util.List;
 
 public class IntroduceRiskScenario extends Scenario {
     Logger log = LogManager.getLogger(IntroduceRiskScenario.class);
@@ -14,7 +17,7 @@ public class IntroduceRiskScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents() {
+    public void onScheduleEvents(List<ExperimentalAgent> agents) {
         this.after(3 * 60 * 1000, () -> {
             var asset = infrastructure.listSoftwareAssets().get(1);
             this.log.info("Introducing Risk to asset {}", asset.getID());

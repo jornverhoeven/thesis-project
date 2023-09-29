@@ -25,8 +25,8 @@ public class EntryCve extends CveRule<String> {
 
     private final String mitigatedVersion;
 
-    public EntryCve(String cve, String property, PropertyValidator<String> validator, float exploitabilityScore, String mitigatedVersion) {
-        super(cve, property, validator, exploitabilityScore);
+    public EntryCve(String cve, String property, PropertyValidator<String> validator, float exploitabilityScore, float cost, float time, String mitigatedVersion) {
+        super(cve, property, validator, exploitabilityScore, cost ,time);
         this.mitigatedVersion = mitigatedVersion;
     }
 
@@ -65,7 +65,7 @@ public class EntryCve extends CveRule<String> {
     public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
         if (this.mitigatedVersion == null) return Optional.empty();
 
-        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), this.mitigatedVersion), this);
+        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), this.mitigatedVersion), this.cost, this.time, this);
         return Optional.of(adaptation);
     }
 }

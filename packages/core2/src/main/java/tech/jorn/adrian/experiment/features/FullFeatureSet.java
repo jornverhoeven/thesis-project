@@ -16,10 +16,12 @@ import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
+import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.risks.HighestRisk;
+import tech.jorn.adrian.experiment.ExperimentalInfrastructureEffector;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.instruments.ExperimentalEventManager;
 import tech.jorn.adrian.experiment.instruments.ExperimentalRiskDetection;
@@ -48,16 +50,17 @@ public class FullFeatureSet extends FeatureSet {
         var knowledgeBase = new KnowledgeBase();
 
         var probabilityCalculator = new ProductRiskProbability();
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
+        var infrastructureEffector = new ExperimentalInfrastructureEffector(infrastructure);
 
         // Services
         var eventManager = new ExperimentalEventManager(messageQueue, configuration);
         var riskDetection = new ExperimentalRiskDetection(RiskLoader.listRisks(), probabilityCalculator, configuration);
-        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration);
+        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration, agentState, infrastructureEffector);
 
         var messageBroker = new ThreadedBroker(node, neighbours, this.messageDispatcher);
         var auctionManager = new AuctionManager(messageBroker, eventManager, new LowestDamage(100.0f), configuration);
 
-        var agentState = new ValueDispatcher<>(AgentState.Initializing);
 
         List<IController> controllers = List.of(
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),

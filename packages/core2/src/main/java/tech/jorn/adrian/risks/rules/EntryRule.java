@@ -1,4 +1,4 @@
-package tech.jorn.adrian.risks.rules.cves;
+package tech.jorn.adrian.risks.rules;
 
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.graphs.base.VoidNode;
@@ -12,6 +12,8 @@ import tech.jorn.adrian.core.properties.AbstractProperty;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.risks.Risk;
 import tech.jorn.adrian.core.risks.RiskEdge;
+import tech.jorn.adrian.core.risks.RiskRule;
+import tech.jorn.adrian.risks.rules.cves.CveRule;
 import tech.jorn.adrian.risks.validators.PropertyValidator;
 
 import java.util.ArrayList;
@@ -19,23 +21,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class EntryCve extends CveRule<String> {
+public class EntryRule extends RiskRule {
     boolean includeSoftware = false;
     boolean includeNodes = false;
 
-    private final String mitigatedVersion;
+    private final float factor;
 
-    public EntryCve(String cve, String property, PropertyValidator<String> validator, float exploitabilityScore, String mitigatedVersion) {
-        super(cve, property, validator, exploitabilityScore);
-        this.mitigatedVersion = mitigatedVersion;
+    public EntryRule(float factor) {
+        super();
+        this.factor = factor;
     }
 
-    public EntryCve includeSoftware() {
+    public EntryRule includeSoftware() {
         this.includeSoftware = true;
         return this;
     }
 
-    public EntryCve includeNodes() {
+    public EntryRule includeNodes() {
         this.includeNodes = true;
         return this;
     }
@@ -50,22 +52,8 @@ public class EntryCve extends CveRule<String> {
         });
 
         nodes.forEach(node -> {
-            var property = node.getProperty(this.getProperty());
-            if (property.isEmpty()) return;
-
-            var isVulnerable = this.validator.validate((String) property.get());
-            if (!isVulnerable) return;
-
-            var risk = new Risk(this.getCve(), this.getExploitabilityScore() / 10, false, this);
+            var risk = new Risk("entry", this.factor, false, this);
             attackGraph.accept(new RiskEdge(VoidNode.getIncoming(), node, risk));
         });
-    }
-
-    @Override
-    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
-        if (this.mitigatedVersion == null) return Optional.empty();
-
-        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), this.mitigatedVersion), this);
-        return Optional.of(adaptation);
     }
 }

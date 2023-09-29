@@ -14,4 +14,9 @@ public class JoinAuctionRequestEvent extends Event {
     public Auction getAuction() {
         return auction;
     }
+
+    @Override
+    public boolean isImmediate() {
+        return true;
+    }
 }

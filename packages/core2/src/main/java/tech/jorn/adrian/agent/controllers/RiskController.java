@@ -48,10 +48,12 @@ public class RiskController extends AbstractController {
         this.proposalSelector = proposalSelector;
 
         this.agentState.subscribe(state -> {
-            if (state.equals(AgentState.Idle) && this.riskAssessmentTimer == null)
-                this.scheduleRiskAssessment();
-            else if (this.riskAssessmentTimer != null)
+            if (this.riskAssessmentTimer != null) {
                 this.riskAssessmentTimer.cancel();
+                this.riskAssessmentTimer = null;
+            }
+            if (state.equals(AgentState.Idle))
+                this.scheduleRiskAssessment();
         });
 
         this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::identifyRisk);

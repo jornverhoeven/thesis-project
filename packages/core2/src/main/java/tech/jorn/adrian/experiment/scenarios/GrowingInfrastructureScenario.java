@@ -7,6 +7,7 @@ import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class GrowingInfrastructureScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents() {
+    public void onScheduleEvents(List<ExperimentalAgent> agents) {
         var nodeList = new ArrayList<InfrastructureNode>();
         var neighbourList = new HashMap<String, List<String>>();
 
@@ -37,7 +38,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("node-a"));
+            neighbourList.put(node.getID(), List.of("iot-controller"));
         }
         {
             var node = new InfrastructureNode("node-y");
@@ -46,7 +47,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("node-d"));
+            neighbourList.put(node.getID(), List.of("iot-controller"));
         }
         {
             var node = new InfrastructureNode("node-x");
@@ -54,8 +55,9 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasFirewall", false);
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
+            node.setProperty("sdk-google/cloud_iot_device_sdk_for_embedded_c-version", "1.0.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("node-c", "node-a"));
+            neighbourList.put(node.getID(), List.of("node-z", "node-y"));
         }
         {
             var node = new InfrastructureNode("node-w");
@@ -64,7 +66,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("node-b"));
+            neighbourList.put(node.getID(), List.of("router"));
         }
         {
             var node = new InfrastructureNode("node-v");
@@ -73,7 +75,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("node-x"));
+            neighbourList.put(node.getID(), List.of("router", "node-w", "node-x"));
         }
 
         for (var i=1; i <= nodeList.size(); i++) {

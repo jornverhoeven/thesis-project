@@ -20,14 +20,16 @@ public class RiskLoader {
                         .fromSoftwareToNode(),
                 new OsVulnerabilityCve("CVE-2022-35927", "contiki-ng/contiki-ng", new BeforeVersion("4.7"), 3.9f, "4.7"), // https://nvd.nist.gov/vuln/detail/CVE-2022-35927
 
-                new EntryCve("CVE-2022-35927", "os-contiki-ng/contiki-ng-version", new BeforeVersion("4.7"), 3.9f, "4.7")
+                new EntryCve("CVE-2022-35927", "os-contiki-ng/contiki-ng-version", new BeforeVersion("4.7"), 3.9f, 500, 10000, "4.7")
                         .includeNodes(),
-                new EntryCve("CVE-2021-40830", "sdk-amazon/amazon_web_services_iot_device_sdk_v2-version", new BeforeVersion("1.5"), 2.8f, "1.5")
+                new EntryCve("CVE-2021-40830", "sdk-amazon/amazon_web_services_iot_device_sdk_v2-version", new BeforeVersion("1.5"), 2.8f, 500, 5000, "1.5")
                         .includeSoftware(),
 
                 new RuleInfrastructureNodeHasFirewall(),
                 new RuleInfrastructureNodeIsPhysicallySecured(),
-                new RuleSoftwareComponentIsEncrypted()
+                new RuleSoftwareComponentIsEncrypted(),
+                new EntryRule(0.08f)
+
         );
     }
 }

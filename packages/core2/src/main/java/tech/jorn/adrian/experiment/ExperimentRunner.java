@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import tech.jorn.adrian.agent.events.ApplyProposalEvent;
 import tech.jorn.adrian.agent.events.FoundRiskEvent;
 import tech.jorn.adrian.agent.services.BasicRiskDetection;
+import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
@@ -33,7 +34,9 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,7 +62,7 @@ public class ExperimentRunner {
         switch (input) {
             case "risk-introduction": return new IntroduceRiskScenario(infrastructure, messageDispatcher);
             case "growing": return new GrowingInfrastructureScenario(infrastructure, messageDispatcher, agentFactory);
-            case "unstable": return new UnstableInfrastructureScenario(infrastructure, messageDispatcher);
+            case "unstable": return new UnstableInfrastructureScenario(infrastructure, messageDispatcher, agentFactory);
             case "mixed": return new MixedScenario(infrastructure, messageDispatcher);
             case "no-chance":
             default:
@@ -91,12 +94,12 @@ public class ExperimentRunner {
 
         var agentFactory = new AgentFactory(featureSet);
 
-        scenario.scheduleEvents();
 
         log.debug("Creating agents");
         var agents = agentFactory.fromInfrastructure(infrastructure);
+        scenario.scheduleEvents(agents);
 
-        var csv = new HashMap<String, List<Object>>();
+        var csv = new ConcurrentHashMap<String, List<Object>>();
         var task = registerMetricCollection(agents, infrastructure, csv);
         var timer = new Timer();
         timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
@@ -118,7 +121,10 @@ public class ExperimentRunner {
         };
         scenario.onFinished().subscribe(onFinished);
 
-        agents.forEach(IAgent::start);
+        var scheduler = Executors.newFixedThreadPool(4);
+        agents.forEach(a -> {
+            scheduler.submit(a::start);
+        });
 
 
     }
@@ -181,17 +187,41 @@ public class ExperimentRunner {
                     .collect(Collectors.joining(";")));
         });
 
+        writer.printf("auctioning-time-global;%s\n", data.get("auctioning-time-global").stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(";")));
+        writer.printf("migrating-time-global;%s\n", data.get("migrating-time-global").stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(";")));
+
+        agents.forEach(agent -> {
+            var id = agent.getConfiguration().getNodeID();
+            writer.printf("auctioning-time-%s;%s\n", id, data.get("auctioning-time-" + id).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(";")));
+            writer.printf("migrating-time-%s;%s\n", id, data.get("migrating-time-" + id).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(";")));
+        });
+
         writer.close();
     }
 
-    public static TimerTask registerMetricCollection(List<ExperimentalAgent> agents, Infrastructure infrastructure, HashMap<String, List<Object>> csv) {
+    public static TimerTask registerMetricCollection(List<ExperimentalAgent> agents, Infrastructure infrastructure, Map<String, List<Object>> csv) {
         var messageCount = new ConcurrentHashMap<IAgent, AtomicInteger>();
-        var proposalCount = new HashMap<IAgent, AtomicInteger>();
-        var riskCount = new HashMap<IAgent, AtomicInteger>();
-        var riskUnique = new HashMap<String, RiskReport>();
+        var proposalCount = new ConcurrentHashMap<IAgent, AtomicInteger>();
+        var riskCount = new ConcurrentHashMap<IAgent, AtomicInteger>();
+        var riskUnique = new ConcurrentHashMap<String, RiskReport>();
+        var auctioning = new ConcurrentHashMap<IAgent, AtomicLong>();
+        var migrating = new ConcurrentHashMap<IAgent, AtomicLong>();
+        var previousState = new ConcurrentHashMap<IAgent, AgentState>();
+        var startTimes = new ConcurrentHashMap<IAgent, Date>();
 
 //        log.debug("Registering metric events");
         agents.forEach(agent -> {
+            auctioning.values().forEach(v -> v.set(0));
+            migrating.values().forEach(v -> v.set(0));
+
             agent.getMessageBroker().registerMessageHandler(message -> {
                 var count = messageCount.computeIfAbsent(agent, k -> new AtomicInteger());
                 count.incrementAndGet();
@@ -206,6 +236,23 @@ public class ExperimentRunner {
 
                 riskUnique.put(event.getRiskReport().toString(), event.getRiskReport());
             });
+            agent.onStateChange().subscribe(state -> {
+                if (state.equals(AgentState.Idle)) {
+                    var elapsedTime = new Date().getTime() - startTimes.getOrDefault(agent, new Date()).getTime();
+                    if (previousState.get(agent) == null) { }
+                    else if (previousState.get(agent).equals(AgentState.Auctioning)) {
+                        var time = auctioning.computeIfAbsent(agent, k -> new AtomicLong());
+                        time.addAndGet(elapsedTime);
+                    } else if (previousState.get(agent).equals(AgentState.Migrating)) {
+                        var time = migrating.computeIfAbsent(agent, k -> new AtomicLong());
+                        time.addAndGet(elapsedTime);
+                    }
+                    startTimes.remove(agent);
+                }
+                else if (state.equals(AgentState.Auctioning)) startTimes.put(agent, new Date());
+                else if (state.equals(AgentState.Migrating)) startTimes.put(agent, new Date());
+                previousState.put(agent, state);
+            });
         });
 
         csv.put("messages-total", new ArrayList<>());
@@ -215,6 +262,9 @@ public class ExperimentRunner {
         csv.put("riskUnique-total", new ArrayList<>());
         csv.put("riskUnique-global", new ArrayList<>());
         csv.put("riskDamage-global", new ArrayList<>());
+        csv.put("auctioning-time-global", new ArrayList<>());
+        csv.put("migrating-time-global", new ArrayList<>());
+
         agents.forEach(agent -> {
             var id = agent.getConfiguration().getNodeID();
             csv.put("messages-" + id, new ArrayList<>());
@@ -222,6 +272,8 @@ public class ExperimentRunner {
             csv.put("riskCount-" + id, new ArrayList<>());
             csv.put("riskDamage-" + id, new ArrayList<>());
             csv.put("riskDamage-%-" + id, new ArrayList<>());
+            csv.put("auctioning-time-" + id, new ArrayList<>());
+            csv.put("migrating-time-" + id, new ArrayList<>());
 //            csv.put("riskUnique-" + id, new ArrayList<>());
         });
 
@@ -243,6 +295,14 @@ public class ExperimentRunner {
                 });
                 csv.compute("riskUnique-total", (k, list) -> {
                     list.add(riskUnique.size());
+                    return list;
+                });
+                csv.compute("auctioning-time-global", (k, list) -> {
+                    list.add(auctioning.values().stream().mapToInt(AtomicLong::intValue).sum());
+                    return list;
+                });
+                csv.compute("migrating-time-global", (k, list) -> {
+                    list.add(migrating.values().stream().mapToInt(AtomicLong::intValue).sum());
                     return list;
                 });
 
@@ -291,6 +351,15 @@ public class ExperimentRunner {
                     });
                     csv.compute("riskDamage-%-" + id, (k, list) -> {
                         list.add(String.format("%.4f", riskDamage / riskDamageGlobal));
+                        return list;
+                    });
+
+                    csv.compute("auctioning-time-" + id, (k, list) -> {
+                        list.add(auctioning.getOrDefault(agent, new AtomicLong(0)).intValue());
+                        return list;
+                    });
+                    csv.compute("migrating-time-" + id, (k, list) -> {
+                        list.add(migrating.getOrDefault(agent, new AtomicLong(0)).intValue());
                         return list;
                     });
                 });

@@ -7,8 +7,8 @@ import tech.jorn.adrian.core.risks.RiskRule;
 public class SoftwareAttributeChange<N extends AbstractDetailedNode<?>, P extends AbstractProperty<?>> extends Mutation<N> {
     private final P newValue;
 
-    public SoftwareAttributeChange(N node, P newValue, RiskRule riskRule) {
-        super(node, 0f, riskRule);
+    public SoftwareAttributeChange(N node, P newValue, float cost, float time, RiskRule riskRule) {
+        super(node, cost, time, riskRule);
         this.newValue = newValue;
     }
 

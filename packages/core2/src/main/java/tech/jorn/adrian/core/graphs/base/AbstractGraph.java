@@ -4,11 +4,12 @@ import tech.jorn.adrian.core.graphs.traversal.BreathFirstIterator;
 import tech.jorn.adrian.core.graphs.traversal.IGraphSearch;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> implements IGraph<N> {
-    protected final Set<N> nodes = new HashSet<>();
-    protected final Map<N, List<L>> adjacent = new HashMap<>();
+    protected final Set<N> nodes = ConcurrentHashMap.newKeySet();
+    protected final Map<N, List<L>> adjacent = new ConcurrentHashMap<>();
 
     @Override
     public void upsertNode(N node) {
@@ -37,6 +38,13 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
     public void addEdge(N from, N to) {
         var adj = this.adjacent.getOrDefault(from, new ArrayList<>());
         adj.add((L) new GraphLink<>(to));
+        this.adjacent.put(from, adj);
+    }
+
+    @Override
+    public void removeEdge(N from, N to) {
+        var adj = this.adjacent.getOrDefault(from, new ArrayList<>());
+        adj.removeIf(l -> l.getNode().equals(to));
         this.adjacent.put(from, adj);
     }
 

@@ -114,7 +114,7 @@ public class AuctionManager {
     }
 
     public void cancelProposal(Auction auction) {
-        var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(this.configuration.getParentNode(), auction, null, Float.MAX_VALUE));
+        var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(this.configuration.getParentNode(), auction, null, Float.MAX_VALUE, Float.MAX_VALUE));
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
     }
 
@@ -164,8 +164,10 @@ public class AuctionManager {
         this.participants.forEach(node -> {
             if (node.equals(this.configuration.getNodeID())) return;
             // TODO: If no proposal was sent, we might not want to sent this event
-            var event = new EventMessage<>(new AuctionFinalizedEvent(auction, proposal.get()));
-            this.messageBroker.send(node, event);
+            var event = new AuctionFinalizedEvent(auction, proposal.get());
+            var message = new EventMessage<>(event);
+            this.messageBroker.send(node, message);
+            this.eventManager.emit(event);
         });
 
 

@@ -1,6 +1,5 @@
 package tech.jorn.adrian.experiment.features;
 
-import tech.jorn.adrian.agent.AgentConfiguration;
 import tech.jorn.adrian.agent.controllers.KnowledgeController;
 import tech.jorn.adrian.agent.controllers.ProposalController;
 import tech.jorn.adrian.agent.controllers.RiskController;
@@ -14,16 +13,17 @@ import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.messages.Message;
 import tech.jorn.adrian.core.messages.MessageBroker;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.risks.HighestRisk;
-import tech.jorn.adrian.experiment.instruments.ProposalImplementationController;
+import tech.jorn.adrian.experiment.ExperimentalConfiguration;
+import tech.jorn.adrian.experiment.ExperimentalInfrastructureEffector;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.instruments.ExperimentalEventManager;
 import tech.jorn.adrian.experiment.instruments.ExperimentalRiskDetection;
+import tech.jorn.adrian.experiment.instruments.ProposalImplementationController;
 import tech.jorn.adrian.risks.RiskLoader;
 
 import java.util.List;
@@ -34,21 +34,22 @@ public class NoCommunicationFeatureSet extends FeatureSet {
     IAgent getAgent(Infrastructure infrastructure, InfrastructureNode node) {
         var neighbours = this.getNeighboursFromInfrastructure(infrastructure, node);
         var assets = this.getAssetsFromInfrastructure(infrastructure, node);
-        var configuration = new AgentConfiguration(node, neighbours, assets);
+        var configuration = new ExperimentalConfiguration(node, neighbours, assets);
 
         var messageQueue = new InMemoryQueue();
         var knowledgeBase = new KnowledgeBase();
 
         var probabilityCalculator = new ProductRiskProbability();
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
+        var infrastructureEffector = new ExperimentalInfrastructureEffector(infrastructure);
 
         // Services
         var eventManager = new ExperimentalEventManager(messageQueue, configuration);
         var riskDetection = new ExperimentalRiskDetection(RiskLoader.listRisks(), probabilityCalculator, configuration);
-        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration);
+        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration, agentState, infrastructureEffector);
 
         var messageBroker = this.getMessageBroker();
 
-        var agentState = new ValueDispatcher<>(AgentState.Initializing);
 
         List<IController> controllers = List.of(
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),

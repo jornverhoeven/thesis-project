@@ -2,12 +2,13 @@ package tech.jorn.adrian.experiment.scenarios;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tech.jorn.adrian.agent.AdrianAgent;
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.observables.*;
+import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Supplier;
@@ -70,16 +71,16 @@ public abstract class Scenario {
         timer.schedule(task, delay);
     }
 
-    public void scheduleEvents() {
+    public void scheduleEvents(List<ExperimentalAgent> agents) {
         this.log.debug("Scheduling scenario events for {}", this.getClass().getSimpleName());
 
         this.scheduleExecutionTimeout();
-        this.onScheduleEvents();
+        this.onScheduleEvents(agents);
 
         this.log.info("All events are scheduler for {}", this.getClass().getSimpleName());
     }
 
-    public abstract void onScheduleEvents();
+    public abstract void onScheduleEvents(List<ExperimentalAgent> agents);
 
     public SubscribableFlagEvent onFinished() {
         return this.finished.subscribable;

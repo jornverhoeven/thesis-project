@@ -2,7 +2,10 @@ package tech.jorn.adrian.experiment.scenarios;
 
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.observables.EventDispatcher;
+import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
+
+import java.util.List;
 
 public class MixedScenario extends Scenario {
     public MixedScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher) {
@@ -10,7 +13,7 @@ public class MixedScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents() {
+    public void onScheduleEvents(List<ExperimentalAgent> agents) {
 
     }
 }

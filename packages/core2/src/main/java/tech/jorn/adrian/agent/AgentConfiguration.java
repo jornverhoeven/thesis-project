@@ -12,7 +12,6 @@ public class AgentConfiguration implements IAgentConfiguration {
     private final ValueDispatcher<List<String>> neighbours;
     private final ValueDispatcher<List<SoftwareAsset>> assets;
 
-
     public AgentConfiguration(InfrastructureNode parent, List<String> neighbours, List<SoftwareAsset> assets) {
         this.parent = new ValueDispatcher<>(parent);
         this.neighbours = new ValueDispatcher<>(neighbours);
@@ -28,6 +27,7 @@ public class AgentConfiguration implements IAgentConfiguration {
     public List<String> getNeighbours() {
         return this.neighbours.current();
     }
+
     public List<SoftwareAsset> getAssets() {
         return this.assets.current();
     }

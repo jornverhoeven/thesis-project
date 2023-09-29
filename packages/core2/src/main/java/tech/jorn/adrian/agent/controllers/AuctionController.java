@@ -9,6 +9,7 @@ import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.mutations.Migration;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
@@ -27,7 +28,11 @@ public class AuctionController extends AbstractController {
         this.registerEvents();
 
         this.auctionManager.onAuctionChanged().subscribe(auction ->  {
-            if (auction == null) agentState.setCurrent(AgentState.Idle);
+            if (auction == null) {
+                if (agentState.current().equals(AgentState.Auctioning))
+                    agentState.setCurrent(AgentState.Idle);
+                else this.log.warn("Auction stopped but agent was not auctioning");
+            }
             else agentState.setCurrent(AgentState.Auctioning);
         });
     }
@@ -82,8 +87,16 @@ public class AuctionController extends AbstractController {
         // TODO: Remove auction from AuctionManager so we are able to join another auction
         this.auctionManager.reset();
         // If we are not the one on the proposal ignore it
-        if (!event.getProposal().origin().equals(this.configuration.getParentNode())) return;
-        this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));
+        boolean shouldApply = false;
+
+        var proposal = event.getProposal();
+        var mutation = proposal.mutation();
+        if (proposal.origin().equals(this.configuration.getParentNode())) shouldApply = true;
+        if (mutation instanceof Migration<?,?> && ((Migration<?, ?>) mutation).getFrom().getID().equals(this.configuration.getNodeID())) shouldApply = true;
+        if (mutation instanceof Migration<?,?> && ((Migration<?, ?>) mutation).getNode().getID().equals(this.configuration.getNodeID())) shouldApply = true;
+
+        if (shouldApply)
+            this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));
     }
     private void onAuctionCancelled(AuctionCancelledEvent e) {
         this.auctionManager.reset();

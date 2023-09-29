@@ -13,6 +13,7 @@ import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.events.queue.InMemoryQueue;
 import tech.jorn.adrian.core.graphs.base.INode;
+import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
@@ -22,6 +23,7 @@ import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.services.AuctionManager;
 import tech.jorn.adrian.core.messages.Message;
 import tech.jorn.adrian.core.messages.MessageBroker;
+import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
@@ -36,15 +38,22 @@ public class AgentRunner {
         var queue = new InMemoryQueue();
         var eventManager = new EventManager(queue);
         var messageBroker = new InMemoryBroker();
+        var agentState = new ValueDispatcher<>(AgentState.Initializing);
+
+        var infrastructureEffector = new InfrastructureEffector() {
+            @Override
+            public void updateInfra(Consumer<Infrastructure> fn) {
+                // Void
+            }
+        };
 
         var knowledgeBase = new KnowledgeBase();
         var riskDetection = new BasicRiskDetection(List.of(), new ProductRiskProbability(), configuration);
-        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(2.0f), configuration);
+        var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(2.0f), configuration, agentState, infrastructureEffector);
 
         KnowledgeBaseNode parent = KnowledgeBaseNode.fromNode(configuration.getParentNode(), KnowledgeOrigin.DIRECT);
         knowledgeBase.upsertNode(parent);
 
-        var agentState = new ValueDispatcher<>(AgentState.Initializing);
         List<IController> controllers = Arrays.asList(
                 new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, agentState.subscribable),
                 new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration, agentState),
