@@ -92,7 +92,6 @@ The infrastructure that is used in the experiments is based on the infrastructur
     \label{fig:infrastructure}
 \end{figure}
 
-\add{Maybe explain the infrastructure in more detail}
 The infrastructure in figure \ref{fig:infrastructure} tries to mimic a smart-home environment, with a set of IoT-devices such as the alarm system, door lock, and motion sensor. Each of these devices run a specific software asset which is depicted by the smaller circles next to them. Next to the IoT-devices several 'common' devices are present, such as a printer, desktop, and router. The heart of the smart-home is the IoT Controller, which is responsible for managing the other devices through the Controller Software. The Software assets marked with a red border are critical assets, which means that compromising these assets could have a significant impact. For example a compromised door lock could allow an attacker to enter the house. The Cloud Software on the left of figure \ref{fig:infrastructure} is designed to have multiple entry points into the private network. This is done to mimic a real-world scenario where the cloud software is hosted on a cloud provider, and is accessible through the internet. One example would be the usage of a cloud based printer provider that allows users to print documents from outside of the network.
 
 
@@ -111,7 +110,7 @@ The metrics we've defined can be categorized by effectiveness and efficiency. Ef
         Weighted sum of damages of remaining risk & Time spent auctioning  \\
                                           & Time spent adapting            \\
     \end{tabular}
-    \caption{\label{table:metrics-groups}Overview of the metrics that are measured, grouped by their category.}
+    \caption{\label{table:metrics-groups}Overview of the metrics that are measured, grouped by either effectiveness or efficiency.}
 \end{table}
 
 
@@ -147,7 +146,7 @@ There is a limit to the speed-up that can be achieved in the simulation as the p
 Places where these delays are implemented are for example the delivery of network-messages and the execution of adaptations. 
 
 \label{sssec:knowledge-depth}
-In the ADRIAN concept document by Mann and Smolka \cite{mann2023ADRIAN}, the concept of knowledge sharing depth/distance is mentioned.  This means that we can control how far agents are able to share their knowledge. This is done by setting a maximum distance between agents. This distance is defined as the number of hops between agents. This means that if the distance is set to 1, agents are only able to share knowledge with their direct neighbors. If the distance is set to 2, agents are able to share knowledge with their direct neighbors and the neighbors of their neighbors. This allows us to test the effect of knowledge sharing on the results of the experiments. During the experimentation it is set to 1, and is not changed throughout the experiments.
+In the ADRIAN concept document by Mann and Smolka \cite{mann2023ADRIAN}, the concept of knowledge sharing depth/distance is mentioned.  This means that we can control how far agents are able to share their knowledge. This is done by setting a maximum distance between agents. This distance is defined as the number of hops a message can be sent between agents. This means that if the distance is set to 1, agents are only able to share knowledge with their direct neighbors. If the distance is set to 2, agents are able to share knowledge with their direct neighbors and the neighbors of their neighbors. During the experimentation it is set to 1, and is not changed throughout the experiments, more on this in Section \ref{sec:future-research}.
 
 \label{sssec:risk-rules}
 As explained in Section \ref{ssec:adrian}, risk rules are used to identify risks and their probabilities in the infrastructure. These risk rules are what define attack graphs. In the experiments we use the same set of risk rules for each experiment. This means that each experiment is able to identify the same risks.

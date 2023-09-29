@@ -72,29 +72,58 @@ In the real world the infrastructure is a graph structure, something that it \co
     \label{fig:uml-graphs}
 \end{figure}
 
+\subsubsection{Services}
+\label{sssec:services}
+Each controller is only responsible for converting events into service calls. But to implement the actual logic, the controllers use services. These services are responsible for the actual computations, such as calculating the \code{AttackGraphs} or finding \code{Proposal}s. Figure \ref{fig:uml-services} shows how the services are tied together.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{_content/uml-services}
+    \includegraphics[width=1.0\textwidth]{_content/uml-services}
     \caption{UML Diagram depicting how the Agents services are tied together.}
     \label{fig:uml-services}
 \end{figure}
 
-\subsection{Sequence Diagrams}
-\label{ssec:sequence-diagrams}
-\add{Update text or remove section}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{_content/knowledge-sharing}
-    \caption{Knowledge Exchange Sequence Diagram}
-    \label{fig:knowledge-sharing}
-\end{figure}
+\begin{description}
+    \item[RiskDetection] This service is responsible for detecting risks in the infrastructure. It does this by calculating the attack graph for each node in the infrastructure. With the attack graph it can then identify \textit{Critical Paths} by finding paths from nodes to a \textit{critical software component}. These \textit{Critical Paths} are then used to calculate the risk damage value. We calculate the risk damage by taking the potential damage value of a software component, and multiplying it by the probability of the path. The probability is calculated over all edges between nodes, that are in the same direction of the critical path. 
+    \begin{figure}[H]
+        \centering
+        \begin{subfigure}[b]{0.4\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{_content/attack-graph.png}
+            \caption{Attack graph between nodes and software components}
+            \label{fig:attack-graph}
+        \end{subfigure}
+        \hspace{0.5cm}
+        \centering
+        \begin{subfigure}[b]{0.4\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{_content/riskreport-future-research-a.png}
+            \caption{Risk report for a critical path}
+            \label{fig:risk-report}
+        \end{subfigure}
+        \caption{On the left is the graph representation of an attack graph, where each edge is a risk that is hold a probability of an attacker exploiting it. The graph is directional, and can hold edges in multiple directions. On the right is the graph representation of a risk report. The risk report is also directional, but only contains the edges that are in the same \textit{direction} as the critical path. Both graphs can have incoming edges to indicate that a node could be the starting point of an attack.}
+    \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{_content/auction}
-    \caption{Auction Sequence Diagram}
-    \label{fig:auction}
-\end{figure}
+    \item[ProposalService] This service is responsible for calculating proposals that the node is willing to apply. It does this by taking the risk report from an auction, and applying different adaptations to it. For example an adaptation could be to update properties of a node or software, or migrate a software component to another node. The service then calculates the risk damage value for each adaptation, and returns the adaptation with the lowest risk damage value. This adaptation is then used as a bid in the auction, for the auctioneer to consider. 
+    
+    \item[AuctionManager] This service is responsible for starting and managing the state of an auction. When it starts a new auction, it will sent invitations to other agents and waits for their replies (accept or reject). It will also keep track of the current state of the auction, and waits for proposals to be submitted. When a proposal is submitted, it will check if all participating nodes replied. If this is the case, it will calculate the risk damage value for each proposal, and select the proposal with the lowest risk damage value. This proposal is then broadcasted to all participating nodes, and the auction is finished. The manager will then wait for the next auction to start. There might also be cases where participating nodes fail to sent proposals. For these cases the \code{AuctionManager} has a timeout that starts when an auction starts. If the timeout is reached, the manager will finish the auction at that point, and select the proposal with the lowest risk damage value. If no applicable proposals were received, the auction is cancelled and nothing is done.
+\end{description}
 
-\addtocontents{toc}{\protect\setcounter{tocdepth}{3}}
+% \subsection{Sequence Diagrams}
+% \label{ssec:sequence-diagrams}
+% \add{Update text or remove section}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{_content/knowledge-sharing}
+%     \caption{Knowledge Exchange Sequence Diagram}
+%     \label{fig:knowledge-sharing}
+% \end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{_content/auction}
+%     \caption{Auction Sequence Diagram}
+%     \label{fig:auction}
+% \end{figure}
+
+% \addtocontents{toc}{\protect\setcounter{tocdepth}{3}}
