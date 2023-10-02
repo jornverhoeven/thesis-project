@@ -1,0 +1,68 @@
+\subsection{Scenario 1: No Changes}
+\textit{In this scenario, no external changes are made to the infrastructure. The purpose of this scenario is to see how the system behaves when no changes are made.}
+
+To introduce the graphs and what they mean, this subsection will go through the graphs in a bit more detail than in the subsections afterwards. 
+
+\begin{figure}[H]
+    \centering
+    \input{graphs/overall-damage-no-change}
+    \caption{This graph shows the overall damage of the system in the scenario where no changes are made overtime.}
+    \label{fig:overall-damage-no-change}
+\end{figure}
+
+From figure \ref{fig:overall-damage-no-change} we see that the agent with the Local-feature set (from here-on \textit{local-agent}) slowly reduces the overall damage of the network, but is unable to get any lower than around $4.000$, and stays at this value after roughly the first $150$ seconds.
+After roughly the first $100$ seconds, both the auctioning and knowledge-sharing agents are able to almost reach zero. The lowest value is for the knowledge-sharing agent at  $5\%$ ($215$ damage total) of the damage the local-agent.
+
+\begin{figure}[H]
+    \centering
+    \input{graphs/messages-no-change}
+    \caption{Graph showing the total amount of messages sent between agents in the scenario where no changes are made overtime.}
+    \label{fig:messages-no-change}
+\end{figure}
+
+In figure \ref{fig:messages-no-change} we can see that the local-agent shares no messages, as this feature-set does not allow for it. The auctioning agent sends the most messages, almost three times as much as the knowledge-sharing agents. This can be explained by the fact that the auctioning agents have a total of $11$ events that can be sent to other agents, compared to the knowledge-sharing agent, which has only $4$ types of messages. This $4 / 11$ ratio is roughly the same as the ratio between the amount of messages sent by the auctioning and knowledge-sharing agents. However, this could be a coincidence, and more research would be needed for this assumption. During an auction participating nodes send on average $4$ messages per participating node, which could also explain the difference in messages sent. 
+
+\begin{figure}[H]
+    \centering
+    \input{graphs/proposals-no-change}
+    \caption{Graph showing the total amount of adaptations applied by agents in the scenario where no changes are made overtime.}
+    \label{fig:proposals-no-change}
+\end{figure}
+
+From figure \ref{fig:proposals-no-change} we can see that auctioning and knowledge-sharing agent both roughly have the same amount of adaptations applied. The local-agent is only able to apply a handful of adaptations.
+
+\begin{figure}[H]
+    \centering
+        \input{graphs/risk-count-no-change}
+    \caption{Graph showing the number of unique risks detected by agents in the scenario where no changes are made overtime.}
+    \label{fig:risk-count-no-change}
+\end{figure}
+
+Figure \ref{fig:risk-count-no-change} shows that the auctioning-agent detects the most risks, followed by the knowledge-sharing agent with only $30\%$ of the risks found. The local-agent detects the least amount of risks at only $10\%$ compared to the auctioning agent. It is to be expected that the local-agents can only detect a fraction of what the other agents detect, as the risks that can be deduced from only their local knowledge is limited.
+
+\begin{figure}[H]
+    \centering
+        \input{graphs/risk-remaining-no-change}
+    \caption{Graph showing the number of remaining risks in the infrastructure in the scenario where no changes are made overtime.}
+    \label{fig:risk-remaining-no-change}
+\end{figure}
+
+When comparing figure \ref{fig:overall-damage-no-change} to figure \ref{fig:risk-remaining-no-change}, we see that the graphs are following the same trend. This is to be expected, as the overall damage is calculated by summing the damage of all the remaining risks.
+
+\begin{figure}[H]
+    \centering
+        \input{graphs/auctioning-time-no-change}
+    \caption{Graph showing the sum of time spent auctioning by agents in the scenario where no changes are made overtime.}
+    \label{fig:auctioning-time-no-change}
+\end{figure}
+
+Figure \ref{fig:auctioning-time-no-change} shows that the auctioning agents is the only agent that spends time auctioning. This is to be expected, as the auctioning agents are the only agents that can auction.
+
+\begin{figure}[H]
+    \centering
+        \input{graphs/adapting-time-no-change}
+    \caption{Graph showing the sum of time spent adapting by agents in the scenario where no changes are made overtime.}
+    \label{fig:adapting-time-no-change}
+\end{figure}
+
+Figure \ref{fig:adapting-time-no-change} shows that the auctioning and knowledge-sharing agents spend roughly the same amount of time adapting in the early phases of the scenario. This is inline with the amount of adaptations applied. After roughly $100$ seconds, the knowledge-sharing agent applies one last adaptation to update the OS-version, which takes $10$ seconds in our simulation time. After this, the knowledge-sharing agent does not apply any more adaptations.

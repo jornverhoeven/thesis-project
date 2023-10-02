@@ -22,6 +22,8 @@ function main() {
         writeToTexFile("auctioning-time", scenario, createTimeSpentAuctioning(scenario));
         writeToTexFile("adapting-time", scenario, createTimeSpentAdapting(scenario));
     });
+    writeToTexFile("multi-run", "no-change", createMultiRun());
+    writeToTexFile("small-infra", "no-change", createSmallInfra());
 }
 
 main();
@@ -50,10 +52,52 @@ function createTimeSpentAdapting(scenario) {
     const metric = 'migrating-time-global';
     return createForMetric(scenario, metric, true)(`Time spent adapting`, "Time [ms]");
 }
-
 function createRemainingRisks(scenario) {
     const metric = 'riskCount-global';
     return createForMetric(scenario, metric, true)(`Remaining Risks`, "Risks");
+}
+function createMultiRun() {
+    const raw = [1,2,3,4,5].map(i => loadCSV(`./output/multi-run/${i}/metrics.csv`));
+    const metric = 'riskDamage-global'
+    const limits = getLimits(
+        raw[0].timestamps, 
+        [].concat(raw[0][metric], raw[1][metric], raw[2][metric], raw[3][metric], raw[4][metric]));
+    const average = raw[0][metric].map((_, index) => {
+        const values = raw.map(r => parseFloat(r[metric][index]));
+        return values.reduce((acc, v) => acc + v, 0) / values.length;
+    });
+    const events = getEvents(scenarios.noChange);
+    const data = [
+        {
+            label: "Run 1",
+            data: zipTimestamps(raw[0].timestamps, raw[0][metric]),
+        },
+        {
+            label: "Run 2",
+            data: zipTimestamps(raw[1].timestamps, raw[1][metric]),
+        },
+        {
+            label: "Run 3",
+            data: zipTimestamps(raw[2].timestamps, raw[2][metric]),
+        },
+        {
+            label: "Run 4",
+            data: zipTimestamps(raw[3].timestamps, raw[3][metric]),
+        },
+        {
+            label: "Run 5",
+            data: zipTimestamps(raw[4].timestamps, raw[4][metric]),
+        },
+        {
+            label: "Average",
+            data: zipTimestamps(raw[0].timestamps, average),
+        }
+    ];
+    return pgfPlotTemplate("Total infrastructure damage", "Damage Total", data, limits, events, false);
+}
+function createSmallInfra() {
+    const metric = 'riskCount-global';
+    return createForMetric("small", metric, true)(`Remaining Risks`, "Risks");
 }
 function createForMetric(scenario, metric, noLegend = false) {
     const full = loadCSV(`./output/${scenario}/${featureSet.full}/metrics.csv`);
@@ -168,5 +212,6 @@ function getEvents(scenario) {
             return [30000, 60000, 90000, 120000, 150000];
         case scenarios.unstable:
             return [30000, 60000, 90000, 120000];
+        default: return [];
     }
 }

@@ -1,162 +1,23 @@
 \section{Results}
 \label{sec:results}
-In this section we present the results of the experiments defined in section \ref{sec:experiments}. The results will be grouped per scenario. We start by presenting overall damage of the system in each of the scenarios, as it is the key indicator of the performance of the system. We then present the other metrics that we defined in section \ref{ssec:metrics}.
+In this section we present the results of the experiments defined in section \ref{sec:experiments}. The results will be grouped per scenario. We start by a short summary of each scenario, followed by presenting the overall damage of the system in each of the scenarios, as it is the key indicator of the performance of the system. We then present the other metrics that we defined in section \ref{ssec:metrics}.
 
-\subsection{Scenario 1: No Changes}
-
-\begin{figure}[H]
-    \centering
-    \input{graphs/overall-damage-no-change}
-    \caption{This graph shows the overall damage of the system in the scenario where no changes are made overtime.}
-    \label{fig:overall-damage-no-change}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/messages-no-change}
-    \caption{Graph showing the total amount of messages sent between agents in the scenario where no changes are made overtime.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/proposals-no-change}
-    \caption{Graph showing the total amount of adaptations applied by agents in the scenario where no changes are made overtime.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-count-no-change}
-    \caption{Graph showing the number of unique risks detected by agents in the scenario where no changes are made overtime.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-remaining-no-change}
-    \caption{Graph showing the number of remaining risks in the infrastructure in the scenario where no changes are made overtime.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/auctioning-time-no-change}
-    \caption{Graph showing the sum of time spent auctioning by agents in the scenario where no changes are made overtime.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/adapting-time-no-change}
-    \caption{Graph showing the sum of time spent adapting by agents in the scenario where no changes are made overtime.}
-\end{figure}
+\input{sections/_results/scenario-1}
+\input{sections/_results/scenario-2}
+\input{sections/_results/scenario-3}
+\input{sections/_results/scenario-4}
 
 
-\subsection{Scenario 2: Risk Introduction}
+\subsection*{Consecutive runs}
 \begin{figure}[H]
     \centering
-    \input{graphs/overall-damage-risk-introduction}
-    \caption{This graph shows the overall damage of the system in the risk introduction scenario. The damage is shown for each of the three strategies. The vertical lines indicate the time at which a risk is introduced.}
-    \label{fig:overall-damage-inroduce-risk}
+        \input{graphs/multi-run-no-change}
+    \caption{Graph showing the Auctioning Feature's performance over multiple runs in the no-change scenario.}
 \end{figure}
 
+\subsection*{Small Infrastructure}
 \begin{figure}[H]
     \centering
-    \input{graphs/messages-risk-introduction}
-    \caption{Graph showing the total amount of messages sent between agents in the risk introduction scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/proposals-risk-introduction}
-    \caption{Graph showing the total amount of adaptations applied by agents in the risk introduction scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-count-risk-introduction}
-    \caption{Graph showing the number of unique risks detected by agents in the risk introduction scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-remaining-risk-introduction}
-    \caption{Graph showing the number of remaining risks in the infrastructure in the risk introduction scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/auctioning-time-risk-introduction}
-    \caption{Graph showing the sum of time spent auctioning by agents in the risk introduction scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/adapting-time-risk-introduction}
-    \caption{Graph showing the sum of time spent adapting by agents in the risk introduction scenario.}
-\end{figure}
-
-\subsection{Scenario 3: Growing Infrastructure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/overall-damage-growing}
-    \caption{This graph shows the overall damage of the system in the growing scenario. The damage is shown for each of the three strategies. The vertical lines indicate the time at which a node is introduced.}
-    \label{fig:overall-damage-growing}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \input{graphs/messages-growing}
-    \caption{Graph showing the total amount of messages sent between agents in the growing infrastructure scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/proposals-growing}
-    \caption{Graph showing the total amount of adaptations applied by agents in the growing scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-count-growing}
-    \caption{Graph showing the number of unique risks detected by agents in the growing scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-remaining-growing}
-    \caption{Graph showing the number of remaining risks in the infrastructure in the growing scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/auctioning-time-growing}
-    \caption{Graph showing the sum of time spent auctioning by agents in the growing scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/adapting-time-growing}
-    \caption{Graph showing the sum of time spent adapting by agents in the growing scenario.}
-\end{figure}
-
-\subsection{Scenario 4: Unstable Infrastructure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/overall-damage-unstable}
-    \caption{This graph shows the overall damage of the system in the unstable scenario. The damage is shown for each of the three strategies. The vertical lines indicate the time at which a node was removed and added again.}
-    \label{fig:overall-damage-unstable}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \input{graphs/messages-unstable}
-    \caption{Graph showing the total amount of messages sent between agents in the unstable scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \input{graphs/proposals-unstable}
-    \caption{Graph showing the total amount of adaptations applied by agents in the unstable scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-count-unstable}
-    \caption{Graph showing the number of unique risks detected by agents in the unstable scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/risk-remaining-unstable}
-    \caption{Graph showing the number of remaining risks in the infrastructure in the unstable scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/auctioning-time-unstable}
-    \caption{Graph showing the sum of time spent auctioning by agents in the unstable scenario.}
-\end{figure}
-\begin{figure}[H]
-    \centering
-        \input{graphs/adapting-time-unstable}
-    \caption{Graph showing the sum of time spent adapting by agents in the unstable scenario.}
+        \input{graphs/small-infra-no-change}
+    \caption{Graph showing the output of all feature sets in the non-changing scenario, with a small infrastructure.}
 \end{figure}
