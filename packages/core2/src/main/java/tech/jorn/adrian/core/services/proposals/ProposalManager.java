@@ -27,6 +27,7 @@ import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.RiskDetection;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
+import tech.jorn.adrian.risks.rules.PropertyBasedRule;
 import tech.jorn.adrian.risks.rules.RuleInfrastructureNodeHasFirewall;
 import tech.jorn.adrian.risks.rules.RuleInfrastructureNodeIsPhysicallySecured;
 import tech.jorn.adrian.risks.rules.cves.CveRule;
@@ -48,7 +49,9 @@ public class ProposalManager {
     private final ValueDispatcher<AgentState> agentState;
     private final InfrastructureEffector infrastructureEffector;
 
-    public ProposalManager(KnowledgeBase knowledgeBase, RiskDetection riskDetection, IProposalSelector proposalSelector, IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState, InfrastructureEffector infrastructureEffector) {
+    public ProposalManager(KnowledgeBase knowledgeBase, RiskDetection riskDetection, IProposalSelector proposalSelector,
+            IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState,
+            InfrastructureEffector infrastructureEffector) {
         this.knowledgeBase = knowledgeBase;
         this.riskDetection = riskDetection;
         this.proposalSelector = proposalSelector;
@@ -56,7 +59,8 @@ public class ProposalManager {
         this.agentState = agentState;
         this.infrastructureEffector = infrastructureEffector;
 
-        this.log = LogManager.getLogger(String.format("[%s] %s", this.configuration.getNodeID(), ProposalManager.class.getSimpleName()));
+        this.log = LogManager.getLogger(
+                String.format("[%s] %s", this.configuration.getNodeID(), ProposalManager.class.getSimpleName()));
     }
 
     public List<AuctionProposal> findProposals(Auction auction) {
@@ -85,14 +89,16 @@ public class ProposalManager {
                     knowledgeNext = knowledgeBase.findById(next.getID())
                             .orElse(next instanceof AttackGraphNode
                                     ? KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) next)
-                                    : KnowledgeBaseSoftwareAsset.fromNode((AbstractDetailedNode<SoftwareProperty<?>>) next));
+                                    : KnowledgeBaseSoftwareAsset
+                                            .fromNode((AbstractDetailedNode<SoftwareProperty<?>>) next));
                     knowledgeBase.upsertNode(knowledgeNext);
                     updated = true;
                 } else {
                     knowledgeNext = knowledgeBase.findById(next.getID()).get();
                 }
             }
-            if (updated) knowledgeBase.addEdge(knowledgeNode, knowledgeNext);
+            if (updated)
+                knowledgeBase.addEdge(knowledgeNode, knowledgeNext);
         }
 
         // Figure out all possible mutations
@@ -100,10 +106,12 @@ public class ProposalManager {
         var proposals = new ArrayList<AuctionProposal>();
         mutations.forEach(mutation -> {
             var proposal = this.evaluateMutation(mutation, auction);
-            if (proposal == null) return;
+            if (proposal == null)
+                return;
             proposals.add(proposal);
-            this.log.info("New probability {} compared to old probability {} for {}", proposal.probability(), riskReport.probability(), mutation.toString());
-            this.log.info("New damage {} compared to old damage {}", riskReport.damageValue(), riskReport.damage());
+            this.log.debug("New probability {} compared to old probability {} for {}", proposal.probability(),
+                    riskReport.probability(), mutation.toString());
+            this.log.debug("New damage {} compared to old damage {}", proposal.newDamage(), riskReport.damage());
         });
 
         return proposals;
@@ -116,7 +124,8 @@ public class ProposalManager {
         if (mutation instanceof Migration<?, ?>)
             return this.evaluateMigration((Migration<?, ?>) mutation, auction, clonedKnowledgeBase);
         else if (mutation instanceof AttributeChange<?, ?>)
-            return this.evaluateAttributeChange((AttributeChange<AbstractDetailedNode<?>, ?>) mutation, auction, clonedKnowledgeBase);
+            return this.evaluateAttributeChange((AttributeChange<AbstractDetailedNode<?>, ?>) mutation, auction,
+                    clonedKnowledgeBase);
         return null;
     }
 
@@ -144,7 +153,8 @@ public class ProposalManager {
 
         // Calculate the new critical path
         List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
-        var sliceStart = riskReport.path().indexOf(riskReport.path().stream().filter(n -> target.get().getID().equals(n.getID())).findFirst().get());
+        var sliceStart = riskReport.path().indexOf(
+                riskReport.path().stream().filter(n -> target.get().getID().equals(n.getID())).findFirst().get());
         for (var i = 0; i <= sliceStart; i++) {
             var n = riskReport.path().get(i);
             var attackNode = attackGraph.findById(n.getID());
@@ -159,11 +169,11 @@ public class ProposalManager {
                 auction,
                 migration,
                 newDamage,
-                probability
-        );
+                probability);
     }
 
-    private AuctionProposal evaluateAttributeChange(AttributeChange<AbstractDetailedNode<?>, ?> attributeChange, Auction auction, KnowledgeBase knowledgeBase) {
+    private AuctionProposal evaluateAttributeChange(AttributeChange<AbstractDetailedNode<?>, ?> attributeChange,
+            Auction auction, KnowledgeBase knowledgeBase) {
         var riskReport = auction.getRiskReport();
         // Apply the attribute change
         var nodeToMutate = knowledgeBase.findById(attributeChange.getNode().getID()).get();
@@ -177,14 +187,16 @@ public class ProposalManager {
                     .map(AttackGraphLink::getRisk).toList();
 
             riskEdges.forEach(edge -> {
-                var hasBeenMutated = attributeChange.getRiskRule() == null && edge.getRisk().rule().getClass().equals(attributeChange.getRiskRule().getClass());
+                var hasBeenMutated = attributeChange.getRiskRule() == null
+                        && edge.getRisk().rule().getClass().equals(attributeChange.getRiskRule().getClass());
                 if (hasBeenMutated) {
                     this.log.debug("Risk {} was just updated so we will not add it again", edge.getRisk().type());
                     return;
                 }
 
                 var exists = existingEdges.stream().filter(link -> link.type().equals(edge.getRisk().type())).findAny();
-                if (exists.isEmpty()) attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
+                if (exists.isEmpty())
+                    attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
             });
         });
         List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
@@ -192,7 +204,8 @@ public class ProposalManager {
         riskReport.path().forEach(node -> {
             var attackNode = attackGraph.findById(node.getID());
             attackNode.ifPresent(attackGraphPath::add);
-            if (attackNode.isEmpty()) this.log.warn("Node not found in attack graph {}", node.getID());
+            if (attackNode.isEmpty())
+                this.log.warn("Node not found in attack graph {}", node.getID());
         });
         var probability = attackGraph.getProbabilityForPath(attackGraphPath, new ProductRiskProbability());
         var newDamage = riskReport.damageValue() * probability;
@@ -201,15 +214,15 @@ public class ProposalManager {
                 auction,
                 attributeChange,
                 newDamage,
-                probability
-        );
+                probability);
     }
 
-    public Optional<AuctionProposal> selectProposal(List<AuctionProposal> proposals) {
-        return this.proposalSelector.select(proposals);
+    public Optional<AuctionProposal> selectProposal(List<AuctionProposal> proposals, Auction auction) {
+        return this.proposalSelector.select(proposals, auction.getRiskReport().damageValue() - 0.1f);
     }
 
-    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> List<Mutation<N>> generateMutations(KnowledgeBase knowledgeBase, RiskReport riskReport) {
+    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> List<Mutation<N>> generateMutations(
+            KnowledgeBase knowledgeBase, RiskReport riskReport) {
 
         List<Mutation<N>> mutations = new java.util.ArrayList<>(List.of());
         var node = (N) knowledgeBase.findById(this.configuration.getNodeID()).get();
@@ -222,11 +235,13 @@ public class ProposalManager {
         return mutations;
     }
 
-    private <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> List<Mutation<N>> getMutators(RiskReport riskReport, N node) {
+    private <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> List<Mutation<N>> getMutators(
+            RiskReport riskReport, N node) {
         var mutations = new ArrayList<Mutation<N>>();
 
         var attackGraph = riskReport.graph();
-        var criticalAsset = (AbstractDetailedNode<SoftwareProperty<?>>) riskReport.path().get(riskReport.path().size() - 1);
+        var criticalAsset = (AbstractDetailedNode<SoftwareProperty<?>>) riskReport.path()
+                .get(riskReport.path().size() - 1);
         var n = attackGraph.findById(node.getID());
         if (n.isPresent()) {
             var risks = riskReport.graph().getNeighboursWithRisks(n.get())
@@ -234,17 +249,23 @@ public class ProposalManager {
                     .collect(Collectors.toList());
             risks.addAll(riskReport.graph().getIncoming().stream().map(AttackGraphLink::getRisk).toList());
             risks.forEach(risk -> {
-                if (!(risk.rule() instanceof CveRule<?>)) return;
-                var adaptation = ((CveRule<?>) risk.rule()).getAdaptation(node);
-                adaptation.ifPresent(mutations::add);
+                if (risk.rule() instanceof CveRule<?> cve) {
+                    var adaptation = cve.getAdaptation(node);
+                    adaptation.ifPresent(mutations::add);
+                } else if (risk.rule() instanceof PropertyBasedRule rule) {
+                    var adaptation = rule.getAdaptation(node);
+                    adaptation.ifPresent(mutations::add);
+                }
             });
 
             this.configuration.getAssets().forEach(asset -> {
                 var s = attackGraph.findById(asset.getID());
-                if (s.isEmpty()) return;
+                if (s.isEmpty())
+                    return;
 
                 risks.forEach(risk -> {
-                    if (!(risk.rule() instanceof CveRule<?>)) return;
+                    if (!(risk.rule() instanceof CveRule<?>))
+                        return;
                     var adaptation = ((CveRule<?>) risk.rule()).getAdaptation((N) s.get());
                     adaptation.ifPresent(mutations::add);
                 });
@@ -252,8 +273,6 @@ public class ProposalManager {
         }
 
         if (node instanceof KnowledgeBaseNode) {
-            mutations.add(new AttributeChange<>(node, new NodeProperty<>("hasFirewall", true), 100, 1000, new RuleInfrastructureNodeHasFirewall()));
-            mutations.add(new AttributeChange<>(node, new NodeProperty<>("isPhysicallySecured", true),100, 1000, new RuleInfrastructureNodeIsPhysicallySecured()));
 
             if (this.configuration.canMigrate() && riskReport.path().size() > 2) {
                 var host = (N) riskReport.path().get(riskReport.path().size() - 2);
@@ -282,8 +301,6 @@ public class ProposalManager {
         }
 
         if (mutation instanceof Migration<?, ?> migration) {
-
-
             if (migration.getFrom().getID().equals(node.getID())) {
 
                 this.log.info("Migrating software {} : Removing from {}", migration.getAsset().getID(), node.getID());
@@ -322,9 +339,28 @@ public class ProposalManager {
         } else {
             proposal.mutation().apply(node);
             this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
+            infrastructureEffector.updateInfra(infra -> {
+                var _node = infra.findById(this.configuration.getNodeID()).get();
+                proposal.mutation().apply(_node);
+                infra.upsertNode(_node);
+            });
         }
 
         this.log.debug("Done applying proposal");
+        if (mutation instanceof Migration<?, ?> migration)
+            this.log.debug("Software {} is now on {}", migration.getAsset().getID(), migration.getNode().getID());
+        else if (mutation instanceof AttributeChange<?, ?> attributeChange) {
+            this.configuration.getParentNode().getProperty(attributeChange.getNewValue().getName())
+                    .ifPresent(property -> {
+                        this.log.debug("Property {} is now {}", attributeChange.getNewValue().getName(), property);
+                    });
+            this.knowledgeBase.findById(this.configuration.getNodeID()).ifPresent(_node -> {
+                _node.getProperty(attributeChange.getNewValue().getName()).ifPresent(property -> {
+                    this.log.debug("Knowledge property {} is now {}", attributeChange.getNewValue().getName(),
+                            property);
+                });
+            });
+        }
         this.agentState.setCurrent(AgentState.Idle);
     }
 }
@@ -333,4 +369,3 @@ public class ProposalManager {
 interface IMutationFunction<N extends AbstractDetailedNode<?>> {
     Mutation<N> mutate(N node);
 }
-

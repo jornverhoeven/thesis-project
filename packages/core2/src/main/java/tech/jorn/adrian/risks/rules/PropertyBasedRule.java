@@ -1,9 +1,12 @@
 package tech.jorn.adrian.risks.rules;
 
+import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.mutations.AttributeChange;
+import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.properties.AbstractProperty;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.risks.Risk;
@@ -22,11 +25,11 @@ public abstract class PropertyBasedRule extends RiskRule {
     private final float mitigatedFactor;
     private final float unmitigatedFactor;
 
-    protected PropertyBasedRule(String property, String ruleId, float mitigatedFactor, float unmitigatedFactor) {
+    protected PropertyBasedRule(String property, String ruleId, float unmitigatedFactor, float mitigatedFactor) {
         this.property = property;
         this.ruleId = ruleId;
-        this.mitigatedFactor = mitigatedFactor;
         this.unmitigatedFactor = unmitigatedFactor;
+        this.mitigatedFactor = mitigatedFactor;
     }
 
     @Override
@@ -82,5 +85,13 @@ public abstract class PropertyBasedRule extends RiskRule {
         return property
                 .map(p -> (Boolean) p)
                 .orElse(Boolean.FALSE);
+    }
+
+    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
+        System.out.println("Checking mitigation for " + node.getID() + " with property " + this.getProperty() + " and value " + node.getProperty(this.getProperty()) + " mitigated " +this.isMitigated(node.getProperty(this.getProperty())));
+        if (this.isMitigated(node.getProperty(this.getProperty()))) return Optional.empty();
+
+        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), true), 100, 1000, this);
+        return Optional.of(adaptation);
     }
 }

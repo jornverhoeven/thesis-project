@@ -27,12 +27,13 @@ public class UnstableInfrastructureScenario extends Scenario {
     public void onScheduleEvents(List<ExperimentalAgent> agents) {
 
         after(30 * 1000, () -> {
-            var agent = agents.get(2);
-            var node = infrastructure.findById("node-c");
+            var nodeId = "soc-temperature";
+            var agent = agents.stream().filter(a -> a.getConfiguration().getNodeID().equals(nodeId)).findFirst().get();
+            var node = infrastructure.findById(nodeId);
             this.log.info("Removing node {} from infrastructure", node.get().getID());
             var links = infrastructure.getLinks(node.get());
-            agents.remove(2);
-            infrastructure.removeNode("node-c");
+            agents.remove(agent);
+            infrastructure.removeNode(nodeId);
 
             agent.stop();
 
@@ -49,16 +50,17 @@ public class UnstableInfrastructureScenario extends Scenario {
         });
 
         after(90 * 1000, () -> {
-            var agent = agents.get(0);
-            var node = infrastructure.findById("node-a");
+            var nodeId = "soc-gate";
+            var agent = agents.stream().filter(a -> a.getConfiguration().getNodeID().equals(nodeId)).findFirst().get();
+            var node = infrastructure.findById(nodeId);
             this.log.info("Removing node {} from infrastructure", node.get().getID());
             var links = infrastructure.getLinks(node.get());
-            agents.remove(2);
-            infrastructure.removeNode("node-a");
+            agents.remove(agent);
+            infrastructure.removeNode(nodeId);
 
             agent.stop();
 
-            after(120 * 1000, () -> {
+            after(60 * 1000, () -> {
                 this.log.info("Adding node {} back into the infrastructure", node.get().getID());
                 infrastructure.upsertNode(node.get());
                 links.forEach(link -> infrastructure.addEdge(node.get(), link.getNode()));

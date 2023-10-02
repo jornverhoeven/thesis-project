@@ -39,4 +39,9 @@ public class InMemoryQueue implements IEventQueue {
     public <E extends Event> SubscribableEvent<E> onNewEvent() {
         return (SubscribableEvent<E>) this.eventDispatcher.subscribable;
     }
+
+    @Override
+    public void clear() {
+        this.queue.clear();
+    }
 }

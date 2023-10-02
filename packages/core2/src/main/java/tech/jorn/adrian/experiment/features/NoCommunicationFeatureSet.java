@@ -44,7 +44,7 @@ public class NoCommunicationFeatureSet extends FeatureSet {
         var infrastructureEffector = new ExperimentalInfrastructureEffector(infrastructure);
 
         // Services
-        var eventManager = new ExperimentalEventManager(messageQueue, configuration);
+        var eventManager = new ExperimentalEventManager(messageQueue, configuration, agentState.subscribable);
         var riskDetection = new ExperimentalRiskDetection(RiskLoader.listRisks(), probabilityCalculator, configuration);
         var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration, agentState, infrastructureEffector);
 
@@ -53,7 +53,7 @@ public class NoCommunicationFeatureSet extends FeatureSet {
 
         List<IController> controllers = List.of(
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f), agentState.subscribable),
+                new RiskController(riskDetection, knowledgeBase, eventManager, new HighestRisk(1.0f), configuration, agentState.subscribable),
                 new ProposalController(proposalManager, eventManager, agentState.subscribable),
                 new ProposalImplementationController(eventManager, configuration, agentState.subscribable)
         );

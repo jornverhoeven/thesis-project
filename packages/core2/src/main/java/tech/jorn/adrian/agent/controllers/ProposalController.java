@@ -27,7 +27,7 @@ public class ProposalController extends AbstractController {
 
     protected void searchForProposal(SearchForProposalEvent event) {
         var proposals = this.proposalManager.findProposals(event.getAuction());
-        var proposal = this.proposalManager.selectProposal(proposals);
+        var proposal = this.proposalManager.selectProposal(proposals, event.getAuction());
 
         proposals.forEach(p -> eventManager.emit(new FoundProposalEvent(p)));
         proposal.ifPresentOrElse(
@@ -42,8 +42,9 @@ public class ProposalController extends AbstractController {
     }
 
     protected void applyProposal(ApplyProposalEvent event) {
-        this.log.info("Applying proposal: {}", event.getProposal().mutation().toString());
+        this.log.info("Applying proposal from auction {}: {}", event.getProposal().auction().getId(), event.getProposal().mutation().toString());
         proposalManager.applyProposal(event.getProposal());
+        // eventManager.getQueue().clear(); // Maybe remove this
     }
 }
 

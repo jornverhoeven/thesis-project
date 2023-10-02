@@ -22,6 +22,7 @@ import tech.jorn.adrian.core.services.proposals.IProposalSelector;
 import tech.jorn.adrian.experiment.messages.InMemoryBroker;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AuctionManager {
@@ -32,39 +33,49 @@ public class AuctionManager {
     private final IProposalSelector proposalSelector;
     private final IAgentConfiguration configuration;
     private TimerTask timeout;
-    private Map<INode, AuctionProposal> proposals = new HashMap<>();
-    private List<INode> participants = new ArrayList<>();
+    private Map<INode, Optional<AuctionProposal>> proposals = new HashMap<>();
+    private Set<INode> participants = ConcurrentHashMap.newKeySet();
+    private Set<INode> confirmed = ConcurrentHashMap.newKeySet();
 
-    public AuctionManager(MessageBroker messageBroker, EventManager eventManager, IProposalSelector proposalSelector, IAgentConfiguration configuration) {
+    public AuctionManager(MessageBroker messageBroker, EventManager eventManager, IProposalSelector proposalSelector,
+            IAgentConfiguration configuration) {
         this.messageBroker = messageBroker;
         this.eventManager = eventManager;
         this.proposalSelector = proposalSelector;
         this.configuration = configuration;
 
-        this.log = LogManager.getLogger(String.format("[%s] %s", configuration.getNodeID(), AuctionManager.class.getSimpleName()));
+        this.log = LogManager
+                .getLogger(String.format("[%s] %s", configuration.getNodeID(), AuctionManager.class.getSimpleName()));
     }
 
     private final ValueDispatcher<Auction> auction = new ValueDispatcher<>(null);
 
     public Auction startAuction(RiskReport riskReport) {
-        var auction = new Auction(new IDGenerator().getID(), this.configuration.getParentNode(), new ArrayList<>(), riskReport);
+        var auction = new Auction(new IDGenerator().getID(), this.configuration.getParentNode(), new ArrayList<>(),
+                riskReport);
         this.log.info("-- Auction Started!! {}", auction.getId());
 
         var timer = new Timer();
         var manager = this;
-        if (this.timeout != null) this.timeout.cancel();
+        if (this.timeout != null)
+            this.timeout.cancel();
         this.timeout = new TimerTask() {
             @Override
             public void run() {
+                manager.log.error("Auction {} timed out, received {}/{} proposals", auction.getId(),
+                        manager.proposals.size(), manager.participants.size());
                 manager.finalizeAuction(auction);
             }
         };
         timer.schedule(this.timeout, this.configuration.getAuctionTimeout());
 
         riskReport.graph().getNodes().forEach(node -> {
-            if (!(node instanceof AttackGraphNode)) return;
-            if (node.getID().equals(this.configuration.getNodeID())) return;
-            if (node.getID().equals(VoidNode.getIncoming().getID())) return;
+            if (!(node instanceof AttackGraphNode))
+                return;
+            if (node.getID().equals(this.configuration.getNodeID()))
+                return;
+            if (node.getID().equals(VoidNode.getIncoming().getID()))
+                return;
             this.messageBroker.send(node, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
             this.participants.add(node);
         });
@@ -72,11 +83,12 @@ public class AuctionManager {
         this.auction.setCurrent(auction);
         this.eventManager.emit(new SearchForProposalEvent(auction));
         this.participants.add(this.configuration.getParentNode());
+        this.confirmed.add(this.configuration.getParentNode());
         return auction;
     }
 
     public void joinAuction(Auction auction) {
-        var event = new JoinAuctionAcceptEvent(auction.getHost(), auction);
+        var event = new JoinAuctionAcceptEvent(this.configuration.getParentNode(), auction);
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
 
         this.auction.setCurrent(auction);
@@ -84,7 +96,7 @@ public class AuctionManager {
     }
 
     public void rejectAuction(Auction auction) {
-        var event = new JoinAuctionRejectEvent(auction.getHost(), auction);
+        var event = new JoinAuctionRejectEvent(this.configuration.getParentNode(), auction);
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
     }
 
@@ -98,13 +110,27 @@ public class AuctionManager {
         if (proposal.mutation() == null) {
             this.log.info("Node {} did not send a proposal", participant.getID());
         } else {
-            this.log.info("Received proposal {} {} from {}", proposal.mutation().getCost(), proposal.newDamage(), participant.getID());
+            this.log.info("Received proposal from {} which reduces damage to {}", participant.getID(),
+                    proposal.newDamage());
         }
 
-        this.proposals.put(participant, proposal);
+        this.proposals.put(participant, Optional.ofNullable(proposal));
 
         if (this.isSaturated()) {
             this.finalizeAuction(auction);
+        } else {
+            var _participants = this.participants.stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            var _proposals = this.proposals.keySet().stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            var _confirmed = this.confirmed.stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            this.log.debug("\n{}\n{}\n{}\n", _participants, _proposals, _confirmed);
+            this.log.debug("Received {} proposals, waiting for {} more (confirmed: {})", this.proposals.size(),
+                    this.participants.size() - this.proposals.size(), this.confirmed.size());
         }
     }
 
@@ -114,43 +140,67 @@ public class AuctionManager {
     }
 
     public void cancelProposal(Auction auction) {
-        var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(this.configuration.getParentNode(), auction, null, Float.MAX_VALUE, Float.MAX_VALUE));
+        var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(
+                this.configuration.getParentNode(), auction, null, Float.MAX_VALUE, Float.MAX_VALUE));
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
     }
 
     public void onAuctionJoined(Auction auction, INode participant) {
-
+        this.log.debug("Agent {} joined auction", participant.getID());
+        this.proposals.put(participant, Optional.empty());
+        this.confirmed.add(participant);
     }
 
     public void onAuctionRejected(Auction auction, INode participant) {
         this.log.debug("Agent {} rejected auction", participant.getID());
-        this.participants.remove(participant);
+        this.participants.removeIf(n -> n.getID().equals(participant.getID()));
 
         if (this.isSaturated()) {
             this.finalizeAuction(auction);
+        } else {
+            var _participants = this.participants.stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            var _proposals = this.proposals.keySet().stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            var _confirmed = this.confirmed.stream()
+                    .map(n -> n.getID())
+                    .collect(Collectors.joining(", "));
+            this.log.debug("\n{}\n{}\n{}\n", _participants, _proposals, _confirmed);
+            this.log.debug("Received {} proposals, waiting for {} more (confirmed: {})", this.proposals.size(),
+                    this.participants.size() - this.proposals.size(), this.confirmed.size());
         }
     }
 
     private void finalizeAuction(Auction auction) {
-        this.log.info("Finalizing auction {}, trying to reduce damage value {}", auction.getId(), auction.getRiskReport().damage());
+        this.log.info("Finalizing auction {}, trying to reduce damage value {}", auction.getId(),
+                auction.getRiskReport().damage());
         this.log.debug("Received proposals from: \n{}", proposals.values()
                 .stream()
-                .map(p -> p.mutation() != null
-                        ? String.format("- proposal from %s: reducing to %.2f by %s", p.origin().getID(), p.newDamage(), p.mutation())
-                        : String.format("- proposal from %s: nothing", p.origin().getID()))
+                .map(p -> p.isPresent() && p.get().mutation() != null
+                        ? String.format("- proposal from %s: reducing to %.2f by %s", p.get().origin().getID(),
+                                p.get().newDamage(), p.get().mutation())
+                        : String.format("- proposal from %s: nothing",
+                                p.isPresent() ? p.get().origin().getID() : "unknown"))
                 .collect(Collectors.joining("\n")));
         this.timeout.cancel();
 
         if (proposals.isEmpty()) {
             this.log.warn("Auction did not yield any applicable proposals, ignoring auction results");
-            this.log.error("-- Auction Stopped!! {}", auction.getId());
+            this.log.info("-- Auction Stopped!! {}", auction.getId());
             this.reset();
         }
 
-        var proposal = this.proposalSelector.select(proposals.values().stream().toList());
+        var proposal = this.proposalSelector.select(proposals.values().stream()
+                .filter(p -> p.isPresent())
+                .map(p -> p.get())
+                .toList(),
+                auction.getRiskReport().damageValue());
         if (proposal.isEmpty()) {
-            this.participants.forEach(node -> this.messageBroker.send(node, new EventMessage<>(new AuctionCancelledEvent(auction))));
-            this.log.error("-- Auction Stopped!! {}", auction.getId());
+            this.participants.forEach(
+                    node -> this.messageBroker.send(node, new EventMessage<>(new AuctionCancelledEvent(auction))));
+            this.log.info("-- Auction Stopped!! {}", auction.getId());
             this.reset();
             return;
         }
@@ -158,18 +208,19 @@ public class AuctionManager {
         this.log.info("Selected proposal from {}: reducing to {} by {}",
                 proposal.get().origin().getID(),
                 proposal.get().newDamage(),
-                proposal.get().mutation().toString()
-        );
+                proposal.get().mutation().toString());
 
         this.participants.forEach(node -> {
-            if (node.equals(this.configuration.getNodeID())) return;
+
             // TODO: If no proposal was sent, we might not want to sent this event
             var event = new AuctionFinalizedEvent(auction, proposal.get());
-            var message = new EventMessage<>(event);
-            this.messageBroker.send(node, message);
-            this.eventManager.emit(event);
+            if (node.equals(this.configuration.getNodeID())) {
+                this.eventManager.emit(event);
+            } else {
+                var message = new EventMessage<>(event);
+                this.messageBroker.send(node, message);
+            }
         });
-
 
         this.log.info("-- Auction Stopped!! {}", auction.getId());
         this.reset();
@@ -190,8 +241,9 @@ public class AuctionManager {
 
     public void reset() {
         this.auction.setCurrent(null);
-        this.proposals = new HashMap<>();
-        this.participants = new ArrayList<>();
+        this.proposals = new ConcurrentHashMap<>();
+        this.participants = ConcurrentHashMap.newKeySet();
+        this.confirmed = ConcurrentHashMap.newKeySet();
         this.log.debug("reset auctioning state");
     }
 }

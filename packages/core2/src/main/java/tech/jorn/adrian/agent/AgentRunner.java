@@ -27,6 +27,7 @@ import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
+import tech.jorn.adrian.core.services.risks.HighestRisk;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,9 +37,9 @@ public class AgentRunner {
     public static void main(String[] args) {
         var configuration = (IAgentConfiguration) null;
         var queue = new InMemoryQueue();
-        var eventManager = new EventManager(queue);
-        var messageBroker = new InMemoryBroker();
         var agentState = new ValueDispatcher<>(AgentState.Initializing);
+        var eventManager = new EventManager(queue, agentState.subscribable);
+        var messageBroker = new InMemoryBroker();
 
         var infrastructureEffector = new InfrastructureEffector() {
             @Override
@@ -55,7 +56,7 @@ public class AgentRunner {
         knowledgeBase.upsertNode(parent);
 
         List<IController> controllers = Arrays.asList(
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, agentState.subscribable),
+                new RiskController(riskDetection, knowledgeBase, eventManager, new HighestRisk(1.0f), configuration, agentState.subscribable),
                 new AuctionController(new AuctionManager(messageBroker, eventManager, new LowestDamage(2.0f), configuration), eventManager, configuration, agentState),
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
                 new ProposalController(proposalManager, eventManager, agentState.subscribable)

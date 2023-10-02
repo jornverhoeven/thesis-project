@@ -11,6 +11,7 @@ public record RiskReport(AttackGraph graph, List<INode> path, float probability,
 
     public String toString() {
         var path = this.path.stream().map(INode::getID).collect(Collectors.joining("->"));
-        return String.format("%s %.2f %.2f %.2f", path, this.probability, this.damageValue, this.damage);
+        // return String.format("%s %.2f %.2f %.2f", path, this.probability, this.damageValue, this.damage);
+        return String.format("%s %.2f", path, this.damage);
     }
 }

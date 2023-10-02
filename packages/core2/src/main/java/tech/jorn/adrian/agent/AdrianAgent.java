@@ -38,7 +38,7 @@ public class AdrianAgent implements IAgent {
         }
         this.agentState.setCurrent(AgentState.Ready);
         try {
-            Thread.sleep(1000 + ((int) (Math.random() * 200)));
+            Thread.sleep(500 + ((int)(Math.random() * 10) * 250));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -59,7 +59,7 @@ public class AuctionController extends AbstractController {
     }
 
     private void joinAuctionRequest(JoinAuctionRequestEvent event) {
-        boolean canJoin = !this.auctionManager.isAuctioning();
+        boolean canJoin = !this.auctionManager.isAuctioning() && this.agentState.current() == AgentState.Idle;
         if (canJoin) this.auctionManager.joinAuction(event.getAuction());
         else this.auctionManager.rejectAuction(event.getAuction());
     }

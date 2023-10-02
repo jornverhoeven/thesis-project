@@ -1,20 +1,19 @@
 package tech.jorn.adrian.experiment.scenarios;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tech.jorn.adrian.agent.AdrianAgent;
+
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
 import tech.jorn.adrian.core.observables.EventDispatcher;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class GrowingInfrastructureScenario extends Scenario {
     Logger log = LogManager.getLogger(GrowingInfrastructureScenario.class);
@@ -46,6 +45,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasFirewall", false);
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
+            node.setProperty("sdk-qualcomm/apq8096-version", "1.1");
             nodeList.add(node);
             neighbourList.put(node.getID(), List.of("iot-controller"));
         }
@@ -66,7 +66,7 @@ public class GrowingInfrastructureScenario extends Scenario {
             node.setProperty("hasAgent", true);
             node.setProperty("os-contiki-ng/contiki-ng-version", "3.2.1");
             nodeList.add(node);
-            neighbourList.put(node.getID(), List.of("router"));
+            neighbourList.put(node.getID(), List.of("router", "node-z"));
         }
         {
             var node = new InfrastructureNode("node-v");

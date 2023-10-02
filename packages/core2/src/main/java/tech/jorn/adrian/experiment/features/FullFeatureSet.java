@@ -21,6 +21,7 @@ import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.core.services.proposals.LowestDamage;
 import tech.jorn.adrian.core.services.proposals.ProposalManager;
 import tech.jorn.adrian.core.services.risks.HighestRisk;
+import tech.jorn.adrian.experiment.ExperimentalConfiguration;
 import tech.jorn.adrian.experiment.ExperimentalInfrastructureEffector;
 import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.instruments.ExperimentalEventManager;
@@ -44,7 +45,7 @@ public class FullFeatureSet extends FeatureSet {
     IAgent getAgent(Infrastructure infrastructure, InfrastructureNode node) {
         var neighbours = this.getNeighboursFromInfrastructure(infrastructure, node);
         var assets = this.getAssetsFromInfrastructure(infrastructure, node);
-        var configuration = new AgentConfiguration(node, neighbours, assets);
+        var configuration = new ExperimentalConfiguration(node, neighbours, assets);
 
         var messageQueue = new InMemoryQueue();
         var knowledgeBase = new KnowledgeBase();
@@ -54,7 +55,7 @@ public class FullFeatureSet extends FeatureSet {
         var infrastructureEffector = new ExperimentalInfrastructureEffector(infrastructure);
 
         // Services
-        var eventManager = new ExperimentalEventManager(messageQueue, configuration);
+        var eventManager = new ExperimentalEventManager(messageQueue, configuration, agentState.subscribable);
         var riskDetection = new ExperimentalRiskDetection(RiskLoader.listRisks(), probabilityCalculator, configuration);
         var proposalManager = new ProposalManager(knowledgeBase, riskDetection, new LowestDamage(100.0f), configuration, agentState, infrastructureEffector);
 
@@ -64,7 +65,7 @@ public class FullFeatureSet extends FeatureSet {
 
         List<IController> controllers = List.of(
                 new KnowledgeController(knowledgeBase, messageBroker, eventManager, configuration, agentState.subscribable),
-                new RiskController(riskDetection, knowledgeBase, proposalManager, eventManager, new HighestRisk(1.0f), new LowestDamage(0.1f), agentState.subscribable),
+                new RiskController(riskDetection, knowledgeBase, eventManager, new HighestRisk(1.0f), configuration, agentState.subscribable),
                 new ProposalController(proposalManager, eventManager, agentState.subscribable),
                 new AuctionController(auctionManager, eventManager, configuration, agentState)
         );

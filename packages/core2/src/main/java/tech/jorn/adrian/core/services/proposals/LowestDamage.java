@@ -15,9 +15,9 @@ public class LowestDamage implements IProposalSelector {
     }
 
     @Override
-    public Optional<AuctionProposal> select(List<AuctionProposal> proposals) {
+    public Optional<AuctionProposal> select(List<AuctionProposal> proposals, float threshold) {
         return proposals.stream()
-                .filter(proposal -> proposal.newDamage() < this.threshold)
+                .filter(proposal -> proposal != null && proposal.newDamage() < this.threshold && proposal.newDamage() < threshold)
                 .min(Comparator.comparingDouble(AuctionProposal::newDamage));
     }
 }

@@ -12,13 +12,19 @@ import tech.jorn.adrian.core.services.IDGenerator;
 
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ProposalImplementationController extends AbstractController {
 
+    private Logger log;
     private final IAgentConfiguration configuration;
 
     public ProposalImplementationController(EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
         super(eventManager, agentState);
         this.configuration = configuration;
+
+        this.log = LogManager.getLogger(String.format("[%s] %s", configuration.getNodeID(), ProposalImplementationController.class.getSimpleName()));
 
         this.registerEvents();
     }
@@ -45,6 +51,7 @@ public class ProposalImplementationController extends AbstractController {
         this.eventManager.emit(new SearchForProposalEvent(auction));
     }
     public void selectedProposal(SelectedProposalEvent event) {
+        this.log.info("Selected proposal that will reduce the damage to {}: {}", event.getProposal().newDamage(), event.getProposal().mutation().toString());
         this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));
     }
 }

@@ -1,14 +1,14 @@
 package tech.jorn.adrian.core.observables;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public abstract class AbstractEventDispatcher<TValue, THandler extends Consumer<TValue>> {
 
     public final Subscribable<TValue, THandler> subscribable = new Subscribable<>(this);
 
-    protected Set<THandler> subscribers = new HashSet<>();
+    protected Set<THandler> subscribers = ConcurrentHashMap.newKeySet();
 
     Runnable subscribe(THandler handler) {
         this.subscribers.add(handler);

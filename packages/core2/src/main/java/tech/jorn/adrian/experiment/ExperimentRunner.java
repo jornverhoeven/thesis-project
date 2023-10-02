@@ -102,7 +102,7 @@ public class ExperimentRunner {
         var csv = new ConcurrentHashMap<String, List<Object>>();
         var task = registerMetricCollection(agents, infrastructure, csv);
         var timer = new Timer();
-        timer.scheduleAtFixedRate(task, 5 * 1000, 5 * 1000);
+        timer.scheduleAtFixedRate(task, 0, 5 * 1000);
 
         log.debug("Starting agents");
 
@@ -133,7 +133,7 @@ public class ExperimentRunner {
         var fileWriter = new FileWriter("./metrics.csv");
         var writer = new PrintWriter(fileWriter);
 
-        writer.printf("timestamps;%s;%s\n", IntStream.range(0, (int) (endTime / 5000)).mapToObj(i -> String.valueOf(5 * (i + 1) * 1000)).collect(Collectors.joining(";")), endTime);
+        writer.printf("timestamps;0;%s;%s\n", IntStream.range(0, (int) (endTime / 5000)).mapToObj(i -> String.valueOf(5 * (i + 1) * 1000)).collect(Collectors.joining(";")), endTime);
         writer.printf("messages-total;%s\n", data.get("messages-total").stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(";")));

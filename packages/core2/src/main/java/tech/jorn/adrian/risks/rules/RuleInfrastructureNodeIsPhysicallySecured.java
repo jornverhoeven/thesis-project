@@ -2,7 +2,7 @@ package tech.jorn.adrian.risks.rules;
 
 public class RuleInfrastructureNodeIsPhysicallySecured extends PropertyBasedRule {
     public RuleInfrastructureNodeIsPhysicallySecured() {
-        super("isPhysicallySecured", "infrastructureNodeIsPhysicallySecured", 0.8f, 0.2f);
+        super("isPhysicallySecured", "infrastructureNodeIsPhysicallySecured", 0.02f, 0.2f);
     }
 
     @Override

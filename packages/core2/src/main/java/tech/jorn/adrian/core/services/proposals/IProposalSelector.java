@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface IProposalSelector {
 
-    Optional<AuctionProposal> select(List<AuctionProposal> proposals);
+    Optional<AuctionProposal> select(List<AuctionProposal> proposals, float threshold);
 }

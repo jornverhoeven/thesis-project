@@ -18,7 +18,7 @@ public class NoChangeScenario extends Scenario {
 
     @Override
     public void onScheduleEvents(List<ExperimentalAgent> agents) {
-        this.after(3 * 60 * 1000, () -> {
+        this.after(5 * 60 * 1000, () -> {
             this.log.debug("Waiting for silence");
             this.waitForSilence(10 * 1000, this.finished::raise);
         });

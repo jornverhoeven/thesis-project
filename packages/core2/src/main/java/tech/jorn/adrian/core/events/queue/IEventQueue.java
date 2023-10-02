@@ -9,4 +9,6 @@ public interface IEventQueue {
     int size();
 
     <E extends Event> SubscribableEvent<E> onNewEvent();
+
+    void clear();
 }

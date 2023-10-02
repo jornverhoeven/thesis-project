@@ -55,6 +55,7 @@ public class BasicRiskDetection implements RiskDetection {
     @Override
     public List<RiskReport> identifyRisks(AttackGraph attackGraph) {
         // 1. Collect all the exposed nodes and critical software components to calculate all paths.
+        var voidNode = attackGraph.findById(VoidNode.getIncoming().getID());
         List<? extends AttackGraphEntry<?>> exposed = attackGraph.getNeighbours(VoidNode.getIncoming());
         List<AttackGraphSoftwareAsset> criticalSoftware = new ArrayList<>();
         attackGraph.getNodes().forEach(node -> {
@@ -81,6 +82,7 @@ public class BasicRiskDetection implements RiskDetection {
                             return contained.isPresent();
                         })
                         .toList();
+                newPaths.forEach(path -> path.add(0, voidNode.get()));
                 criticalPaths.addAll(newPaths);
             });
         });

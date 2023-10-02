@@ -64,6 +64,7 @@ public class EntryCve extends CveRule<String> {
     @Override
     public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
         if (this.mitigatedVersion == null) return Optional.empty();
+        if (node.getProperty(this.getProperty()).isEmpty()) return Optional.empty();
 
         var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), this.mitigatedVersion), this.cost, this.time, this);
         return Optional.of(adaptation);
