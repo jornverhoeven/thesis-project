@@ -1,10 +1,14 @@
 \subsection{Scenario 2: Risk Introduction}
+\textit{This scenario introduces a risk to the infrastructure after $180$ seconds. The purpose of this scenario is to see how the system behaves when a new risk is introduced.}
+
 \begin{figure}[H]
     \centering
     \input{graphs/overall-damage-risk-introduction}
     \caption{This graph shows the overall damage of the system in the risk introduction scenario. The damage is shown for each of the three strategies. The vertical lines indicate the time at which a risk is introduced.}
     \label{fig:overall-damage-inroduce-risk}
 \end{figure}
+
+Figure \ref{fig:overall-damage-inroduce-risk} shows a graph that follows a similar trend as shown in figure \ref{fig:overall-damage-no-change}. This is to be expected as the scenarios are identical up until the $180$ seconds mark. During this time we see a small increase in damage for all graphs. As the metrics are collected in $5000$ms intervals, it is not obvious from the graph that an increase in damage occurs. However, when observing the logs of each agent the damage increase can be seen. 
 
 \begin{figure}[H]
     \centering
@@ -15,7 +19,11 @@
     \centering
     \input{graphs/proposals-risk-introduction}
     \caption{Graph showing the total amount of adaptations applied by agents in the risk introduction scenario.}
+    \label{fig:proposals-risk-introduction}
 \end{figure}
+
+When the risk is introduced after $180$ seconds, we can see in Figure \ref{fig:proposals-risk-introduction} that no new adaptations are applied. We would expect at least a few adaptations to be made for the knowledge-sharing and auctioning agent. However, this is not the case.
+
 \begin{figure}[H]
     \centering
         \input{graphs/risk-count-risk-introduction}
@@ -35,4 +43,7 @@
     \centering
         \input{graphs/adapting-time-risk-introduction}
     \caption{Graph showing the sum of time spent adapting by agents in the risk introduction scenario.}
+    \label{fig:adapting-time-risk-introduction}
 \end{figure}
+
+Figure \ref{fig:adapting-time-risk-introduction} shows that the knowledge-sharing agent is spending almost twice as much time adapting compared to the auctioning agent. Compared to figure \ref{fig:adapting-time-no-change} we see that the knowledge-sharing agent is spending more time adapting in the earlier stages of the scenario. More on this in subsection \ref{ssec:consecutive-runs}.

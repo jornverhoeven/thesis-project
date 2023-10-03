@@ -26,7 +26,13 @@
     \centering
         \input{graphs/risk-remaining-growing}
     \caption{Graph showing the number of remaining risks in the infrastructure in the growing scenario.}
+    \label{fig:risk-remaining-growing}
 \end{figure}
+
+Figure \ref{fig:risk-remaining-growing} has a scale that is almost $60$ times larger than all other scenarios, and has found $212$ times more risks than initially. This can be explained by the growing size of the infrastructure, and the new edges that are introduced. A risk is defined as a path from an infrastructure node to a critical software component. As the infrastructure grows, the amount of possible paths grows exponentially. This is why the amount of risks detected is also growing exponentially. 
+
+It should be noted that the probability and damage value of many of these risks are very low, as these critical paths can become long. This could be a reason why the overall damage (figure \ref{fig:overall-damage-growing}) is only $30$ times larger than at the start of the scenario. However, the metrics that are collected are not enough to determine the exact cause of this difference.
+
 \begin{figure}[H]
     \centering
         \input{graphs/auctioning-time-growing}
