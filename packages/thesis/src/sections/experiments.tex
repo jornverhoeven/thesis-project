@@ -58,26 +58,27 @@ Four scenarios have been defined, each with a different set of characteristics. 
 \paragraph*{No Changes}
 This scenario is the simplest. In this scenario, the infrastructure is static and does not change over time. This means that no infrastructure nodes or software are added, and no links between them are removed. This scenario makes it possible to reason about the outcome of the experiments without having to take into account the changes in the infrastructure. 
 
-\textit{This scenario runs for a maximum of 20 minutes, or until no messages have been sent for 1 minute. This means that the scenario will end when the agents have stopped communicating with each other. This is done to prevent the scenario from running indefinitely.}
+\textit{This scenario runs for a maximum of 10 minutes, or until no messages have been sent for 1 minute. This means that the scenario will end when the agents have stopped communicating with each other. This is done to prevent the scenario from running indefinitely.}
 
 \paragraph{Introduce Risks} 
 In this scenario, risks are slowly introduced into the infrastructure to simulate the discovery of new CVEs. This is done by changing the properties of the existing nodes. No new infrastructure nodes or software are added. The properties that are changed to simulate new risks are properties that would trigger a risk rule to be identified. One example would be to set the \code{Contiki-NG OS} version of a property to a version that is known to have a vulnerability. This should trigger a risk rule that would identify a risk.
+The update to the properties is done at exactly $180$ seconds after the start of the scenario. 
 
-\textit{This scenario runs for a maximum of 20 minutes, no messages have been sent for 1 minute, or when the risk has been identified and mitigated.}
+\textit{This scenario runs for a maximum of 10 minutes, no messages have been sent for 1 minute, or when the risk has been identified and mitigated.}
 
 \paragraph*{Growing Infrastructure}
-A more realistic scenario is one where the infrastructure is growing over time. This means that nodes are added to the infrastructure over time. The scenario has been hardcoded to add a new node to the infrastructure every 30 seconds\footnote{\label{footnote:simulation-time}These seconds are simulation time, see Section \ref{sssec:simulation-time} how this relates in real-time.} for 10 minutes, for a total of 20 nodes added. When a node is added an existing node is picked semi-randomly, and an edge is made between the two. By using a random function that uses a seed value, nodes will always be picked in the same sequence. This allows us to reproduce the experiments predictably.
+A more realistic scenario is one where the infrastructure is growing over time. This means that nodes are added to the infrastructure over time. The scenario has been hardcoded to add a new node to the infrastructure every 30 seconds\footnote{\label{footnote:simulation-time}These seconds are simulation time, see Section \ref{sssec:simulation-time} how this relates in real-time.} until a total of 5 nodes is added. When a node is added an existing node is picked semi-randomly, and an edge is made between the two.
 
-\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been sent for 2 minutes, or when it has run for a maximum of 20 minutes. This is done to prevent the scenario from running indefinitely.}
+\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been sent for 1 minute, or when it has run for a maximum of 10 minutes. This is done to prevent the scenario from running indefinitely.}
 
 \paragraph*{Unstable Infrastructure}
-Another realistic scenario is one where the infrastructure is unstable. This means that nodes are removed from the infrastructure, but reappear after some time. The scenario has been hardcoded to remove a random node from the infrastructure every 30 seconds\footnote{See footnote [\ref{footnote:simulation-time}.} and add it back after 10 seconds. This means that the infrastructure is flickering with the availability of nodes. This scenario is used to test the robustness of the system, and how it can deal with nodes that are not always available.
+Another realistic scenario is one where the infrastructure is unstable. This means that nodes are removed from the infrastructure, but reappear after some time. The scenario has been hardcoded to remove a random node from the infrastructure every 30 seconds\footnote{See footnote [\ref{footnote:simulation-time}.} and add it back after 30 seconds. This is repeated two times in the scenario. This means that the infrastructure is flickering with the availability of nodes. This scenario is used to test the robustness of the system, and how it can deal with nodes that are not always available.
 
-\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been send for 2 minutes, or when it has run for a maximum of 20 minutes. This is done to prevent the scenario from running indefinitely.}
+\textit{After the last node has been added to the infrastructure, the scenario will finish when no messages have been send for 1 minute, or when it has run for a maximum of 10 minutes. This is done to prevent the scenario from running indefinitely.}
 
-\paragraph*{Mixed}
-The last scenario is a combination of the previous scenarios. This means that nodes are added and removed from the infrastructure over time. 
-\add{Update the definition of the mixed scenario}
+% \paragraph*{Mixed}
+% The last scenario is a combination of the previous scenarios. This means that nodes are added and removed from the infrastructure over time. 
+% \add{Update the definition of the mixed scenario}
 
 \subsection{Infrastructure}
 \label{ssec:infrastructure}

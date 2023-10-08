@@ -4,6 +4,7 @@ Looking back at the results of the experiments, we can see that all feature sets
 
 % \add{Mention the amount of risks detected}
 \subsection{Risks Detected}
+\label{ssec:risks-detected}
 From the figures detailing the unique number of risks detected (figures \ref{fig:risk-count-no-change}, \ref{fig:risk-count-risk-introduction}, \ref{fig:risk-count-growing}, and \ref{fig:risk-count-unstable}) we can see that the local-agent is only able to detect a fraction of the risks that the auctioning and knowledge-sharing agents are able to detect. This is expected as the local-agent cannot share any information with its neighbors, and therefore cannot detect any risks that have an origin outside of its own infrastructure node and software component.
 
 The auctioning agents are able to detect more risks than the knowledge-sharing agents, up to $200\%$ in figure \ref{fig:risk-count-no-change}. 
@@ -14,6 +15,7 @@ As mentioned before, in the ADRIAN-concept by Mann and Smolka \cite{mann2023ADRI
 
 % \add{Explain why knowledge-sharing damage output is sometimes better, but more time adaptating is bad}
 \subsection{Damage Reduction \& Adaptation Time}
+\label{ssec:damage-reduction}
 In the results we see that overall knowledge-sharing and auctioning agents tend to perform similarly when looking at the overall damage of the infrastructure. However, when we look at the time spent adapting, we can see that in all cases the knowledge-sharing agents spend almost twice as much time applying adaptations.
 Depending on the adaptation, this could mean that the software components running on the infrastructure node could become unavailable for longer periods of time, and that the infrastructure node is unresponsive while applying the adaptations.  In the last scenario (figure \ref{fig:adapting-time-unstable}) we see that the knowledge-sharing agents spends $30$ seconds of the $180$ seconds it was running, which is $16.7\%$ of the time it was running. 
 
@@ -22,7 +24,8 @@ In a real-world scenario this downtime would likely be unfavorable, but should b
 
 % \add{Mention that adaptation count is the same, but time spent adapting is different}
 \subsection{Efficient Adaptations}
-When looking at the number of adaptations that are applied (figures \ref{fig:adaptation-count-no-change}, \ref{fig:adaptation-count-risk-introduction}, \ref{fig:adaptation-count-growing}, and \ref{fig:adaptation-count-unstable}) we can see that the auctioning and knowledge-sharing agents perform similarly. However, when looking at the time spent adapting (figures \ref{fig:adapting-time-no-change}, \ref{fig:adapting-time-risk-introduction}, \ref{fig:adapting-time-growing}, and \ref{fig:adapting-time-unstable}) we can see that the knowledge-sharing agents spend almost twice as much time adapting. This is an indicator that the auctioning agents are able to apply more efficient adaptations, as they are able to apply the same amount of adaptations in a shorter amount of time, while also reducing the overall damage roughly the same amount.
+\label{ssec:efficient-adaptations}
+When looking at the number of adaptations that are applied (figures \ref{fig:proposals-no-change}, \ref{fig:proposals-risk-introduction}, \ref{fig:proposals-growing}, and \ref{fig:proposals-unstable}) we can see that the auctioning and knowledge-sharing agents perform similarly. However, when looking at the time spent adapting (figures \ref{fig:adapting-time-no-change}, \ref{fig:adapting-time-risk-introduction}, \ref{fig:adapting-time-growing}, and \ref{fig:adapting-time-unstable}) we can see that the knowledge-sharing agents spend almost twice as much time adapting. This is an indicator that the auctioning agents are able to apply more efficient adaptations, as they are able to apply the same amount of adaptations in a shorter amount of time, while also reducing the overall damage roughly the same amount.
 
 % \add{Mention the stability of the system}
 \subsection{Stability}

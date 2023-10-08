@@ -1,5 +1,29 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
+At the start of this research we set out to answer the following research questions:
+
+\vspace{0.5em}
+\emph{Can the ADRIAN protocol be implemented and used for effective Risk Assessment and Mitigation?}
+\vspace{0.5em}
+
+Which would inturn be answered by the following questions: 
+\begin{itemize}
+    \item \textit{(Identification) Can we use the ADRIAN protocol to do automated risk identification within a network of nodes with an (imperfect) local knowledge base?}
+    \item \textit{(Mitigation) Can the ADRIAN protocol be used to decrease the overall risk, by applying adaptation patterns over time?}
+\end{itemize}
+
+In this section we will answer these questions, with the information from the Result and Discussion sections in mind.
 
 \add{Relate discussion to the research questions}
+
+\paragraph*{Identification}
+In subsection \ref{ssec:risks-detected} we explained that the full implementation of the ADRIAN protocol is capable of detecting risks in a network of nodes. By using an internal knowledge base agents are able to detect risks that they would otherwise be unable to detect. The benefits of this decentralized approach are that agents only need to store, share, and assess the properties of each node for a subset of the problem. This makes it very scalable and allows for a large number of nodes to be added to the network. However, this also means that the agents are unable to detect risks that are outside of their knowledge base. This is a trade-off that is made in the ADRIAN protocol. 
+
+\paragraph*{Mitigation}
+The ADRIAN protocol, even without auctions, is able to decrease the overall risk and predicted damage of an infrastructure.
+Subsections \ref{ssec:damage-reduction} and \ref{ssec:efficient-adaptations} explain that the full implementation of the ADRIAN protocol is capable of reducing the overall damage of the infrastructure, by using the concepts of auctions. These auctions allow agents to find more effective adaptations, and reduce the amount of service-/downtime a node and its software components experience. 
+
+
+\vspace{0.5em}
+Combining all the information from Section \ref{sec:discussion} and the answers to the sub-research questions, we can conclude that the ADRIAN protocol can be used for effective Risk Assessment and Mitigation. 
