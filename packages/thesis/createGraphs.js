@@ -190,11 +190,11 @@ function createPlot(data, index) {
 }
 
 function color(index) {
-    const colors = ["blue", "red", "orange", "black", "green"];
+    const colors = ["blue", "red", "orange", "black", "green", "brown"];
     return colors[index];
 }
 function mark(index) {
-    const marks = ["square", "triangle", "diamond", "pentagon", "star"];
+    const marks = ["square", "triangle", "diamond", "pentagon", "star", "oplus"];
     return marks[index];
 }
 
