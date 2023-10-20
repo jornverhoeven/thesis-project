@@ -7,12 +7,12 @@ import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
-import tech.jorn.adrian.core.graphs.infrastructure.Infrastructure;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
@@ -28,15 +28,11 @@ import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.RiskDetection;
 import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.risks.rules.PropertyBasedRule;
-import tech.jorn.adrian.risks.rules.RuleInfrastructureNodeHasFirewall;
-import tech.jorn.adrian.risks.rules.RuleInfrastructureNodeIsPhysicallySecured;
 import tech.jorn.adrian.risks.rules.cves.CveRule;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ProposalManager {
@@ -77,8 +73,10 @@ public class ProposalManager {
                 var exists = knowledgeBase.findById(node.getID()).isPresent();
                 if (!exists) {
                     knowledgeNode = KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) node);
-                    knowledgeBase.upsertNode(knowledgeNode);
-                    updated = true;
+                    if (knowledgeNode.getKnowledgeOrigin() != KnowledgeOrigin.DIRECT) {
+                        knowledgeBase.upsertNode(knowledgeNode);
+                        updated = true;
+                    }
                 } else {
                     knowledgeNode = knowledgeBase.findById(node.getID()).get();
                 }
@@ -91,8 +89,10 @@ public class ProposalManager {
                                     ? KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) next)
                                     : KnowledgeBaseSoftwareAsset
                                             .fromNode((AbstractDetailedNode<SoftwareProperty<?>>) next));
-                    knowledgeBase.upsertNode(knowledgeNext);
-                    updated = true;
+                    if (knowledgeNode.getKnowledgeOrigin() != KnowledgeOrigin.DIRECT) {
+                        knowledgeBase.upsertNode(knowledgeNext);
+                        updated = true;
+                    }
                 } else {
                     knowledgeNext = knowledgeBase.findById(next.getID()).get();
                 }
@@ -273,7 +273,6 @@ public class ProposalManager {
         }
 
         if (node instanceof KnowledgeBaseNode) {
-
             if (this.configuration.canMigrate() && riskReport.path().size() > 2) {
                 var host = (N) riskReport.path().get(riskReport.path().size() - 2);
                 var alreadyHosting = host.getID().equals(node.getID());

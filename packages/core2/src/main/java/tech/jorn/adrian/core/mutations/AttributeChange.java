@@ -24,6 +24,7 @@ public class AttributeChange<N extends AbstractDetailedNode<?>, P extends Abstra
     @Override
     public boolean isApplicable(N node) {
         var current = node.getProperty(this.newValue.getName());
+        System.out.println("current: " + current + " new: " + this.newValue.getValue());
         return current.map(c -> !c.equals(this.newValue.getValue()))
                 .orElse(true);
     }

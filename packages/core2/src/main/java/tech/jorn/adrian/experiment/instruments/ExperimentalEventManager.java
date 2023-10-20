@@ -16,5 +16,5 @@ public class ExperimentalEventManager extends EventManager {
         this.log = LogManager.getLogger("[" + agentConfiguration.getNodeID() + "] EventManager");
     }
 
-
+    
 }

@@ -10,6 +10,7 @@ import tech.jorn.adrian.core.observables.SubscribableValueEvent;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AdrianAgent implements IAgent {
     private Logger log;
@@ -31,14 +32,17 @@ public class AdrianAgent implements IAgent {
     }
 
     public void start() {
+
         try {
-            Thread.sleep(100 + ((int) (Math.random() * 100)));
+            var delay = ThreadLocalRandom.current().nextInt(0, 10);
+            Thread.sleep(100 + delay * 100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         this.agentState.setCurrent(AgentState.Ready);
         try {
-            Thread.sleep(500 + ((int)(Math.random() * 10) * 250));
+            var delay = ThreadLocalRandom.current().nextInt(0, 20);
+            Thread.sleep(500 + (delay * 250));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

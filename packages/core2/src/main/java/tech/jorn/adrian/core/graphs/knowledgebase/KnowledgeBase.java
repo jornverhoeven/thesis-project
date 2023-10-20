@@ -1,15 +1,13 @@
 package tech.jorn.adrian.core.graphs.knowledgebase;
 
-import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.graphs.base.AbstractGraph;
 import tech.jorn.adrian.core.graphs.base.GraphLink;
-import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
-
-import java.util.List;
-import java.util.Optional;
 
 public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLink<KnowledgeBaseEntry<?>>> {
     public KnowledgeBase() {
@@ -37,7 +35,7 @@ public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLin
             var internalNode = this.findById(node.getID());
 
             // We need to make sure that all links are also updated
-            var internalAdjacent = this.adjacent.get(node);
+            var internalAdjacent = this.adjacent.getOrDefault(node, new CopyOnWriteArrayList<>());
             var adjacent = knowledgeBase.adjacent.get(node);
 
 //            internalAdjacent.removeAll(internalAdjacent);

@@ -21,7 +21,7 @@ import tech.jorn.adrian.core.services.RiskDetection;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.function.Consumer;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 public class RiskController extends AbstractController {
@@ -44,14 +44,12 @@ public class RiskController extends AbstractController {
         this.knowledgeBase = knowledgeBase;
         this.riskSelector = riskSelector;
 
-        this.agentState.subscribe(state -> {
-            if (state.equals(AgentState.Idle))
-                this.scheduleRiskAssessment();
-        });
-
         this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::identifyRisk);
         this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent);
         this.eventManager.registerEventHandler(SelectedRiskEvent.class, this::selectedRiskEvent);
+
+        this.riskAssessmentTimer = new Timer(String.format("timer-%s", configuration.getNodeID()));
+        this.scheduleRiskAssessment();
     }
 
     protected void identifyRisk(IdentifyRiskEvent event) {
@@ -92,29 +90,25 @@ public class RiskController extends AbstractController {
         return new TimerTask() {
             @Override
             public void run() {
+                if (!canDoRiskAssessment()) return;
+
                 log.warn("Searching for risks due to inactivity");
                 eventManager.emit(new IdentifyRiskEvent());
-                scheduleRiskAssessment();
             }
         };
     }
 
     private void scheduleRiskAssessment() {
-        if (this.riskAssessmentTimer != null) {
-            this.riskAssessmentTimer.cancel();
-            this.riskAssessmentTimer = null;
-        }
+        // if (this.riskAssessmentTimer != null) {
+        //     this.riskAssessmentTimer.cancel();
+        //     this.riskAssessmentTimer = null;
+        // }
 
         try {
-            this.riskAssessmentTimer = new Timer();
             var task = createScheduledRiskAssessmentTask();
 
             var interval = 30 * 1000;
-            this.riskAssessmentTimer.schedule(task, interval);
-
-            this.eventManager.once(Event.class, e -> {
-                scheduleRiskAssessment();
-            });
+            this.riskAssessmentTimer.scheduleAtFixedRate(task, interval, interval);
         } catch (Exception e) {
             log.error("Error while scheduling risk assessment");
         }

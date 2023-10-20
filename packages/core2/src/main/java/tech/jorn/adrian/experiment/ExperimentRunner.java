@@ -121,12 +121,18 @@ public class ExperimentRunner {
         };
         scenario.onFinished().subscribe(onFinished);
 
-        var scheduler = Executors.newFixedThreadPool(4);
+        // Thread[] threads = new Thread[agents.size()];
+        // agents.forEach(a -> {
+        //     var thread = new Thread(() -> {
+        //         a.start();
+        //     });
+        //     threads[agents.indexOf(a)] = thread;
+        //     thread.start();
+        // });
+        var scheduler = Executors.newScheduledThreadPool(agents.size());
         agents.forEach(a -> {
             scheduler.submit(a::start);
         });
-
-
     }
 
     public static void writeToCSV(List<ExperimentalAgent> agents, Map<String, List<Object>> data, long endTime) throws IOException {

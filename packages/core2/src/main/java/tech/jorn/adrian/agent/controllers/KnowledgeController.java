@@ -33,18 +33,21 @@ public class KnowledgeController extends AbstractController {
     private boolean hasSharedInitialKnowledge = false;
     private boolean triggerRiskIdentificationOnIdle = false;
 
-    public KnowledgeController(KnowledgeBase knowledgeBase, MessageBroker messageBroker, EventManager eventManager, IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
+    public KnowledgeController(KnowledgeBase knowledgeBase, MessageBroker messageBroker, EventManager eventManager,
+            IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
         super(eventManager, agentState);
         this.messageBroker = messageBroker;
         this.configuration = configuration;
 
         log = LogManager.getLogger("[" + configuration.getNodeID() + "] KnowledgeController");
 
-        this.knowledgeBase = this.createKnowledgeBaseFromConfig(knowledgeBase, configuration.getParentNode(), configuration.getNeighbours(), configuration.getAssets());
+        this.knowledgeBase = this.createKnowledgeBaseFromConfig(knowledgeBase, configuration.getParentNode(),
+                configuration.getNeighbours(), configuration.getAssets());
 
         this.eventManager.registerEventHandler(ShareKnowledgeEvent.class, this::processKnowledge);
         this.configuration.getParentNode().onPropertyChange().subscribe(this::onNodePropertyChange);
-        this.configuration.getAssets().forEach(asset -> asset.onPropertyChange().subscribe(() -> this.onAssetPropertyChange(asset)));
+        this.configuration.getAssets()
+                .forEach(asset -> asset.onPropertyChange().subscribe(() -> this.onAssetPropertyChange(asset)));
 
         agentState.subscribe(state -> {
             if (state == AgentState.Idle && (!this.hasSharedInitialKnowledge || triggerRiskIdentificationOnIdle)) {
@@ -74,8 +77,10 @@ public class KnowledgeController extends AbstractController {
 
     protected void onNodePropertyChange(NodeProperty<?> property) {
         var node = this.configuration.getParentNode();
-        this.log.debug("Updating property {} from {} to {}", property.getName(), this.knowledgeBase.findById(node.getID()).get().getProperty(property.getName()), property.getValue());
-        this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
+        this.log.debug("Updating property {} from {} to {}", property.getName(),
+                this.knowledgeBase.findById(node.getID()).get().getProperty(property.getName()), property.getValue());
+        this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node)
+                .setKnowledgeOrigin(KnowledgeOrigin.DIRECT));
 
         this.shareKnowledge();
 
@@ -83,8 +88,10 @@ public class KnowledgeController extends AbstractController {
         if (this.agentState.current().equals(AgentState.Idle))
             this.eventManager.emit(new IdentifyRiskEvent());
     }
+
     protected void onAssetPropertyChange(SoftwareAsset asset) {
-        this.knowledgeBase.upsertNode(KnowledgeBaseSoftwareAsset.fromNode(asset));
+        this.knowledgeBase.upsertNode(KnowledgeBaseSoftwareAsset.fromNode(asset)
+                .setKnowledgeOrigin(KnowledgeOrigin.DIRECT));
 
         this.shareKnowledge();
 
@@ -97,14 +104,14 @@ public class KnowledgeController extends AbstractController {
         var event = new ShareKnowledgeEvent(
                 this.configuration.getParentNode(),
                 this.knowledgeBase,
-                1
-        );
+                1);
         this.messageBroker.broadcast(new EventMessage<>(event));
     }
 
-    private KnowledgeBase createKnowledgeBaseFromConfig(KnowledgeBase knowledgeBase, AbstractDetailedNode<NodeProperty<?>> origin, List<String> links, List<SoftwareAsset> assets) {
+    private KnowledgeBase createKnowledgeBaseFromConfig(KnowledgeBase knowledgeBase,
+            AbstractDetailedNode<NodeProperty<?>> origin, List<String> links, List<SoftwareAsset> assets) {
         var originNode = KnowledgeBaseNode.fromNode(origin)
-                        .setKnowledgeOrigin(KnowledgeOrigin.DIRECT);
+                .setKnowledgeOrigin(KnowledgeOrigin.DIRECT);
         knowledgeBase.upsertNode(originNode);
         assets.forEach(asset -> {
             var assetNode = KnowledgeBaseSoftwareAsset.fromNode(asset);

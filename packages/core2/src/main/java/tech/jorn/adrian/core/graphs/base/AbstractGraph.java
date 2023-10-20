@@ -5,6 +5,8 @@ import tech.jorn.adrian.core.graphs.traversal.IGraphSearch;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> implements IGraph<N> {
@@ -16,7 +18,7 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
         if (nodes.contains(node)) nodes.remove(node);
         nodes.add(node); // This might be a bit extra ash we are updating the keys of the map
 
-        var links = adjacent.getOrDefault(node, new ArrayList<>());
+        var links = adjacent.getOrDefault(node, new CopyOnWriteArrayList<>());
         if (adjacent.containsKey(node)) adjacent.remove(node);
         adjacent.put(node, links);
     }

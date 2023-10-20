@@ -13,4 +13,9 @@ public class CancelProposalEvent extends Event {
     public Auction getAuction() {
         return auction;
     }
+
+    @Override
+    public boolean isImmediate() {
+        return true;
+    }
 }

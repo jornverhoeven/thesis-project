@@ -102,6 +102,10 @@ public class AuctionManager {
 
     public void receiveProposal(AuctionProposal proposal, INode participant) {
         var auction = this.auction.current();
+        if (auction == null) {
+            this.log.warn("Received proposal for unknown auction");
+            return;
+        }
         if (!auction.getId().equals(proposal.auction().getId())) {
             this.log.warn("Should not have received a proposal when not the auctioneer node");
             return;

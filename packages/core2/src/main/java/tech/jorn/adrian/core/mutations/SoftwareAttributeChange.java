@@ -24,8 +24,7 @@ public class SoftwareAttributeChange<N extends AbstractDetailedNode<?>, P extend
     @Override
     public boolean isApplicable(N node) {
         var current = node.getProperty(this.newValue.getName());
-        System.out.println(this.newValue.getName() + " " + current.orElse("") + " " + this.newValue.getValue() + " == " + current.map(c -> !c.equals(this.newValue.getValue()))
-                .orElse(true));
+        System.out.println("current: " + current + " new: " + this.newValue.getValue());
         return current.map(c -> !c.equals(this.newValue.getValue()))
                 .orElse(true);
     }

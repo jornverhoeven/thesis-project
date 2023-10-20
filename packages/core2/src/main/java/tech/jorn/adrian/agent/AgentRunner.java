@@ -66,6 +66,11 @@ public class AgentRunner {
         messageBroker.registerMessageHandler(message -> {
             if (message instanceof EventMessage<?> m) eventManager.emit(m.getEvent());
         });
+
+        var thread = new Thread(() -> {
+            agent.start();
+        });
+        thread.start();
     }
 }
 

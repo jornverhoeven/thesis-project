@@ -3,7 +3,7 @@
         <!-- Console appender configuration -->
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout
-                    pattern="%d{HH:mm:ss,SSS} %highlight{%-5p}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green bold, DEBUG=black, TRACE=blue} [%-8t] %-12c{1} - %m%n"/>
+                    pattern="%d{HH:mm:ss,SSS} %r %highlight{%-5p}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green bold, DEBUG=black, TRACE=blue} [%-8t] %-12c{1} - %m%n"/>
 
         </Console>
     </Appenders>
