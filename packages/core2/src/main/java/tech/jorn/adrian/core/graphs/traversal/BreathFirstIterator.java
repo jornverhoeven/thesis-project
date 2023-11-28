@@ -25,6 +25,7 @@ public class BreathFirstIterator<N extends INode> implements IGraphSearch<N> {
             N current = currentPath.get(currentPath.size() - 1);
 
             if (current.equals(goal)) paths.add(currentPath);
+            if (currentPath.size() > 5) continue;
 
             for (N neighbour : graph.getNeighbours(current)) {
                 if (currentPath.contains((neighbour))) continue;

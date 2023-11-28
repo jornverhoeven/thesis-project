@@ -17,7 +17,7 @@ public interface IAgentConfiguration {
         return this.getParentNode().getID();
     }
 
-    default int getAuctionTimeout() { return 30 * 1000; }
+    default int getAuctionTimeout() { return 10 * 1000; }
 
     default boolean canMigrate() { return true; }
 

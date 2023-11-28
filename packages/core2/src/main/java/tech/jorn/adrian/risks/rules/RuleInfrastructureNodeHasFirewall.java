@@ -2,7 +2,7 @@ package tech.jorn.adrian.risks.rules;
 
 public class RuleInfrastructureNodeHasFirewall extends PropertyBasedRule {
     public RuleInfrastructureNodeHasFirewall() {
-        super("hasFirewall", "infrastructureNodeHasFirewall", 0.02f, 0.2f);
+        super("hasFirewall", "infrastructureNodeHasFirewall", 0.8f, 0.2f);
     }
 
     @Override

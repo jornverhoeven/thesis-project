@@ -1,13 +1,18 @@
 package tech.jorn.adrian.core.graphs.knowledgebase;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
 import tech.jorn.adrian.core.graphs.base.AbstractGraph;
 import tech.jorn.adrian.core.graphs.base.GraphLink;
+import tech.jorn.adrian.core.graphs.base.VoidNode;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphSoftwareAsset;
 import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
+import tech.jorn.adrian.core.risks.RiskReport;
 
 public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLink<KnowledgeBaseEntry<?>>> {
     public KnowledgeBase() {
@@ -33,6 +38,7 @@ public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLin
         });
         knowledgeBase.getNodes().forEach(node -> {
             var internalNode = this.findById(node.getID());
+            if (internalNode.isEmpty()) return;
 
             // We need to make sure that all links are also updated
             var internalAdjacent = this.adjacent.getOrDefault(node, new CopyOnWriteArrayList<>());
@@ -71,6 +77,36 @@ public class KnowledgeBase extends AbstractGraph<KnowledgeBaseEntry<?>, GraphLin
             });
         });
         return clone;
+    }
+
+    public KnowledgeBase mergeAttackGraph(RiskReport report) {
+        report.graph().getNodes().forEach(node -> {
+            if (node.getID().equals(VoidNode.ID)) return;
+
+            var knowledge = this.findById(node.getID());
+            if (knowledge.isPresent() && knowledge.get().getKnowledgeOrigin().equals(KnowledgeOrigin.DIRECT)) return;
+
+            if (node instanceof AttackGraphNode n) {
+                this.upsertNode(KnowledgeBaseNode.fromNode(n)
+                        .setKnowledgeOrigin(KnowledgeOrigin.INDIRECT));
+            } else if (node instanceof AttackGraphSoftwareAsset n) {
+                this.upsertNode(KnowledgeBaseSoftwareAsset.fromNode(n)
+                        .setKnowledgeOrigin(KnowledgeOrigin.INDIRECT));
+            }
+        });
+        report.graph().getNodes().forEach(parent -> {
+            var links = report.graph().getLinks(parent);
+            var knowledgeParent = this.findById(parent.getID()).get();
+            var neighbours = this.adjacent.getOrDefault(knowledgeParent, new ArrayList<>());
+
+            links.forEach(link -> {
+                var node = this.findById(link.getNode().getID()).get();
+                var exists = neighbours.stream().anyMatch(n -> n.getNode().getID().equals(node.getID()));
+                if (exists) return;
+                this.addEdge(knowledgeParent, node);
+            });
+        });
+        return this;
     }
 
 }

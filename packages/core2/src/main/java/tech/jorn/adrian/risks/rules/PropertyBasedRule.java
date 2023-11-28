@@ -1,10 +1,12 @@
 package tech.jorn.adrian.risks.rules;
 
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
+import tech.jorn.adrian.core.graphs.base.VoidNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
+import tech.jorn.adrian.core.graphs.risks.AttackGraphSoftwareAsset;
 import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.properties.AbstractProperty;
@@ -48,6 +50,12 @@ public abstract class PropertyBasedRule extends RiskRule {
                 // Break if the node and parent are equal somehow
                 if (parent.getID().equals(node.getID())) return;
 
+                // If the parent is VOID, it must be exposed
+                 var exposed = (boolean) node.getProperty("exposed").orElse(false);
+                 if (parent.getID().equals(VoidNode.ID)) {
+                     if (!exposed) return;
+                 }
+
                 // If the parent is a software asset, and it is ignored, we skip it
                 if (parent instanceof KnowledgeBaseSoftwareAsset && !this.allowAssetParent()) return;
                 // If the parent is a node, and it is ignored, we skip it
@@ -88,10 +96,11 @@ public abstract class PropertyBasedRule extends RiskRule {
     }
 
     public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
+        if ((node instanceof KnowledgeBaseSoftwareAsset) || (node instanceof AttackGraphSoftwareAsset)) return Optional.empty();
         System.out.println("Checking mitigation for " + node.getID() + " with property " + this.getProperty() + " and value " + node.getProperty(this.getProperty()) + " mitigated " +this.isMitigated(node.getProperty(this.getProperty())));
         if (this.isMitigated(node.getProperty(this.getProperty()))) return Optional.empty();
 
-        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), true), 100, 1000, this);
+        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), true), 100, 2000, this);
         return Optional.of(adaptation);
     }
 }

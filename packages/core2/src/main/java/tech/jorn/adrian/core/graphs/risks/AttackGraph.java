@@ -21,6 +21,11 @@ public class AttackGraph extends AbstractGraph<AttackGraphEntry<?>, AttackGraphL
 
     public void addEdge(AttackGraphEntry<?> from, AttackGraphEntry<?> to, Risk risk) {
         var adj = this.adjacent.getOrDefault(from, new ArrayList<>());
+
+//        var riskExists = adj.stream()
+//                .anyMatch(link -> link.getNode().equals(to) && link.getRisk().type().equals(risk.type()));
+//        if (riskExists) return;
+
         adj.add(new AttackGraphLink<>(to, risk));
         this.adjacent.put(from, adj);
     }
@@ -67,10 +72,14 @@ public class AttackGraph extends AbstractGraph<AttackGraphEntry<?>, AttackGraphL
                     .map(link -> link.getRisk().factor())
                     .toList();
             var edgeProbability = probabilityCalculator.calculate(probabilities);
+//            System.out.println(probabilities.stream().map(p -> p.toString()).collect(Collectors.joining(",")) + "=" + edgeProbability);
             result.add(edgeProbability);
         }
-        return result.stream()
+
+        var probability = result.stream()
                 .reduce(1.0f, (acc, cur) -> acc * cur);
+//        System.out.println("Final probability: " + probability);
+        return probability;
     }
 
     public List<AttackGraphLink<AttackGraphEntry<?>>> getNeighboursWithRisks(AttackGraphEntry<?> node) {

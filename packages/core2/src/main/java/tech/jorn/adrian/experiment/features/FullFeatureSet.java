@@ -45,7 +45,7 @@ public class FullFeatureSet extends FeatureSet {
     IAgent getAgent(Infrastructure infrastructure, InfrastructureNode node) {
         var neighbours = this.getNeighboursFromInfrastructure(infrastructure, node);
         var assets = this.getAssetsFromInfrastructure(infrastructure, node);
-        var configuration = new ExperimentalConfiguration(node, neighbours, assets);
+        var configuration = new AgentConfiguration(node, neighbours, assets);
 
         var messageQueue = new InMemoryQueue();
         var knowledgeBase = new KnowledgeBase();

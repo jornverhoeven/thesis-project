@@ -10,11 +10,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tech.jorn.adrian.agent.events.AuctionBidEvent;
+import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
 import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.events.queue.IEventQueue;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
@@ -47,8 +50,21 @@ public class EventManager {
     }
 
     public void emit(Event event) {
+        if (this.agentState.current().equals(AgentState.Shutdown)) return;
+        // if (event.isDebugEvent()) {
+        // processEvent(event, false);
+        // return;
+        // }
+
+        // if (this.agentState.current().equals(AgentState.Migrating) && !( event
+        // instanceof ShareKnowledgeEvent )) {
+        // this.log.debug("Dropping event \033[4m{}\033[0m because agent is migrating",
+        // event.getClass().getSimpleName());
+        // return;
+        // }
         if (event.isImmediate()) {
-            // this.log.debug("Executing immediate \033[4m{}\033[0m", event.getClass().getSimpleName());
+            // this.log.debug("Executing immediate \033[4m{}\033[0m",
+            // event.getClass().getSimpleName());
             this.log.debug("Scheduled immediate \033[4m{}\033[0m", event.getClass().getSimpleName());
             if (this._queue.peekFirst() != null && this._queue.peekFirst().getID().equals(event.getID())) {
                 this.log.debug("Event \033[4m{}\033[0m is already scheduled", event.getClass().getSimpleName());
@@ -77,7 +93,7 @@ public class EventManager {
             var event = this._queue.pollFirst();
             if (event == null)
                 return;
-            
+
             this.processEvent(event, false);
             if (!this._queue.isEmpty())
                 this.scheduleProcessing();
@@ -85,26 +101,19 @@ public class EventManager {
     }
 
     private <E extends Event> void processEvent(E event, boolean immediate) {
-        // if (this.processing.availablePermits() == 0 && !immediate) {
-        // this.log.warn("Attempted to process event \033[4m{}\033[0m while processing
-        // another event",
-        // event.getClass().getSimpleName());
-        // return;
-        // }
-
         var maxtime = new Date(System.currentTimeMillis() - 10 * 1000);
         if (event.getTime().before(maxtime)) {
-            this.log.warn("Event \033[4m{}\033[0m is {} seconds old", event.getClass().getSimpleName(),
-                    (System.currentTimeMillis() - event.getTime().getTime()) / 1000);
             return;
         }
 
         try {
             this.processing.acquire();
 
-            if (!event.isDebugEvent())
-                this.log.debug("Processing event \033[4m{}\033[0m {}", event.getClass().getSimpleName(), event.getID());
-
+            if (!event.isDebugEvent()) {
+                if (event instanceof AuctionBidEvent e)
+                    this.log.debug("Processing event \033[4m{}\033[0m {}. {}", event.getClass().getSimpleName(), event.getID(), e.getProposal());
+                else this.log.debug("Processing event \033[4m{}\033[0m {}", event.getClass().getSimpleName(), event.getID());
+            }
             var handlers = this.getEventHandlers(event.getClass());
             if (handlers != null) {
                 for (var handler : handlers) {
@@ -130,6 +139,16 @@ public class EventManager {
 
     public IEventQueue getQueue() {
         return queue;
+    }
+
+    public void terminate() {
+        try {
+            this._queue.clear();
+            this.executorService.shutdown();
+            this.executorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            this.log.error("Failed to terminate event manager");
+        }
     }
 }
 

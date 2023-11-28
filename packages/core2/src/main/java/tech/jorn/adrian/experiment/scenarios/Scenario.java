@@ -9,6 +9,7 @@ import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Supplier;
@@ -22,8 +23,8 @@ public abstract class Scenario {
 
 
     protected final FlagDispatcher finished = new FlagDispatcher();
-    protected final EventDispatcher<IAgent> newAgent = new EventDispatcher<>();
-    protected final EventDispatcher<IAgent> removeAgent = new EventDispatcher<>();
+    protected final EventDispatcher<ExperimentalAgent> newAgent = new EventDispatcher<>();
+    protected final EventDispatcher<ExperimentalAgent> removeAgent = new EventDispatcher<>();
     private Timer timeoutHandle = null;
 
     public Scenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher, int maxExecutionTime) {
@@ -71,7 +72,7 @@ public abstract class Scenario {
         timer.schedule(task, delay);
     }
 
-    public void scheduleEvents(List<ExperimentalAgent> agents) {
+    public void scheduleEvents(Queue<ExperimentalAgent> agents) {
         this.log.debug("Scheduling scenario events for {}", this.getClass().getSimpleName());
 
         this.scheduleExecutionTimeout();
@@ -80,7 +81,7 @@ public abstract class Scenario {
         this.log.info("All events are scheduler for {}", this.getClass().getSimpleName());
     }
 
-    public abstract void onScheduleEvents(List<ExperimentalAgent> agents);
+    public abstract void onScheduleEvents(Queue<ExperimentalAgent> agents);
 
     public SubscribableFlagEvent onFinished() {
         return this.finished.subscribable;
@@ -89,10 +90,10 @@ public abstract class Scenario {
         return this.finished.isRaised();
     }
 
-    public SubscribableEvent<IAgent> onNewAgent() {
+    public SubscribableEvent<ExperimentalAgent> onNewAgent() {
         return this.newAgent.subscribable;
     }
-    public SubscribableEvent<IAgent> onAgentRemoved() {
+    public SubscribableEvent<ExperimentalAgent> onAgentRemoved() {
         return this.removeAgent.subscribable;
     }
 }

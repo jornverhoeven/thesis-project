@@ -12,6 +12,7 @@ import tech.jorn.adrian.experiment.messages.Envelope;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
 
 public class UnstableInfrastructureScenario extends Scenario {
@@ -24,7 +25,7 @@ public class UnstableInfrastructureScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents(List<ExperimentalAgent> agents) {
+    public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
 
         after(30 * 1000, () -> {
             var nodeId = "soc-temperature";

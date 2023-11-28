@@ -8,6 +8,7 @@ import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 import java.util.List;
+import java.util.Queue;
 
 public class NoChangeScenario extends Scenario {
     Logger log = LogManager.getLogger(NoChangeScenario.class);
@@ -17,8 +18,8 @@ public class NoChangeScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents(List<ExperimentalAgent> agents) {
-        this.after(5 * 60 * 1000, () -> {
+    public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
+        this.after(3 * 60 * 1000, () -> {
             this.log.debug("Waiting for silence");
             this.waitForSilence(10 * 1000, this.finished::raise);
         });

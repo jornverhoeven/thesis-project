@@ -6,6 +6,7 @@ import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 import java.util.List;
+import java.util.Queue;
 
 public class MixedScenario extends Scenario {
     public MixedScenario(Infrastructure infrastructure, EventDispatcher<Envelope> messageDispatcher) {
@@ -13,7 +14,7 @@ public class MixedScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents(List<ExperimentalAgent> agents) {
+    public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
 
     }
 }

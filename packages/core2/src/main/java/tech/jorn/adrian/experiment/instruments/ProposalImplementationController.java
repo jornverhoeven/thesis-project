@@ -51,7 +51,7 @@ public class ProposalImplementationController extends AbstractController {
         this.eventManager.emit(new SearchForProposalEvent(auction));
     }
     public void selectedProposal(SelectedProposalEvent event) {
-        this.log.info("Selected proposal that will reduce the damage to {}: {}", event.getProposal().newDamage(), event.getProposal().mutation().toString());
+        this.log.info("Selected proposal that will reduce the damage to {}: {}", event.getProposal().updatedReport().damage(), event.getProposal().mutation().toString());
         this.eventManager.emit(new ApplyProposalEvent(event.getProposal()));
     }
 }

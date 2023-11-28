@@ -2,6 +2,8 @@ package tech.jorn.adrian.agent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import tech.jorn.adrian.agent.controllers.RiskController;
 import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgent;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
@@ -51,6 +53,9 @@ public class AdrianAgent implements IAgent {
 
     public void stop() {
         this.agentState.setCurrent(AgentState.Shutdown);
+
+        RiskController riskController = (RiskController) this.controllers.stream().filter(c -> c instanceof RiskController).findFirst().get();
+        riskController.stop();
     }
 
     @Override

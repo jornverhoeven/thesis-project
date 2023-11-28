@@ -9,6 +9,7 @@ import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
+import tech.jorn.adrian.core.graphs.base.VoidNode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
@@ -23,6 +24,9 @@ import tech.jorn.adrian.core.properties.SoftwareProperty;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class KnowledgeController extends AbstractController {
     Logger log = LogManager.getLogger(KnowledgeController.class);
@@ -32,6 +36,9 @@ public class KnowledgeController extends AbstractController {
     private final IAgentConfiguration configuration;
     private boolean hasSharedInitialKnowledge = false;
     private boolean triggerRiskIdentificationOnIdle = false;
+
+    private ScheduledExecutorService knowledgeShareScheduler = Executors.newSingleThreadScheduledExecutor();
+    private Future<?> knowledgeShareFuture;
 
     public KnowledgeController(KnowledgeBase knowledgeBase, MessageBroker messageBroker, EventManager eventManager,
             IAgentConfiguration configuration, SubscribableValueEvent<AgentState> agentState) {
@@ -45,7 +52,7 @@ public class KnowledgeController extends AbstractController {
                 configuration.getNeighbours(), configuration.getAssets());
 
         this.eventManager.registerEventHandler(ShareKnowledgeEvent.class, this::processKnowledge);
-        this.configuration.getParentNode().onPropertyChange().subscribe(this::onNodePropertyChange);
+        this.configuration.getParentNode().onPropertyChange().subscribe(this::debouncedPropertyChange);
         this.configuration.getAssets()
                 .forEach(asset -> asset.onPropertyChange().subscribe(() -> this.onAssetPropertyChange(asset)));
 
@@ -75,6 +82,15 @@ public class KnowledgeController extends AbstractController {
         }
     }
 
+    protected void debouncedPropertyChange(NodeProperty<?> property) {
+        if (this.knowledgeShareFuture != null && !this.knowledgeShareFuture.isDone()) {
+            this.knowledgeShareFuture.cancel(true);
+        }
+        this.knowledgeShareFuture = this.knowledgeShareScheduler.schedule(() -> {
+            this.onNodePropertyChange(property);
+        }, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
     protected void onNodePropertyChange(NodeProperty<?> property) {
         var node = this.configuration.getParentNode();
         this.log.debug("Updating property {} from {} to {}", property.getName(),
@@ -84,7 +100,7 @@ public class KnowledgeController extends AbstractController {
 
         this.shareKnowledge();
 
-        this.triggerRiskIdentificationOnIdle = true;
+        // this.triggerRiskIdentificationOnIdle = true;
         if (this.agentState.current().equals(AgentState.Idle))
             this.eventManager.emit(new IdentifyRiskEvent());
     }
@@ -95,7 +111,7 @@ public class KnowledgeController extends AbstractController {
 
         this.shareKnowledge();
 
-        this.triggerRiskIdentificationOnIdle = true;
+        // this.triggerRiskIdentificationOnIdle = true;
         if (this.agentState.current().equals(AgentState.Idle))
             this.eventManager.emit(new IdentifyRiskEvent());
     }
@@ -110,9 +126,18 @@ public class KnowledgeController extends AbstractController {
 
     private KnowledgeBase createKnowledgeBaseFromConfig(KnowledgeBase knowledgeBase,
             AbstractDetailedNode<NodeProperty<?>> origin, List<String> links, List<SoftwareAsset> assets) {
+
+        var voidNode = VoidNode.forKnowledge();
+        knowledgeBase.upsertNode(voidNode);
+
         var originNode = KnowledgeBaseNode.fromNode(origin)
                 .setKnowledgeOrigin(KnowledgeOrigin.DIRECT);
         knowledgeBase.upsertNode(originNode);
+
+        var isExposed = (Boolean) origin.getProperty("exposed").orElse(false);
+        if (isExposed)
+            knowledgeBase.addEdge(voidNode, originNode);
+
         assets.forEach(asset -> {
             var assetNode = KnowledgeBaseSoftwareAsset.fromNode(asset);
             knowledgeBase.upsertNode(assetNode);

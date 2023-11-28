@@ -7,6 +7,8 @@ import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class AgentFactory {
     private final FeatureSet featureSet;
@@ -16,9 +18,9 @@ public class AgentFactory {
     }
 
 
-    public List<ExperimentalAgent> fromInfrastructure(Infrastructure infrastructure) {
+    public Queue<ExperimentalAgent> fromInfrastructure(Infrastructure infrastructure) {
         var nodes = infrastructure.listNodes();
-        var agents = new ArrayList<ExperimentalAgent>();
+        var agents = new ConcurrentLinkedQueue<ExperimentalAgent>();
 
         nodes.forEach(node -> {
             var agent = this.fromNode(infrastructure, node);

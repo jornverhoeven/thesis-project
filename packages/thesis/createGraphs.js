@@ -24,6 +24,7 @@ function main() {
     });
     writeToTexFile("multi-run", "no-change", createMultiRun());
     writeToTexFile("small-infra", "no-change", createSmallInfra());
+    // writeToTexFile("large-infra", "large", createLargeInfra());
 }
 
 main();
@@ -99,6 +100,12 @@ function createSmallInfra() {
     const metric = 'riskCount-global';
     return createForMetric("small", metric, true)(`Remaining Risks`, "Risks");
 }
+
+function createLargeInfra() {
+    const metric = 'riskDamage-global';
+    return createForMetric("large", metric, true)(`Remaining Risks`, "Risks");
+}
+
 function createForMetric(scenario, metric, noLegend = false) {
     const full = loadCSV(`./output/${scenario}/${featureSet.full}/metrics.csv`);
     const knowledgeSharing = loadCSV(`./output/${scenario}/${featureSet.knowledgeSharing}/metrics.csv`);

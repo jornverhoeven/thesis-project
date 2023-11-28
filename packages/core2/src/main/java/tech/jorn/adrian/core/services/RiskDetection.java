@@ -9,5 +9,5 @@ import java.util.List;
 public interface RiskDetection {
     AttackGraph createAttackGraph(KnowledgeBase knowledgeBase);
 
-    List<RiskReport> identifyRisks(AttackGraph attackGraph);
+    List<RiskReport> identifyRisks(AttackGraph attackGraph, boolean isContained);
 }

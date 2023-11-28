@@ -50,6 +50,18 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
         this.adjacent.put(from, adj);
     }
 
+    public void removeEdgeByID(String from, String to) {
+        var parent = this.findById(from);
+        var target = this.findById(to);
+
+        if (parent.isEmpty()) return;
+        if (target.isEmpty()) return;
+
+        var adj = this.adjacent.getOrDefault(parent.get(), new ArrayList<>());
+        adj.removeIf(l -> l.getNode().equals(target.get()));
+        this.adjacent.put(parent.get(), adj);
+    }
+
     @Override
     public Optional<N> findById(String id) {
         return this.adjacent.keySet().stream()
@@ -59,7 +71,7 @@ public abstract class AbstractGraph<N extends INode, L extends GraphLink<N>> imp
 
     @Override
     public List<N> getNeighbours(N node) {
-        return this.adjacent.get(node).stream()
+        return this.adjacent.getOrDefault(node, List.of()).stream()
                 .map(GraphLink::getNode)
                 .collect(Collectors.toList());
     }

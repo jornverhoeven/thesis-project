@@ -10,8 +10,11 @@ import tech.jorn.adrian.core.auction.AuctionProposal;
 import tech.jorn.adrian.agent.events.AuctionCancelledEvent;
 import tech.jorn.adrian.agent.events.AuctionFinalizedEvent;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.base.VoidNode;
+import tech.jorn.adrian.core.graphs.infrastructure.InfrastructureNode;
+import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
@@ -21,6 +24,9 @@ import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.proposals.IProposalSelector;
 import tech.jorn.adrian.experiment.messages.InMemoryBroker;
 
+import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -51,9 +57,19 @@ public class AuctionManager {
     private final ValueDispatcher<Auction> auction = new ValueDispatcher<>(null);
 
     public Auction startAuction(RiskReport riskReport) {
+        try {
+            Thread.sleep((int) Math.floor(Math.random() * 225) + 25);
+        } catch (Exception e) {
+            this.log.error("Could not sleep");
+        }
+        if (this.auction.current() != null) {
+            this.log.warn("Started or joined another auction while in a grace period");
+            return null;
+        }
+
         var auction = new Auction(new IDGenerator().getID(), this.configuration.getParentNode(), new ArrayList<>(),
                 riskReport);
-        this.log.info("-- Auction Started!! {}", auction.getId());
+        this.log.info("-- Auction Started!! {} damage {}", auction.getId(), auction.getRiskReport().damage());
 
         var timer = new Timer();
         var manager = this;
@@ -79,6 +95,21 @@ public class AuctionManager {
             this.messageBroker.send(node, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
             this.participants.add(node);
         });
+
+        // Invite neighbours to the auction
+        var inviteNeighbours = true;
+        if (inviteNeighbours && riskReport.path().size() <= 5) {
+            var additionalNodes = new ArrayList<String>();
+            this.configuration.getNeighbours().forEach(node -> {
+                var tempNode = new AttackGraphNode(node);
+                if (this.participants.contains(tempNode)) return;
+
+                this.messageBroker.send(tempNode, new EventMessage<>(new JoinAuctionRequestEvent(auction)));
+                this.participants.add(tempNode);
+                additionalNodes.add(node);
+            });
+            this.log.debug("Added {} neighbouring nodes {}", additionalNodes.size(), String.join(", ", additionalNodes));
+        }
 
         this.auction.setCurrent(auction);
         this.eventManager.emit(new SearchForProposalEvent(auction));
@@ -115,7 +146,7 @@ public class AuctionManager {
             this.log.info("Node {} did not send a proposal", participant.getID());
         } else {
             this.log.info("Received proposal from {} which reduces damage to {}", participant.getID(),
-                    proposal.newDamage());
+                    proposal.updatedReport().damage());
         }
 
         this.proposals.put(participant, Optional.ofNullable(proposal));
@@ -145,13 +176,13 @@ public class AuctionManager {
 
     public void cancelProposal(Auction auction) {
         var event = new AuctionBidEvent(this.configuration.getParentNode(), new AuctionProposal(
-                this.configuration.getParentNode(), auction, null, Float.MAX_VALUE, Float.MAX_VALUE));
+                this.configuration.getParentNode(), auction, null, null));
         this.messageBroker.send(auction.getHost(), new EventMessage<>(event));
     }
 
     public void onAuctionJoined(Auction auction, INode participant) {
         this.log.debug("Agent {} joined auction", participant.getID());
-        this.proposals.put(participant, Optional.empty());
+        this.proposals.putIfAbsent(participant, Optional.empty());
         this.confirmed.add(participant);
     }
 
@@ -180,14 +211,25 @@ public class AuctionManager {
     private void finalizeAuction(Auction auction) {
         this.log.info("Finalizing auction {}, trying to reduce damage value {}", auction.getId(),
                 auction.getRiskReport().damage());
-        this.log.debug("Received proposals from: \n{}", proposals.values()
-                .stream()
-                .map(p -> p.isPresent() && p.get().mutation() != null
+        try {
+            var path = Path.of("./graphs/" + auction.getId() + "/auction.txt");
+            Files.createDirectories(path.getParent());
+            var writer = new FileWriter(path.toFile());
+            writer.write("Host: " + auction.getHost().getID() + "\n");
+            writer.write("Risk: " + auction.getRiskReport().toString() + "\n");
+            writer.write("Proposals:\n");
+            for (Optional<AuctionProposal> p : proposals.values()) {
+                writer.write(p.isPresent() && p.get().mutation() != null
                         ? String.format("- proposal from %s: reducing to %.2f by %s", p.get().origin().getID(),
-                                p.get().newDamage(), p.get().mutation())
+                        p.get().updatedReport().damage(), p.get().mutation())
                         : String.format("- proposal from %s: nothing",
-                                p.isPresent() ? p.get().origin().getID() : "unknown"))
-                .collect(Collectors.joining("\n")));
+                        p.isPresent() ? p.get().origin().getID() : "unknown") + "\n");
+            }
+            writer.close();
+        } catch (Exception e) {
+            log.error(e);
+        }
+
         this.timeout.cancel();
 
         if (proposals.isEmpty()) {
@@ -200,7 +242,7 @@ public class AuctionManager {
                 .filter(p -> p.isPresent())
                 .map(p -> p.get())
                 .toList(),
-                auction.getRiskReport().damageValue());
+                auction.getRiskReport().damage() - 0.1f);
         if (proposal.isEmpty()) {
             this.participants.forEach(
                     node -> this.messageBroker.send(node, new EventMessage<>(new AuctionCancelledEvent(auction))));
@@ -211,13 +253,12 @@ public class AuctionManager {
 
         this.log.info("Selected proposal from {}: reducing to {} by {}",
                 proposal.get().origin().getID(),
-                proposal.get().newDamage(),
+                proposal.get().updatedReport().damage(),
                 proposal.get().mutation().toString());
 
+        // TODO: If no proposal was sent, we might not want to sent this event
+        var event = new AuctionFinalizedEvent(auction, proposal.get());
         this.participants.forEach(node -> {
-
-            // TODO: If no proposal was sent, we might not want to sent this event
-            var event = new AuctionFinalizedEvent(auction, proposal.get());
             if (node.equals(this.configuration.getNodeID())) {
                 this.eventManager.emit(event);
             } else {
@@ -239,8 +280,15 @@ public class AuctionManager {
     }
 
     private boolean isSaturated() {
-        return this.proposals.size() == participants.size()
-                && proposals.values().stream().allMatch(Objects::nonNull);
+        var validProposalCount = this.proposals.values().stream().filter(Optional::isPresent).count();
+        this.log.debug("participants {}, confirmed {}, proposals {}, saturated {}",
+                participants.size(),
+                confirmed.size(),
+                validProposalCount,
+                validProposalCount == participants.size()
+                        && proposals.values().stream().allMatch(Optional::isPresent));
+        return validProposalCount == participants.size()
+                && proposals.values().stream().allMatch(Optional::isPresent);
     }
 
     public void reset() {

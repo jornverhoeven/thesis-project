@@ -47,13 +47,23 @@ public class EntryRule extends RiskRule {
         List<KnowledgeBaseEntry<?>> nodes = new ArrayList<>();
 
         knowledgeBase.getNodes().forEach(node -> {
+            if (node.getID().equals(VoidNode.getIncoming().getID())) return;
             if (this.includeSoftware && node instanceof KnowledgeBaseSoftwareAsset) nodes.add(node);
             if (this.includeNodes && node instanceof KnowledgeBaseNode) nodes.add(node);
         });
 
         nodes.forEach(node -> {
+            var exposed = (boolean) node.getProperty("exposed").orElse(false);
+            if (!exposed) return;
+
             var risk = new Risk("entry", this.factor, false, this);
             attackGraph.accept(new RiskEdge(VoidNode.getIncoming(), node, risk));
         });
+    }
+
+    @Override
+    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(
+            N node) {
+        return Optional.empty();
     }
 }

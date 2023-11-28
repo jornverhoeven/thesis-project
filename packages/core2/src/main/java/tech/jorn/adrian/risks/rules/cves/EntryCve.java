@@ -50,6 +50,10 @@ public class EntryCve extends CveRule<String> {
         });
 
         nodes.forEach(node -> {
+            var exposed = (boolean) node.getProperty("exposed").orElse(false);
+            if (!exposed) return;
+
+
             var property = node.getProperty(this.getProperty());
             if (property.isEmpty()) return;
 

@@ -1,28 +1,29 @@
 package tech.jorn.adrian.agent.controllers;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tech.jorn.adrian.agent.events.*;
+
+import tech.jorn.adrian.agent.events.FoundRiskEvent;
+import tech.jorn.adrian.agent.events.IdentifyRiskEvent;
+import tech.jorn.adrian.agent.events.InitiateAuctionEvent;
+import tech.jorn.adrian.agent.events.SelectedRiskEvent;
 import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.AbstractController;
-import tech.jorn.adrian.core.events.Event;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
-import tech.jorn.adrian.core.observables.SubscribableEvent;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
-import tech.jorn.adrian.core.services.proposals.ProposalManager;
-import tech.jorn.adrian.core.services.proposals.LowestDamage;
-import tech.jorn.adrian.core.services.proposals.IProposalSelector;
-import tech.jorn.adrian.core.services.risks.HighestRisk;
-import tech.jorn.adrian.core.services.risks.IRiskSelector;
+import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.RiskDetection;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
-import java.util.stream.Collectors;
+import tech.jorn.adrian.core.services.risks.IRiskSelector;
 
 public class RiskController extends AbstractController {
     Logger log = LogManager.getLogger(RiskController.class);
@@ -32,6 +33,9 @@ public class RiskController extends AbstractController {
     private final KnowledgeBase knowledgeBase;
 
     private Timer riskAssessmentTimer;
+    private ScheduledExecutorService riskAssessmentScheduler = Executors.newSingleThreadScheduledExecutor();
+    private Future<?> riskAssessmentFuture;
+    private RiskReport lastRiskReport;
 
     public RiskController(RiskDetection riskDetection, KnowledgeBase knowledgeBase, EventManager eventManager,
             IRiskSelector riskSelector, IAgentConfiguration configuration,
@@ -44,7 +48,7 @@ public class RiskController extends AbstractController {
         this.knowledgeBase = knowledgeBase;
         this.riskSelector = riskSelector;
 
-        this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::identifyRisk);
+        this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::debounced);
         this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent);
         this.eventManager.registerEventHandler(SelectedRiskEvent.class, this::selectedRiskEvent);
 
@@ -52,11 +56,24 @@ public class RiskController extends AbstractController {
         this.scheduleRiskAssessment();
     }
 
+    protected void debounced(IdentifyRiskEvent event) {
+        if (this.riskAssessmentFuture != null) {
+            this.riskAssessmentFuture.cancel(true);
+        }
+
+        this.riskAssessmentFuture = this.riskAssessmentScheduler.schedule(() -> {
+            this.identifyRisk(event);
+        }, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
     protected void identifyRisk(IdentifyRiskEvent event) {
         // if (!this.canDoRiskAssessment()) return;
 
         var attackGraph = this.riskDetection.createAttackGraph(this.knowledgeBase);
-        var risks = this.riskDetection.identifyRisks(attackGraph);
+        var risks = this.riskDetection.identifyRisks(attackGraph, true);
+        if (this.lastRiskReport != null) {
+            risks.removeIf(r -> r.toString().equals(this.lastRiskReport.toString()));
+        }
         var risk = this.riskSelector.select(risks);
 
         this.log.debug("Found {} risks", risks.size());
@@ -82,6 +99,7 @@ public class RiskController extends AbstractController {
                         .map(INode::getID)
                         .collect(Collectors.joining(" -> ")));
         this.eventManager.emit(new InitiateAuctionEvent(event.getRiskReport()));
+        this.lastRiskReport = event.getRiskReport();
     }
 
     private TimerTask createScheduledRiskAssessmentTask() {
@@ -116,5 +134,10 @@ public class RiskController extends AbstractController {
 
     private boolean canDoRiskAssessment() {
         return this.agentState.current().equals(AgentState.Idle);
+    }
+
+    public void stop() {
+        this.riskAssessmentTimer.cancel();
+        this.riskAssessmentScheduler.shutdownNow();
     }
 }

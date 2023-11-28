@@ -121,8 +121,8 @@ The metrics are defined as follows:
     \item[Weighted sum of damages for remaining risks] The weighted sum of the damage for the risks that have not been mitigated by the agents during the epoch. This can also be seen as the overall damage to the system. It is one of the key indicators of the system's performance. In essence, it is the metric that we are trying to minimize. 
     % \comment{Zoltan}{I think this should be weighted by the probability of those risks}
     \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
-    \item[Time spent auctioning] The time spent by the agents on auctioning.
-    \item[Time spent adapting] The time spent by the agents applying adaptations.
+    \item[Time spent auctioning] The time spent by the agents on auctioning. This time is measured from the moment an auction is initiated, or when an auction is joined, until the auction is finished. 
+    \item[Time spent adapting] The time spent by the agents applying adaptations. This time is measured from the moment a proposal is accepted until the adaptation is finished.
     \item[Total number of messages exchanged] The total number of messages exchanged between agents during the epoch.
     \item[Total number of risks identified] The total number of risks identified by the agents during the epoch.
     \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch.

@@ -3,6 +3,7 @@ package tech.jorn.adrian.experiment.scenarios;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +27,7 @@ public class GrowingInfrastructureScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents(List<ExperimentalAgent> agents) {
+    public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
         var nodeList = new ArrayList<InfrastructureNode>();
         var neighbourList = new HashMap<String, List<String>>();
 
@@ -95,7 +96,7 @@ public class GrowingInfrastructureScenario extends Scenario {
                 var agent = this.agentFactory.apply(node);
                 agent.start();
 
-                this.newAgent.dispatch(agent);
+                this.newAgent.dispatch((ExperimentalAgent) agent);
             });
         }
 

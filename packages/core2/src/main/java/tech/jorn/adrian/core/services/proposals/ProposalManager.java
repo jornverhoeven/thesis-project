@@ -7,6 +7,8 @@ import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.auction.Auction;
 import tech.jorn.adrian.core.auction.AuctionProposal;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
+import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
+import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
@@ -19,6 +21,7 @@ import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Migration;
 import tech.jorn.adrian.core.mutations.Mutation;
+import tech.jorn.adrian.core.mutations.SoftwareAttributeChange;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.properties.AbstractProperty;
 import tech.jorn.adrian.core.properties.NodeProperty;
@@ -26,10 +29,11 @@ import tech.jorn.adrian.core.properties.SoftwareProperty;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.RiskDetection;
-import tech.jorn.adrian.core.services.probability.ProductRiskProbability;
 import tech.jorn.adrian.risks.rules.PropertyBasedRule;
 import tech.jorn.adrian.risks.rules.cves.CveRule;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,8 +50,8 @@ public class ProposalManager {
     private final InfrastructureEffector infrastructureEffector;
 
     public ProposalManager(KnowledgeBase knowledgeBase, RiskDetection riskDetection, IProposalSelector proposalSelector,
-            IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState,
-            InfrastructureEffector infrastructureEffector) {
+                           IAgentConfiguration configuration, ValueDispatcher<AgentState> agentState,
+                           InfrastructureEffector infrastructureEffector) {
         this.knowledgeBase = knowledgeBase;
         this.riskDetection = riskDetection;
         this.proposalSelector = proposalSelector;
@@ -61,70 +65,52 @@ public class ProposalManager {
 
     public List<AuctionProposal> findProposals(Auction auction) {
         var riskReport = auction.getRiskReport();
-        // Add all new nodes to the knowledge base
-        for (int i = 0; i < riskReport.path().size() - 1; i++) {
-            var node = riskReport.path().get(i);
-            var next = riskReport.path().get(i + 1);
+        this.knowledgeBase.mergeAttackGraph(riskReport);
 
-            var updated = false;
-            KnowledgeBaseEntry<?> knowledgeNode;
-            KnowledgeBaseEntry<?> knowledgeNext;
-            {
-                var exists = knowledgeBase.findById(node.getID()).isPresent();
-                if (!exists) {
-                    knowledgeNode = KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) node);
-                    if (knowledgeNode.getKnowledgeOrigin() != KnowledgeOrigin.DIRECT) {
-                        knowledgeBase.upsertNode(knowledgeNode);
-                        updated = true;
-                    }
-                } else {
-                    knowledgeNode = knowledgeBase.findById(node.getID()).get();
-                }
-            }
-            {
-                var exists = knowledgeBase.findById(next.getID()).isPresent();
-                if (!exists) {
-                    knowledgeNext = knowledgeBase.findById(next.getID())
-                            .orElse(next instanceof AttackGraphNode
-                                    ? KnowledgeBaseNode.fromNode((AbstractDetailedNode<NodeProperty<?>>) next)
-                                    : KnowledgeBaseSoftwareAsset
-                                            .fromNode((AbstractDetailedNode<SoftwareProperty<?>>) next));
-                    if (knowledgeNode.getKnowledgeOrigin() != KnowledgeOrigin.DIRECT) {
-                        knowledgeBase.upsertNode(knowledgeNext);
-                        updated = true;
-                    }
-                } else {
-                    knowledgeNext = knowledgeBase.findById(next.getID()).get();
-                }
-            }
-            if (updated)
-                knowledgeBase.addEdge(knowledgeNode, knowledgeNext);
-        }
+        // Calculate all risks before we apply any mutations
+        var risksBefore = this.riskDetection.identifyRisks(
+                this.riskDetection.createAttackGraph(knowledgeBase),
+                false
+        );
 
         // Figure out all possible mutations
         var mutations = this.generateMutations(knowledgeBase, riskReport);
         var proposals = new ArrayList<AuctionProposal>();
+        this.log.debug("Found {} mutations", mutations.size());
         mutations.forEach(mutation -> {
-            var proposal = this.evaluateMutation(mutation, auction);
+            KnowledgeBase clonedKnowledgeBase = knowledgeBase.clone();
+            var proposal = this.evaluateMutation(mutation, auction, clonedKnowledgeBase);
             if (proposal == null)
                 return;
+
+            var risksAfter = this.riskDetection.identifyRisks(
+                    this.riskDetection.createAttackGraph(clonedKnowledgeBase),
+                    false
+            );
+
+            this.log.error(mutation.toString());
+            this.log.error("Found {} risks compared to {} originally", risksAfter.size(), risksBefore.size());
+            this.log.error("Found {} damage compared to {} damage originally", risksAfter.stream().mapToDouble(RiskReport::damage).sum(), risksBefore.stream().mapToDouble(RiskReport::damage).sum());
+
             proposals.add(proposal);
-            this.log.debug("New probability {} compared to old probability {} for {}", proposal.probability(),
+            this.log.debug("New probability {} compared to old probability {} for {}",
+                    proposal.updatedReport().probability(),
                     riskReport.probability(), mutation.toString());
-            this.log.debug("New damage {} compared to old damage {}", proposal.newDamage(), riskReport.damage());
+            this.log.debug("New damage {} compared to old damage {}",
+                    proposal.updatedReport().damage(),
+                    riskReport.damage());
         });
 
         return proposals;
     }
 
-    private AuctionProposal evaluateMutation(Mutation<?> mutation, Auction auction) {
+    private AuctionProposal evaluateMutation(Mutation<?> mutation, Auction auction, KnowledgeBase clonedKnowledgeBase) {
         this.log.debug("Evaluating mutation {}", mutation.toString());
-        KnowledgeBase clonedKnowledgeBase = knowledgeBase.clone();
 
         if (mutation instanceof Migration<?, ?>)
             return this.evaluateMigration((Migration<?, ?>) mutation, auction, clonedKnowledgeBase);
-        else if (mutation instanceof AttributeChange<?, ?>)
-            return this.evaluateAttributeChange((AttributeChange<AbstractDetailedNode<?>, ?>) mutation, auction,
+        else if (mutation instanceof AttributeChange<?, ?> || mutation instanceof SoftwareAttributeChange<?, ?>)
+            return this.evaluateAttributeChange((Mutation<AbstractDetailedNode<?>>) mutation, auction,
                     clonedKnowledgeBase);
         return null;
     }
@@ -134,11 +120,10 @@ public class ProposalManager {
         // First we need to perform the migration on the knowledgebase
         var software = riskReport.path().get(riskReport.path().size() - 1);
         var knowledgeSoftware = knowledgeBase.findById(software.getID());
-        var host = knowledgeBase.getParents(software.getID())
-                .stream()
-                .filter(n -> n instanceof KnowledgeBaseNode)
-                .findFirst();
+        var host = knowledgeBase.findById(riskReport.path().get(riskReport.path().size() - 2).getID());
         var target = knowledgeBase.findById(migration.getNode().getID());
+
+//        MermaidGraphRenderer.forAttackGraph().toFile("./graphs/mutation-before.mmd", riskReport.graph(), riskReport.toString());
 
         // Sever connection between host and software
         knowledgeBase.removeEdge(host.get(), knowledgeSoftware.get());
@@ -153,27 +138,54 @@ public class ProposalManager {
 
         // Calculate the new critical path
         List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
-        var sliceStart = riskReport.path().indexOf(
-                riskReport.path().stream().filter(n -> target.get().getID().equals(n.getID())).findFirst().get());
-        for (var i = 0; i <= sliceStart; i++) {
-            var n = riskReport.path().get(i);
-            var attackNode = attackGraph.findById(n.getID());
-            attackNode.ifPresent(attackGraphPath::add);
+        var targetNode = riskReport.path().stream().filter(n -> target.get().getID().equals(n.getID())).findFirst();
+        if (targetNode.isEmpty()) {
+            log.warn("Target was missing from critical path because of a suggested migration. Inserting after auction host");
+            var hostNode = riskReport.path().stream().filter(n -> n.getID() == auction.getHost().getID()).findFirst();
+            if (hostNode.isEmpty()) {
+                log.error("Cannot find hosting node, canceling proposal");
+                return null;
+            }
+            var sliceStart = riskReport.path().indexOf(hostNode.get());
+            for (var i = 0; i <= sliceStart; i++) {
+                var n = riskReport.path().get(i);
+                var attackNode = attackGraph.findById(n.getID());
+                attackNode.ifPresent(attackGraphPath::add);
+            }
+            var self = attackGraph.findById(this.configuration.getNodeID()).get();
+            attackGraphPath.add(self);
+
+            var _software = attackGraph.findById(riskReport.path().get(riskReport.path().size()-1).getID()).get();
+            log.debug("New critical path: {} -> {}",
+                    attackGraphPath.stream().map(INode::getID).collect(Collectors.joining(" -> ")),
+                    _software.getID());
+        } else {
+            var sliceStart = riskReport.path().indexOf(targetNode.get());
+            for (var i = 0; i <= sliceStart; i++) {
+                var n = riskReport.path().get(i);
+                var attackNode = attackGraph.findById(n.getID());
+                attackNode.ifPresent(attackGraphPath::add);
+            }
         }
         var attackSoftware = attackGraph.findById(software.getID());
         attackSoftware.ifPresent(attackGraphPath::add);
-        var probability = attackGraph.getProbabilityForPath(attackGraphPath, new ProductRiskProbability());
-        var newDamage = riskReport.damageValue() * probability;
+        var updatedReport = RiskReport.fromCriticalPath(attackGraph, attackGraphPath);
+//        MermaidGraphRenderer.forAttackGraph().toFile("./mutation-after.mmd", attackGraph, updatedReport.toString());
+        log.debug("Old path: {}", riskReport.toString());
+        log.debug("New path2: {}", updatedReport.toString());
+//        MermaidGraphRenderer.forAttackGraph().toFile("./graphs/" + auction.getId() + "-before.mmd", riskReport.graph(), riskReport.toString());
+//        MermaidGraphRenderer.forAttackGraph().toFile("./graphs/" + auction.getId() + "-after.mmd", updatedReport.graph(), updatedReport.toString());
+
         return new AuctionProposal(
                 this.configuration.getParentNode(),
                 auction,
                 migration,
-                newDamage,
-                probability);
+                updatedReport
+        );
     }
 
-    private AuctionProposal evaluateAttributeChange(AttributeChange<AbstractDetailedNode<?>, ?> attributeChange,
-            Auction auction, KnowledgeBase knowledgeBase) {
+    private AuctionProposal evaluateAttributeChange(Mutation<AbstractDetailedNode<?>> attributeChange,
+                                                    Auction auction, KnowledgeBase knowledgeBase) {
         var riskReport = auction.getRiskReport();
         // Apply the attribute change
         var nodeToMutate = knowledgeBase.findById(attributeChange.getNode().getID()).get();
@@ -195,8 +207,9 @@ public class ProposalManager {
                 }
 
                 var exists = existingEdges.stream().filter(link -> link.type().equals(edge.getRisk().type())).findAny();
-                if (exists.isEmpty())
+                if (exists.isEmpty()) {
                     attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
+                }
             });
         });
         List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
@@ -207,18 +220,30 @@ public class ProposalManager {
             if (attackNode.isEmpty())
                 this.log.warn("Node not found in attack graph {}", node.getID());
         });
-        var probability = attackGraph.getProbabilityForPath(attackGraphPath, new ProductRiskProbability());
-        var newDamage = riskReport.damageValue() * probability;
+        var updatedReport = RiskReport.fromCriticalPath(attackGraph, attackGraphPath);
+
+        log.debug("Old path: {}", riskReport.toString());
+        log.debug("New path1: {}", updatedReport.toString());
+
+        try {
+            var path = Path.of("./graphs/" + auction.getId() + "/" + this.configuration.getNodeID() + "/" + attributeChange.getRiskRule().getClass().getSimpleName());
+//            Files.createDirectories(path.getParent());
+            Files.createDirectories(path);
+            MermaidGraphRenderer.forAttackGraph().toFile(path.resolve("before.mmd").toString(), riskReport.graph(), attributeChange + "\n%% " + riskReport);
+            MermaidGraphRenderer.forAttackGraph().toFile(path.resolve("after.mmd").toString(), updatedReport.graph(), attributeChange + "\n%% " + updatedReport);
+        } catch (Exception e) {
+            log.error(e);
+        }
+
         return new AuctionProposal(
                 this.configuration.getParentNode(),
                 auction,
                 attributeChange,
-                newDamage,
-                probability);
+                updatedReport);
     }
 
     public Optional<AuctionProposal> selectProposal(List<AuctionProposal> proposals, Auction auction) {
-        return this.proposalSelector.select(proposals, auction.getRiskReport().damageValue() - 0.1f);
+        return this.proposalSelector.select(proposals, auction.getRiskReport().damage());
     }
 
     public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> List<Mutation<N>> generateMutations(
@@ -226,9 +251,24 @@ public class ProposalManager {
 
         List<Mutation<N>> mutations = new java.util.ArrayList<>(List.of());
         var node = (N) knowledgeBase.findById(this.configuration.getNodeID()).get();
+
+        var softwareAsset = (N) riskReport.path().get(riskReport.path().size() - 1);
+        var isHosting = riskReport.path().get(riskReport.path().size() - 2).getID().equals(node.getID());
+        var isOnCriticalPath = riskReport.path().contains(new AttackGraphNode(this.configuration.getNodeID()));
+
         var mutators = this.getMutators(riskReport, node);
         mutators.forEach(mutator -> {
-            if (mutator != null && mutator.isApplicable(node)) {
+            if (mutator == null)
+                return;
+            this.log.debug("Found mutator {}, applicable? {}", mutator.toString(),
+                    isHosting
+                            ? mutator.isApplicable(softwareAsset)
+                            : mutator.isApplicable(node));
+            if (mutator instanceof SoftwareAttributeChange && isHosting && mutator.isApplicable(softwareAsset)) {
+                mutations.add(mutator);
+            } else if (mutator instanceof AttributeChange && mutator.isApplicable(node) && isOnCriticalPath) {
+                mutations.add(mutator);
+            } else if (mutator instanceof Migration && mutator.isApplicable(softwareAsset)) {
                 mutations.add(mutator);
             }
         });
@@ -247,7 +287,6 @@ public class ProposalManager {
             var risks = riskReport.graph().getNeighboursWithRisks(n.get())
                     .stream().map(AttackGraphLink::getRisk)
                     .collect(Collectors.toList());
-            risks.addAll(riskReport.graph().getIncoming().stream().map(AttackGraphLink::getRisk).toList());
             risks.forEach(risk -> {
                 if (risk.rule() instanceof CveRule<?> cve) {
                     var adaptation = cve.getAdaptation(node);
@@ -255,6 +294,7 @@ public class ProposalManager {
                 } else if (risk.rule() instanceof PropertyBasedRule rule) {
                     var adaptation = rule.getAdaptation(node);
                     adaptation.ifPresent(mutations::add);
+                    this.log.debug("Found adaptation: {} {}", adaptation, node);
                 }
             });
 
@@ -264,9 +304,9 @@ public class ProposalManager {
                     return;
 
                 risks.forEach(risk -> {
-                    if (!(risk.rule() instanceof CveRule<?>))
-                        return;
-                    var adaptation = ((CveRule<?>) risk.rule()).getAdaptation((N) s.get());
+                    // if (!(risk.rule() instanceof CveRule<?>))
+                    // return;
+                    var adaptation = risk.rule().getAdaptation((N) s.get());
                     adaptation.ifPresent(mutations::add);
                 });
             });
@@ -280,6 +320,7 @@ public class ProposalManager {
                     mutations.add(new Migration<>(criticalAsset, host, node, 1000, 10000, null));
             }
         }
+        this.log.debug("Suggesting {} mutations", mutations.size());
         return mutations;
     }
 
@@ -336,13 +377,20 @@ public class ProposalManager {
             this.knowledgeBase.addEdge(knowledgeTarget.get(), knowledgeAsset.get());
             this.knowledgeBase.addEdge(knowledgeAsset.get(), knowledgeTarget.get());
         } else {
-            proposal.mutation().apply(node);
-            this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node));
             infrastructureEffector.updateInfra(infra -> {
-                var _node = infra.findById(this.configuration.getNodeID()).get();
-                proposal.mutation().apply(_node);
-                infra.upsertNode(_node);
+                if (mutation instanceof AttributeChange<?, ?> attributeChange) {
+                    var _node = infra.findById(this.configuration.getNodeID()).get();
+                    mutation.apply(_node);
+                    infra.upsertNode(_node);
+                } else if (mutation instanceof SoftwareAttributeChange<?, ?> softwareAttributeChange) {
+                    var _node = infra.findById(softwareAttributeChange.getNode().getID()).get();
+                    mutation.apply(_node);
+                    infra.upsertNode(_node);
+                }
             });
+            // proposal.mutation().apply(node);
+            // this.knowledgeBase.upsertNode(KnowledgeBaseNode.fromNode(node)
+            // .setKnowledgeOrigin(KnowledgeOrigin.DIRECT));
         }
 
         this.log.debug("Done applying proposal");
@@ -353,12 +401,6 @@ public class ProposalManager {
                     .ifPresent(property -> {
                         this.log.debug("Property {} is now {}", attributeChange.getNewValue().getName(), property);
                     });
-            this.knowledgeBase.findById(this.configuration.getNodeID()).ifPresent(_node -> {
-                _node.getProperty(attributeChange.getNewValue().getName()).ifPresent(property -> {
-                    this.log.debug("Knowledge property {} is now {}", attributeChange.getNewValue().getName(),
-                            property);
-                });
-            });
         }
         this.agentState.setCurrent(AgentState.Idle);
     }

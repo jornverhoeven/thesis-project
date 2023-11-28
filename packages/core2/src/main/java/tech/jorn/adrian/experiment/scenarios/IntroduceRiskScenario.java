@@ -8,6 +8,7 @@ import tech.jorn.adrian.experiment.instruments.ExperimentalAgent;
 import tech.jorn.adrian.experiment.messages.Envelope;
 
 import java.util.List;
+import java.util.Queue;
 
 public class IntroduceRiskScenario extends Scenario {
     Logger log = LogManager.getLogger(IntroduceRiskScenario.class);
@@ -17,18 +18,20 @@ public class IntroduceRiskScenario extends Scenario {
     }
 
     @Override
-    public void onScheduleEvents(List<ExperimentalAgent> agents) {
-        this.after(3 * 60 * 1000, () -> {
-            var asset = infrastructure.listSoftwareAssets().get(1);
-            this.log.info("Introducing Risk to asset {}", asset.getID());
-            asset.setProperty("sdk-google/cloud_iot_device_sdk_for_embedded_c-version", "1.0.2");
+    public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
+        this.after(2 * 60 * 1000, () -> {
+//            var asset = infrastructure.listSoftwareAssets().get(1);
+//            this.log.info("Introducing Risk to asset {}", asset.getID());
+//            asset.setProperty("os-fake/os-version", "1.0.1");
 
-            var node = infrastructure.listNodes().get(0);
-            this.log.info("Introducing Risk to node {}", node.getID());
-            node.setProperty("firmware-qualcomm/apq8096-version", "2.1.2");
+            for (var i = 0; i < infrastructure.listNodes().size(); i++) {
+                var node = infrastructure.listNodes().get(i);
+                this.log.info("Introducing Risk to node {}", node.getID());
+                node.setProperty("os-fake/os-version", "1.0.1");
+            }
 
         });
-        this.after(4 * 60 * 1000, () -> {
+        this.after(3 * 60 * 1000, () -> {
             this.log.debug("Waiting for silence");
             this.waitForSilence(10 * 1000, this.finished::raise);
         });

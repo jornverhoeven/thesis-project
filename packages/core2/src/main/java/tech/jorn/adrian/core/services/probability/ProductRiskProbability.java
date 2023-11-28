@@ -7,7 +7,7 @@ import java.util.List;
 public class ProductRiskProbability implements IRiskProbabilityCalculator {
     @Override
     public float calculate(List<Float> risks) {
-        return risks.stream()
+        return 1 - risks.stream()
                 .reduce(1.0f, (acc, cur) -> acc * (1.0f - cur));
     }
 }

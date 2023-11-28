@@ -29,7 +29,12 @@ public class RiskLoader {
                 new RuleInfrastructureNodeIsPhysicallySecured(),
                 new RuleSoftwareComponentIsEncrypted(),
                 new EntryRule(0.08f)
+                        .includeNodes(),
 
+                new OsVulnerabilityCve("CVE-fake", "fake/os", new BeforeVersion("4.9"), 8.0f, "5.1"),
+                new EntryCve("CVE-fake", "os-fake/os-version", new BeforeVersion("4.9"), 8.0f, 500, 10000, "5.1")
+                        .includeNodes(),
+                new RuleFakeVulnerability()
         );
     }
 }

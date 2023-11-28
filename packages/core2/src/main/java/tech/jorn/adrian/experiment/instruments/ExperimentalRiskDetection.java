@@ -40,13 +40,13 @@ public class ExperimentalRiskDetection extends BasicRiskDetection {
     }
 
     @Override
-    public List<RiskReport> identifyRisks(AttackGraph attackGraph) {
+    public List<RiskReport> identifyRisks(AttackGraph attackGraph, boolean isContained) {
         try {
             Thread.sleep( (int) (Math.random() * 5));
         } catch (Exception e) {
         }
 
-        return super.identifyRisks(attackGraph);
+        return super.identifyRisks(attackGraph, isContained);
     }
 
     @Override

@@ -1,21 +1,15 @@
 package tech.jorn.adrian.experiment.instruments;
 
-import com.sun.jdi.Value;
+import java.util.List;
+
 import tech.jorn.adrian.agent.AdrianAgent;
-import tech.jorn.adrian.agent.events.IdentifyRiskEvent;
-import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
 import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.IController;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
-import tech.jorn.adrian.core.messages.EventMessage;
 import tech.jorn.adrian.core.messages.MessageBroker;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
-import tech.jorn.adrian.core.services.RiskDetection;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ExperimentalAgent extends AdrianAgent {
     private final MessageBroker messageBroker;
@@ -29,6 +23,12 @@ public class ExperimentalAgent extends AdrianAgent {
         this.eventManager = eventManager;
         this.riskDetection = riskDetection;
         this.knowledgeBase = knowledgeBase;
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        this.eventManager.terminate();
     }
 
     public EventManager getEventManager() {

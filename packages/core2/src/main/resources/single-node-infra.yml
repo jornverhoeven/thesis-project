@@ -1,21 +1,38 @@
 nodes:
   - id: node-a
     name: Node A
-    isExposed: false
     hasAgent: true
+    exposed: true
+    hasFirewall: false
+    isPhysicallySecured: true
+    fake-vulnerability: true
+  - id: node-b
+    name: Node B
+    hasAgent: true
+    exposed: true
     hasFirewall: true
-    firmware-qualcomm/apq8096-version: 1.2.3
+    isPhysicallySecured: true
+    fake-vulnerability: true
+  - id: node-c
+    name: Node C
+    hasAgent: true
+    exposed: false
+    hasFirewall: true
+    isPhysicallySecured: true
+    fake-vulnerability: false
 
 links:
   - source: node-a
     target: node-b
-  - source: node-b
+  - source: node-a
     target: node-c
+#  - source: node-b
+#    target: node-c
 
 assets:
   - id: software-1
     name: Software Component 1
     type: software
     isCritical: true
-    damageValue: 45.5
-    host: node-a
+    damageValue: 300.0
+    host: node-b
