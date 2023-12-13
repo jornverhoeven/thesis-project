@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tech.jorn.adrian.agent.events.AuctionBidEvent;
+import tech.jorn.adrian.agent.events.JoinAuctionAcceptEvent;
 import tech.jorn.adrian.agent.events.ShareKnowledgeEvent;
 import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.events.queue.IEventQueue;
@@ -111,13 +112,19 @@ public class EventManager {
 
             if (!event.isDebugEvent()) {
                 if (event instanceof AuctionBidEvent e)
-                    this.log.debug("Processing event \033[4m{}\033[0m {}. {}", event.getClass().getSimpleName(), event.getID(), e.getProposal());
+                    this.log.debug("Processing event \033[4m{}\033[0m {}. {} {}", event.getClass().getSimpleName(), event.getID(), e.getProposal().auction().getId(), e.getProposal().mutation());
+                else if (event instanceof JoinAuctionAcceptEvent e)
+                    this.log.debug("Processing event \033[4m{}\033[0m {}. {}", event.getClass().getSimpleName(), event.getID(), e.getAuction().getId());
                 else this.log.debug("Processing event \033[4m{}\033[0m {}", event.getClass().getSimpleName(), event.getID());
             }
             var handlers = this.getEventHandlers(event.getClass());
             if (handlers != null) {
                 for (var handler : handlers) {
-                    handler.accept(event);
+                    try {
+                        handler.accept(event);
+                    } catch (Exception e) {
+                        this.log.error(e);
+                    }
                 }
             }
 

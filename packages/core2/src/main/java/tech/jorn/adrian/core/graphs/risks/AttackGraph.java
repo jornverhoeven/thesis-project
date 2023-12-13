@@ -85,5 +85,12 @@ public class AttackGraph extends AbstractGraph<AttackGraphEntry<?>, AttackGraphL
     public List<AttackGraphLink<AttackGraphEntry<?>>> getNeighboursWithRisks(AttackGraphEntry<?> node) {
         return this.adjacent.get(node);
     }
+    public List<AttackGraphLink<AttackGraphEntry<?>>> getParentsWithRisks(AttackGraphEntry<?> node) {
+        var parents = this.getParents(node);
+        return parents.stream()
+                .flatMap(p -> getNeighboursWithRisks(p).stream())
+                .filter(link -> link.getNode().equals(node))
+                .collect(Collectors.toList());
+    }
 }
 

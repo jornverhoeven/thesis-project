@@ -1,106 +1,109 @@
 package tech.jorn.adrian.risks.rules;
 
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
-import tech.jorn.adrian.core.graphs.base.VoidNode;
-import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
-import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
-import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphSoftwareAsset;
-import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.properties.AbstractProperty;
-import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.risks.Risk;
-import tech.jorn.adrian.core.risks.RiskEdge;
 import tech.jorn.adrian.core.risks.RiskRule;
+import tech.jorn.adrian.risks.validators.PropertyValidator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class PropertyBasedRule extends RiskRule {
 
-    private final String property;
-    private final String ruleId;
-    private final float mitigatedFactor;
-    private final float unmitigatedFactor;
+    protected final String ruleId;
+    protected final String property;
+    protected final float factor;
+    protected boolean softwareIncluded = false;
+    protected boolean nodesIncluded = true;
+    protected boolean softwareTargeted = true;
+    protected boolean nodesTargeted = true;
+    protected Supplier<Risk> mitigatedRiskSupplier = null;
+    protected Predicate<KnowledgeBaseEntry<?>> isMitigatedPred;
+    protected BiFunction<AbstractDetailedNode, RiskRule, Optional<? extends Mutation>> adaptationFactory;
 
-    protected PropertyBasedRule(String property, String ruleId, float unmitigatedFactor, float mitigatedFactor) {
+    protected PropertyBasedRule(String ruleId, String property, float factor) {
         this.property = property;
         this.ruleId = ruleId;
-        this.unmitigatedFactor = unmitigatedFactor;
-        this.mitigatedFactor = mitigatedFactor;
+        this.factor = factor;
     }
 
-    @Override
-    public void evaluate(KnowledgeBase knowledgeBase, Consumer<RiskEdge> dispatchRisk) {
-        List<KnowledgeBaseEntry<?>> nodes = new ArrayList<>();
-
-        knowledgeBase.getNodes().forEach(node -> {
-            if (this.includeNodes() && node instanceof KnowledgeBaseNode) nodes.add(node);
-            if (this.includeAssets() && node instanceof KnowledgeBaseSoftwareAsset) nodes.add(node);
-        });
-
-        nodes.forEach(node -> {
-            var parents = knowledgeBase.getParents(node);
-
-            parents.forEach(parent -> {
-                // Break if the node and parent are equal somehow
-                if (parent.getID().equals(node.getID())) return;
-
-                // If the parent is VOID, it must be exposed
-                 var exposed = (boolean) node.getProperty("exposed").orElse(false);
-                 if (parent.getID().equals(VoidNode.ID)) {
-                     if (!exposed) return;
-                 }
-
-                // If the parent is a software asset, and it is ignored, we skip it
-                if (parent instanceof KnowledgeBaseSoftwareAsset && !this.allowAssetParent()) return;
-                // If the parent is a node, and it is ignored, we skip it
-                if (parent instanceof KnowledgeBaseNode && !this.allowNodeParent()) return;
-
-                Risk risk;
-                try {
-                    var check = this.isMitigated(node.getProperty(property));
-                    if (check) risk = new Risk(this.ruleId, this.mitigatedFactor, true, this);
-                    else risk = new Risk(this.ruleId, this.unmitigatedFactor, false, this);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                var riskEdge = new RiskEdge(parent, node, risk);
-                dispatchRisk.accept(riskEdge);
-            });
-        });
-    }
 
     public String getProperty() {
         return property;
     }
 
-    protected boolean includeAssets() {
-        return true;
-    }
-    protected boolean includeNodes() {
-        return true;
+
+    public PropertyBasedRule includeSoftware() {
+        this.softwareIncluded = true;
+        return this;
     }
 
-    protected boolean allowAssetParent() { return true; }
-    protected boolean allowNodeParent() { return true; }
+    public PropertyBasedRule excludeNodes() {
+        this.nodesIncluded = false;
+        return this;
+    }
 
-    public boolean isMitigated(Optional<?> property) {
+    public PropertyBasedRule target(boolean nodes, boolean software) {
+        this.nodesTargeted = nodes;
+        this.softwareTargeted = software;
+        return this;
+    }
+
+    public PropertyBasedRule mitigatedRisk(float damage) {
+        this.mitigatedRiskSupplier = () -> new Risk(this.property, damage, true, this);
+        return this;
+    }
+
+    public PropertyBasedRule mitigatedRisk(Supplier<Risk> riskSupplier) {
+        this.mitigatedRiskSupplier = riskSupplier;
+        return this;
+    }
+
+    public PropertyBasedRule mitigationTest(Predicate<KnowledgeBaseEntry<?>> test) {
+        this.isMitigatedPred = test;
+        return this;
+    }
+
+    public PropertyBasedRule mitigationTest(PropertyValidator<String> propertyValidator) {
+        this.isMitigatedPred = node -> {
+            var propertyValue = node.getProperty(this.property);
+            if (propertyValue.isEmpty()) return true;
+            return !propertyValidator.validate((String) propertyValue.get());
+        };
+        return this;
+    }
+
+    protected boolean isMitigated(KnowledgeBaseEntry<?> node) {
+        if (this.isMitigatedPred == null) return this.isPropertyMitigated(node.getProperty(this.property));
+        return this.isMitigatedPred.test(node);
+    }
+
+    private boolean isPropertyMitigated(Optional<?> property) {
         return property
                 .map(p -> (Boolean) p)
                 .orElse(Boolean.FALSE);
     }
 
-    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
-        if ((node instanceof KnowledgeBaseSoftwareAsset) || (node instanceof AttackGraphSoftwareAsset)) return Optional.empty();
-        System.out.println("Checking mitigation for " + node.getID() + " with property " + this.getProperty() + " and value " + node.getProperty(this.getProperty()) + " mitigated " +this.isMitigated(node.getProperty(this.getProperty())));
-        if (this.isMitigated(node.getProperty(this.getProperty()))) return Optional.empty();
+    public PropertyBasedRule withAdaptation(BiFunction<AbstractDetailedNode, RiskRule, Optional<? extends Mutation>> factory) {
+        this.adaptationFactory = factory;
+        return this;
+    }
 
-        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), true), 100, 2000, this);
-        return Optional.of(adaptation);
+    public <N extends AbstractDetailedNode<P>, P extends AbstractProperty<?>> Optional<Mutation<N>> getAdaptation(N node) {
+        if (this.adaptationFactory == null) return Optional.empty();
+        return (Optional<Mutation<N>>) this.adaptationFactory.apply(node, this);
+
+//        if ((node instanceof KnowledgeBaseSoftwareAsset) || (node instanceof AttackGraphSoftwareAsset)) return Optional.empty();
+//        System.out.println("Checking mitigation for " + node.getID() + " with property " + this.getProperty() + " and value " + node.getProperty(this.getProperty()) + " mitigated " +this.isMitigated(node.getProperty(this.getProperty())));
+//        if (this.isMitigated(node.getProperty(this.getProperty()))) return Optional.empty();
+//
+//        var adaptation = new AttributeChange<>(node, new NodeProperty<>(this.getProperty(), true), 100, 2000, this);
+//        return Optional.of(adaptation);
     }
 }

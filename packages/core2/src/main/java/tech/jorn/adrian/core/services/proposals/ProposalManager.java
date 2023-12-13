@@ -11,26 +11,22 @@ import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
-import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseEntry;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseNode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBaseSoftwareAsset;
-import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeOrigin;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphEntry;
 import tech.jorn.adrian.core.graphs.risks.AttackGraphLink;
-import tech.jorn.adrian.core.graphs.risks.AttackGraphNode;
 import tech.jorn.adrian.core.mutations.AttributeChange;
 import tech.jorn.adrian.core.mutations.Migration;
 import tech.jorn.adrian.core.mutations.Mutation;
 import tech.jorn.adrian.core.mutations.SoftwareAttributeChange;
 import tech.jorn.adrian.core.observables.ValueDispatcher;
 import tech.jorn.adrian.core.properties.AbstractProperty;
-import tech.jorn.adrian.core.properties.NodeProperty;
 import tech.jorn.adrian.core.properties.SoftwareProperty;
+import tech.jorn.adrian.core.risks.Risk;
 import tech.jorn.adrian.core.risks.RiskReport;
 import tech.jorn.adrian.core.services.InfrastructureEffector;
 import tech.jorn.adrian.core.services.RiskDetection;
 import tech.jorn.adrian.risks.rules.PropertyBasedRule;
-import tech.jorn.adrian.risks.rules.cves.CveRule;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,9 +84,17 @@ public class ProposalManager {
                     false
             );
 
-            this.log.error(mutation.toString());
-            this.log.error("Found {} risks compared to {} originally", risksAfter.size(), risksBefore.size());
-            this.log.error("Found {} damage compared to {} damage originally", risksAfter.stream().mapToDouble(RiskReport::damage).sum(), risksBefore.stream().mapToDouble(RiskReport::damage).sum());
+            var riskCountDelta = risksAfter.size() - risksBefore.size();
+            var riskDamageDelta = risksAfter.stream().mapToDouble(RiskReport::damage).sum() - risksBefore.stream().mapToDouble(RiskReport::damage).sum();
+
+            if (riskCountDelta > 5) {
+                this.log.warn("Proposal skipped as it would introduce too many new risks (+{})", riskCountDelta);
+                return;
+            }
+            if (riskDamageDelta > 10) {
+                this.log.warn("Proposal skipped as it would introduce too much new damage (+{})", riskDamageDelta);
+                return;
+            }
 
             proposals.add(proposal);
             this.log.debug("New probability {} compared to old probability {} for {}",
@@ -155,7 +159,7 @@ public class ProposalManager {
             var self = attackGraph.findById(this.configuration.getNodeID()).get();
             attackGraphPath.add(self);
 
-            var _software = attackGraph.findById(riskReport.path().get(riskReport.path().size()-1).getID()).get();
+            var _software = attackGraph.findById(riskReport.path().get(riskReport.path().size() - 1).getID()).get();
             log.debug("New critical path: {} -> {}",
                     attackGraphPath.stream().map(INode::getID).collect(Collectors.joining(" -> ")),
                     _software.getID());
@@ -193,25 +197,26 @@ public class ProposalManager {
         knowledgeBase.upsertNode(nodeToMutate);
 
         var attackGraph = this.riskDetection.createAttackGraph(knowledgeBase);
-        riskReport.graph().getNodes().forEach(node -> {
-            var riskEdges = riskReport.graph().getNeighboursWithRisks(node);
-            var existingEdges = attackGraph.getNeighboursWithRisks(node).stream()
-                    .map(AttackGraphLink::getRisk).toList();
 
-            riskEdges.forEach(edge -> {
-                var hasBeenMutated = attributeChange.getRiskRule() == null
-                        && edge.getRisk().rule().getClass().equals(attributeChange.getRiskRule().getClass());
-                if (hasBeenMutated) {
-                    this.log.debug("Risk {} was just updated so we will not add it again", edge.getRisk().type());
-                    return;
-                }
-
-                var exists = existingEdges.stream().filter(link -> link.type().equals(edge.getRisk().type())).findAny();
-                if (exists.isEmpty()) {
-                    attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
-                }
-            });
-        });
+//        riskReport.graph().getNodes().forEach(node -> {
+//            var riskEdges = riskReport.graph().getNeighboursWithRisks(node);
+//            var existingEdges = attackGraph.getNeighboursWithRisks(node).stream()
+//                    .map(AttackGraphLink::getRisk).toList();
+//
+//            riskEdges.forEach(edge -> {
+//                var hasBeenMutated = attributeChange.getRiskRule() == null
+//                        && edge.getRisk().rule().getClass().equals(attributeChange.getRiskRule().getClass());
+//                if (hasBeenMutated) {
+//                    this.log.debug("Risk {} was just updated so we will not add it again", edge.getRisk().type());
+//                    return;
+//                }
+//
+//                var exists = existingEdges.stream().filter(link -> link.type().equals(edge.getRisk().type())).findAny();
+//                if (exists.isEmpty()) {
+//                    attackGraph.addEdge(node, edge.getNode(), edge.getRisk());
+//                }
+//            });
+//        });
         List<AttackGraphEntry<?>> attackGraphPath = new ArrayList();
 
         riskReport.path().forEach(node -> {
@@ -254,7 +259,7 @@ public class ProposalManager {
 
         var softwareAsset = (N) riskReport.path().get(riskReport.path().size() - 1);
         var isHosting = riskReport.path().get(riskReport.path().size() - 2).getID().equals(node.getID());
-        var isOnCriticalPath = riskReport.path().contains(new AttackGraphNode(this.configuration.getNodeID()));
+        var isOnCriticalPath = riskReport.path().stream().anyMatch(n -> n.getID().equals(this.configuration.getNodeID()));
 
         var mutators = this.getMutators(riskReport, node);
         mutators.forEach(mutator -> {
@@ -284,14 +289,16 @@ public class ProposalManager {
                 .get(riskReport.path().size() - 1);
         var n = attackGraph.findById(node.getID());
         if (n.isPresent()) {
-            var risks = riskReport.graph().getNeighboursWithRisks(n.get())
-                    .stream().map(AttackGraphLink::getRisk)
-                    .collect(Collectors.toList());
+            var forwardRisks = riskReport.graph().getNeighboursWithRisks(n.get())
+                    .stream().map(AttackGraphLink::getRisk).toList();
+            var backwardRisks = riskReport.graph().getParentsWithRisks(n.get())
+                    .stream().map(AttackGraphLink::getRisk).toList();
+            var risks = new ArrayList<Risk>();
+            risks.addAll(forwardRisks);
+            risks.addAll(backwardRisks);
+
             risks.forEach(risk -> {
-                if (risk.rule() instanceof CveRule<?> cve) {
-                    var adaptation = cve.getAdaptation(node);
-                    adaptation.ifPresent(mutations::add);
-                } else if (risk.rule() instanceof PropertyBasedRule rule) {
+                if (risk.rule() instanceof PropertyBasedRule rule) {
                     var adaptation = rule.getAdaptation(node);
                     adaptation.ifPresent(mutations::add);
                     this.log.debug("Found adaptation: {} {}", adaptation, node);

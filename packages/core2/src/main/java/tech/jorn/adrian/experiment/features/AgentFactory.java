@@ -23,6 +23,7 @@ public class AgentFactory {
         var agents = new ConcurrentLinkedQueue<ExperimentalAgent>();
 
         nodes.forEach(node -> {
+            if (!(boolean)node.getProperty("hasAgent").orElse(false)) return;
             var agent = this.fromNode(infrastructure, node);
             if (agent != null) agents.add((ExperimentalAgent) agent);
         });

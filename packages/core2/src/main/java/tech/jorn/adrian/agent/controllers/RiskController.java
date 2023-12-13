@@ -67,19 +67,20 @@ public class RiskController extends AbstractController {
     }
 
     protected void identifyRisk(IdentifyRiskEvent event) {
-        // if (!this.canDoRiskAssessment()) return;
-
         var attackGraph = this.riskDetection.createAttackGraph(this.knowledgeBase);
         var risks = this.riskDetection.identifyRisks(attackGraph, true);
+
         if (this.lastRiskReport != null) {
+            // Filter-out any risks that we previously processed
             risks.removeIf(r -> r.toString().equals(this.lastRiskReport.toString()));
         }
-        var risk = this.riskSelector.select(risks);
 
-        this.log.debug("Found {} risks", risks.size());
+        var risk = this.riskSelector.select(risks);
+        this.log.debug("Found {} risks{}", risks.size(), risk
+                .map(riskReport -> " and selected " + riskReport.toShortString())
+                .orElse(""));
 
         risks.forEach(r -> this.eventManager.emit(new FoundRiskEvent(r)));
-        // risk.ifPresent(r -> this.eventManager.emit(new SelectedRiskEvent(r)));
         risk.ifPresentOrElse(
                 r -> this.eventManager.emit(new SelectedRiskEvent(r)),
                 () -> this.log.warn("No risk was found with the given constraints"));

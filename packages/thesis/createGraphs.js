@@ -214,7 +214,7 @@ function getEvents(scenario) {
         case scenarios.noChange:
             return [];
         case scenarios.introduceRisk:
-            return [180000];
+            return [120000];
         case scenarios.growing:
             return [30000, 60000, 90000, 120000, 150000];
         case scenarios.unstable:

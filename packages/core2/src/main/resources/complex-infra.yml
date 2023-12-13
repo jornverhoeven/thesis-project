@@ -3,64 +3,70 @@ nodes:
     name: IoT Controller
     hasAgent: true
     exposed: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    fake-vulnerability: true
+    canMigrate: true
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-motion
     name: Motion Sensor
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-humidity
     name: Humidity Controller
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-door-lock
     name: Door Lock
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-gate
     name: Gate Controller
     hasAgent: true
     exposed: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-alarm
     name: Alarm System
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-smoke
     name: Smoke Detector
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-temperature
     name: Temperature Controller
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: soc-light
     name: Lighting Controller
     hasAgent: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
-    firmware-qualcomm/apq8096-version: 1.0.1
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: desktop
     name: Desktop
     hasAgent: true
     exposed: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
+    canMigrate: true
+    contiki-ng/contiki-ng: 4.3.1
   - id: printer
     name: Printer
     hasAgent: true
     exposed: true
-    os-contiki-ng/contiki-ng-version: 4.3.1
+    contiki-ng/contiki-ng: 4.3.1
+  - id: server
+    name: Server
+    exposed: true
+    canMigrate: true
+    hasAgent: true
+    contiki-ng/contiki-ng: 4.3.1
+    qualcomm/apq8096: 1.0.5
   - id: router
     name: Router
-    exposed: true
-  - id: mobile
-    name: Mobile
     exposed: true
 
   - id: cloud-printer
@@ -109,62 +115,64 @@ assets:
     host: iot-controller
   - id: database
     name: Database
+    host: iot-controller
     isCritical: true
     damageValue: 1000.0
   - id: soc-motion-software
     name: Motion Sensor Software
     host: soc-motion
-    sdk-google/cloud_iot_device_sdk_for_embedded_c-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    google/cloud_iot_device_sdk_for_embedded_c: 1.0.1
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-humidity-software
     name: Humidity Controller Software
     host: soc-humidity
-    sdk-google/cloud_iot_device_sdk_for_embedded_c-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    google/cloud_iot_device_sdk_for_embedded_c: 1.0.1
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-door-lock-software
     name: Door Lock Software
     host: soc-door-lock
     isCritical: true
     damageValue: 400.0
-    firmware-qualcomm/apq8096-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    qualcomm/apq8096: 1.0.5
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-gate-software
     name: Gate Controller Software
     host: soc-gate
     isCritical: true
     damageValue: 300.0
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-alarm-software
     name: Alarm System Software
     host: soc-alarm
     isCritical: true
     damageValue: 200.0
-    firmware-qualcomm/apq8096-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    qualcomm/apq8096: 1.0.5
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-smoke-software
     name: Smoke Detector Software
     host: soc-smoke
-    firmware-qualcomm/apq8096-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    qualcomm/apq8096: 1.0.5
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
   - id: soc-temperature-software
     name: Temperature Controller Software
     host: soc-temperature
   - id: soc-light-software
     name: Lighting Controller Software
     host: soc-light
-    firmware-qualcomm/apq8096-version: 1.0.1
-    sdk-amazon/amazon_web_services_iot_device_sdk_v2-version: 1.4.1
+    qualcomm/apq8096: 1.0.5
+    amazon/amazon_web_services_iot_device_sdk_v2: 1.4.1
 
   - id: desktop-software
     name: Desktop Software
     host: desktop
+  - id: server-software
+    name: Server Software
+    host: server
+    isCritical: true
+    damageValue: 50.0
   - id: printer-software
     name: Printer Software
     host: printer
-  
-  - id: home-app-software
-    name: Home App Software
-    host: mobile
   
   - id: cloud-printer-software
     name: Cloud Printer Software
@@ -195,9 +203,10 @@ connectors:
     target: database
   - source: soc-light-software  
     target: database
-  
+  - source: server-software
+    target: database
   - source: io-controller-software
-    target: home-app-software
+    target: server-software
   
   - source: cloud-printer-software
     target: printer-software

@@ -17,8 +17,14 @@ public interface IAgentConfiguration {
         return this.getParentNode().getID();
     }
 
-    default int getAuctionTimeout() { return 10 * 1000; }
+    default int getAuctionTimeout() {
+        return 4 * 1000;
+    }
 
-    default boolean canMigrate() { return true; }
+    default boolean canMigrate() {
+        return (boolean) this.getParentNode()
+                .getProperty("canMigrate")
+                .orElse(false);
+    }
 
 }

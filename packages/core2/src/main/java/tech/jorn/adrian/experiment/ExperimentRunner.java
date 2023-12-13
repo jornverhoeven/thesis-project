@@ -150,6 +150,7 @@ public class ExperimentRunner {
 
                 // log.debug("Updating metrics");
                 metricCollector.updateInterval(agents);
+                tick++;
 
                 thread.setPriority(Thread.NORM_PRIORITY);
             }

@@ -149,7 +149,11 @@ public class AuctionManager {
                     proposal.updatedReport().damage());
         }
 
-        this.proposals.put(participant, Optional.ofNullable(proposal));
+        var node = this.proposals.keySet().stream().filter(n -> n.getID().equals(participant.getID())).findFirst();
+        if (node.isEmpty()) this.proposals.put(participant, Optional.ofNullable(proposal));
+        else {
+            this.proposals.put(node.get(), Optional.ofNullable(proposal));
+        }
 
         if (this.isSaturated()) {
             this.finalizeAuction(auction);
@@ -182,7 +186,9 @@ public class AuctionManager {
 
     public void onAuctionJoined(Auction auction, INode participant) {
         this.log.debug("Agent {} joined auction", participant.getID());
-        this.proposals.putIfAbsent(participant, Optional.empty());
+
+        var node = this.proposals.keySet().stream().filter(n -> n.getID().equals(participant.getID())).findFirst();
+        if (node.isEmpty()) this.proposals.put(participant, Optional.empty());
         this.confirmed.add(participant);
     }
 
@@ -217,8 +223,11 @@ public class AuctionManager {
             var writer = new FileWriter(path.toFile());
             writer.write("Host: " + auction.getHost().getID() + "\n");
             writer.write("Risk: " + auction.getRiskReport().toString() + "\n");
+            writer.write("Joined: " + confirmed.stream().map(INode::getID).collect(Collectors.joining(", ")) + "\n");
             writer.write("Proposals:\n");
-            for (Optional<AuctionProposal> p : proposals.values()) {
+
+            for (var node : proposals.keySet()) {
+                var p = proposals.get(node);
                 writer.write(p.isPresent() && p.get().mutation() != null
                         ? String.format("- proposal from %s: reducing to %.2f by %s", p.get().origin().getID(),
                         p.get().updatedReport().damage(), p.get().mutation())

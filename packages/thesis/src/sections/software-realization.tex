@@ -127,3 +127,135 @@ Each controller is only responsible for converting events into service calls. Bu
 % \end{figure}
 
 % \addtocontents{toc}{\protect\setcounter{tocdepth}{3}}
+
+\subsection{Risk Rules \& Mutations}
+In this section we will describe the risk rules and mutations that are used in the ADRIAN protocol \cite{mann2023ADRIAN}. The risk rules are used to identify risks in the infrastructure. These rules look at the different properties of the infrastructure and software components, and based on these properties, they can identify a risk between two nodes, software or any combination of those two. 
+
+To implement the risk rules we've chosen to distinguish between three types of risks; \emph{Forward risks}, \emph{Backwards risks}, and \emph{Inward risks}. \emph{Inward risks} are nearly identical to \emph{Backwards risks}, the only theoretical distinction is that inward risks always come from a void-node, whereas backwards risks only come from entities on the graph. Figure \ref{fig:risk-rules} gives a visual representation of the differences between these three types of risks.
+
+\begin{figure}[H]
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/risk-rules-forward.png}
+        \caption{Forward risk rule.}
+        \label{fig:risk-rule-forward}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/risk-rules-backward.png}
+        \caption{Backwards risk rule.}
+        \label{fig:risk-rule-backward}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/risk-rules-inward.png}
+        \caption{Inwards risk rule.}
+        \label{fig:risk-rule-inward}
+    \end{subfigure}
+    \caption{A representation of the three different risk rules. The asterisk (*) represents a property that would trigger the risk rule. The arrows represent the direction of the risk. Any square could be either a node or a software component. In the case of Inward rules, the parent will always be the void node.}
+    \label{fig:risk-rules}
+\end{figure}
+
+
+The mutations are used to adapt the infrastructure and software components. These mutations are used to reduce the risk in the infrastructure.
+
+\add{Add table of all riskrules that were used.}
+\add{Explain the different mutations that were used.}
+
+\subsection{Calculating probabilities}
+\label{ssec:calculating-probabilities}
+
+\[p = 1 - \prod_{k=1}^{R}(1-p_{k}) \]
+
+
+\subsection{Migrations} 
+\label{ssec:migrations}
+While developing and experimenting with the ADRIAN protocol, we noticed that the mitigation strategy to migrate software from one node to another is seldom applied. Only under special circumstances will the agents propose to migrate software from one node to another. To illustrate some of the reasons why this is the case, we will sketch several cases that where encountered during the experiments, and why the agents did not \emph{(and should not)} propose to migrate software.
+
+\paragraph*{Migrating along the critical path}
+In figure \ref{fig:migrations-example} we see a simplified infrastructure. The critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node A, the critical path would be shortened as shown in figure \ref{fig:migrations-shortened}. None of the properties change and all edge-probabilities stay the same, only the critical path does. This means that the damage would in almost all cases increase, as any additional edges (unless the probability is exactly 1) decrease the probability of the attack graph, because each probability is always \(0 \leq p \leq 1\). 
+
+Only if the new edge between node A and software S1 has a significantly reduced probability, would the migration be beneficial. However, because the properties of A and S1 do not change, this is unlikely to happen. 
+
+\begin{figure}[H]
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations.png}
+        \caption{Basic infrastructure.}
+        \label{fig:migrations-infrastructure}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-a.png}
+        \caption{Critical path.}
+        \label{fig:migrations-basic}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-c.png}
+        \caption{Proposed migration.}
+        \label{fig:migrations-shortened}
+    \end{subfigure}
+    \caption{A simplified representation of an infrastructure, to illustrate the effect of migrations on the risk probability. (a) Shows the overall infrastructure. (b) shows in red a critical path from node A to software S1. (c) shows in red the critical path after a migration proposal.}
+    \label{fig:migrations-example}
+\end{figure}
+
+\paragraph*{Migrating outside the critical path}
+As per our previous example from Figure \ref{fig:migrations-example} we see that migrations along the critical path are usually not beneficial. However, migrations could be a viable option when migrating to neighboring nodes on the critical path. In figure \ref{fig:migrations-outside} we show what a migration outside of the critical path could look like. In this example we see that the critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node C, the critical path would be shortened as shown in figure \ref{fig:migrations-outside-proposal}. This time the overall probability could decrease as expected.  
+
+\begin{figure}[H]
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations.png}
+        \caption{Basic infrastructure.}
+        \label{fig:migrations-outside-infrastructure}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-a.png}
+        \caption{Critical path.}
+        \label{fig:migrations-outside-attack}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-d.png}
+        \caption{Proposed migration.}
+        \label{fig:migrations-outside-proposal}
+    \end{subfigure}
+    \caption{A simplified representation of an infrastructure, to illustrate the effect of migrations outside of the critical path . (a) Shows the overall infrastructure. (b) shows in red a critical path from node A to software S1. (c) shows in red the critical path after a migration proposal.}
+    \label{fig:migrations-outside}
+\end{figure}
+
+The ADRIAN concept by Mann \& Smolka \cite{mann2023ADRIAN} initially mentions that agents could only invite other agents that are on the critical path. This would mean that the migration from Figure \ref{fig:migrations-outside} are not possible. However, a small note was made in the concept that potentially others could be invited as well. We believe that this is a good idea, and has been implemented in our system as well.
+
+\paragraph*{Calculating risk deltas}
+When calculating the effectiveness of a mutation, the original ADRIAN concept by Mann \& Smolka \cite{mann2023ADRIAN} mentions that the new probability of the critical path should be calculated. For simple attribute changes this is easy as the critical path stays the same, and the changes are always optimistic\footnote{When implementing the risk rule and its adaptation, we change a property so it never creates a higher risk. It will only ever reduce the risk, or remove it completely.}. However, in case of migrations this calculation becomes a bit more complex. 
+
+When migrating software from one node to another, the critical path changes. This means that the new critical path has to be calculated, and the new risk probability has to be calculated. This as a calculation is only a bit more complex than the evaluation for attribute changes. However, the problem with a migration is that new risks could be introduced in the infrastructure, outside the critical path. Figure \ref{fig:migrations-delta} illustrates this problem in more detail.
+
+\begin{figure}[H]
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-delta-a.png}
+        \caption{Critical path.}
+        \label{fig:migrations-delta-attack}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-delta-b.png}
+        \caption{Proposed migration.}
+        \label{fig:migrations-delta-proposal}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{_content/migrations/migrations-delta-c.png}
+        \caption{New risks.}
+        \label{fig:migrations-delta-risks}
+    \end{subfigure}
+    \caption{A simplified representation of an infrastructure, to illustrate the effect of migrations outside of the critical path . (a) shows in red a critical path from node A to software S1. (b) shows in red the critical path after a migration proposal. (c) shows in red a potential new risk that is introduced.}
+    \label{fig:migrations-delta}
+\end{figure}
+
+Since these new risks are not on the critical path, they are not taken into account when calculating the risk probability. This means that a migration could make sense for a specific risk, but could introduce new risks that are not taken into account. This could lead to a situation where the risk probability of the critical path is reduced, but the overall risk probability of the infrastructure is increased. 
+
+To mitigate this problem, we've implemented logic that detects risks from its knowledge base before a mutation is applied, and after a mutation is applied. The software then calculates a delta between the two, both in size and total damage. If there are too many new risks introduced, or the total damage increases too much, the mutation is not applied. This adds an additional safeguard to the system, and prevents the agents from applying mutations that could potentially increase the overall damage of the infrastructure.

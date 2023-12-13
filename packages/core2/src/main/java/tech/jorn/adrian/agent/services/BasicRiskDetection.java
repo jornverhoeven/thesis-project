@@ -105,7 +105,7 @@ public class BasicRiskDetection implements RiskDetection {
             return report;
         }).toList();
 
-        return riskReports;
+        return new ArrayList<>(riskReports);
     }
 
     public Consumer<RiskEdge> createRiskDispatcher(AttackGraph attackGraph) {

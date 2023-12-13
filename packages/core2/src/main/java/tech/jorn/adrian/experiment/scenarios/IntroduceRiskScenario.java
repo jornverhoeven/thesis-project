@@ -19,16 +19,27 @@ public class IntroduceRiskScenario extends Scenario {
 
     @Override
     public void onScheduleEvents(Queue<ExperimentalAgent> agents) {
-        this.after(2 * 60 * 1000, () -> {
+        this.after(2 * 60 * 1000 - 2000, () -> {
 //            var asset = infrastructure.listSoftwareAssets().get(1);
 //            this.log.info("Introducing Risk to asset {}", asset.getID());
 //            asset.setProperty("os-fake/os-version", "1.0.1");
-
-            for (var i = 0; i < infrastructure.listNodes().size(); i++) {
-                var node = infrastructure.listNodes().get(i);
+            {
+                var node = infrastructure.listNodes().stream().filter(n -> n.getID().equals("iot-controller")).findFirst().get();
                 this.log.info("Introducing Risk to node {}", node.getID());
-                node.setProperty("os-fake/os-version", "1.0.1");
+                node.setProperty("fake-sdk", "1.0.1");
             }
+            {
+                var node = infrastructure.listNodes().stream().filter(n -> n.getID().equals("server")).findFirst().get();
+                this.log.info("Introducing Risk to node {}", node.getID());
+                node.setProperty("fake-sdk", "1.0.1");
+            }
+
+//            for (var i = 0; i < infrastructure.listNodes().size(); i++) {
+//                var node = infrastructure.listNodes().get(i);
+//                this.log.info("Introducing Risk to node {}", node.getID());
+//                 node.setProperty("fake-os", "1.0.1");
+////                node.setProperty("fake-vulnerability", true);
+//            }
 
         });
         this.after(3 * 60 * 1000, () -> {
