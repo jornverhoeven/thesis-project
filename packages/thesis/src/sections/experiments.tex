@@ -62,7 +62,7 @@ This scenario is the simplest. In this scenario, the infrastructure is static an
 
 \paragraph{Introduce Risks} 
 In this scenario, risks are slowly introduced into the infrastructure to simulate the discovery of new CVEs. This is done by changing the properties of the existing nodes. No new infrastructure nodes or software are added. The properties that are changed to simulate new risks are properties that would trigger a risk rule to be identified. One example would be to set the \code{Contiki-NG OS} version of a property to a version that is known to have a vulnerability. This should trigger a risk rule that would identify a risk.
-The update to the properties is done at exactly $180$ seconds after the start of the scenario. 
+The update to the properties is done at exactly $120$ seconds after the start of the scenario. 
 
 \textit{This scenario runs for a maximum of 10 minutes, no messages have been sent for 1 minute, or when the risk has been identified and mitigated.}
 
@@ -108,7 +108,7 @@ The metrics we've defined can be categorized by effectiveness and efficiency. Ef
         \textbf{Effectiveness}            & \textbf{Efficiency}            \\
         Total \# of risk identified       & Total \# of messages exchanged \\
         \# of remaining risks             & \# of adaptations              \\
-        The weighted sum of damages of remaining risk & Time spent auctioning  \\
+        The sum of damages of remaining risk & Time spent auctioning  \\
                                           & Time spent adapting            \\
     \end{tabular}
     \caption{\label{table:metrics-groups}Overview of the metrics that are measured, grouped by either effectiveness or efficiency.}
@@ -118,7 +118,7 @@ The metrics we've defined can be categorized by effectiveness and efficiency. Ef
 The metrics are defined as follows:
 
 \begin{description}
-    \item[Weighted sum of damages for remaining risks] The weighted sum of the damage for the risks that have not been mitigated by the agents during the epoch. This can also be seen as the overall damage to the system. It is one of the key indicators of the system's performance. In essence, it is the metric that we are trying to minimize. 
+    \item[Sum of damages for remaining risks] The sum of the damage for the risks that have not been mitigated by the agents during the epoch. This can also be seen as the overall damage to the system. It is one of the key indicators of the system's performance. In essence, it is the metric that we are trying to minimize. The damage of a risk is calculated by multiplying the probability of the risk with the damage of the critical software component, as explained in Section \ref{ssec:adrian}. 
     % \comment{Zoltan}{I think this should be weighted by the probability of those risks}
     \item[Number of adaptations] The number of adaptations performed by the agents during the epoch.
     \item[Time spent auctioning] The time spent by the agents on auctioning. This time is measured from the moment an auction is initiated, or when an auction is joined, until the auction is finished. 

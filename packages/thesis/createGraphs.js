@@ -94,7 +94,7 @@ function createMultiRun() {
             data: zipTimestamps(raw[0].timestamps, average),
         }
     ];
-    return pgfPlotTemplate("Total infrastructure damage", "Damage Total", data, limits, events, false);
+    return pgfPlotTemplate("Total infrastructure damage", "Damage Total", data, limits, events, false, (index) => index === 5 ? "red" : "gray");
 }
 function createSmallInfra() {
     const metric = 'riskCount-global';
@@ -129,7 +129,7 @@ function createForMetric(scenario, metric, noLegend = false) {
             data: zipTimestamps(local.timestamps, local[metric]),
         },
     ]
-    return (title, ylabel) => pgfPlotTemplate(title, ylabel, data, limits, events, false);
+    return (title, ylabel, colors) => pgfPlotTemplate(title, ylabel, data, limits, events, false, colors);
 }
 
 function loadCSV(path) {
@@ -157,7 +157,7 @@ function zipTimestamps(timestamps, data) {
     return timestamps.map((timestamp, index) => [timestamp, data[index]]);
 }
 
-function pgfPlotTemplate(title, yLabel, data, limits, events, noLegend) {
+function pgfPlotTemplate(title, yLabel, data, limits, events, noLegend, colors = color) {
     const xmax = Math.round(limits.timestamp.max / 5000) * 5000 + 5000;
     const ymax = (() => {
         const len = limits.data.max.toString().length;
@@ -180,7 +180,7 @@ function pgfPlotTemplate(title, yLabel, data, limits, events, noLegend) {
     xtick scale label code/.code={}
 ]
 
-${data.map((d, index) => createPlot(d, index)).join("\n")}
+${data.map((d, index) => createPlot(d, index, colors)).join("\n")}
 
 ${events.map(e => `\t\\addplot[color=gray, dashed,] coordinates {(${e},0) (${e},${ymax})};`).join("\n")}
 ${noLegend ? '\\legend{}' : ''}
@@ -189,8 +189,8 @@ ${noLegend ? '\\legend{}' : ''}
 \\end{tikzpicture}`;
 }
 
-function createPlot(data, index) {
-    return `\t\\addplot[color=${color(index)},mark=${mark(index)}] coordinates {
+function createPlot(data, index, colors) {
+    return `\t\\addplot[color=${colors(index)},mark=${mark(index)}] coordinates {
         ${data.data.map(([t, d]) => d !== undefined ? `(${t},${d.toString().replace(",",".")})` : "").join("")}
     };
     \\addlegendentry{${data.label}}`

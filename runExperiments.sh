@@ -5,13 +5,13 @@ infra=complex-infra.yml
 #scenarios=(no-change risk-introduction growing unstable)
 # scenarios=(unstable)
 # scenarios=(growing)
-scenarios=(risk-introduction)
-#scenarios=(no-change)
-features=(local knowledge-sharing auctioning)
+# scenarios=(risk-introduction)
+scenarios=(no-change)
+#features=(local knowledge-sharing auctioning)
 # features=(knowledge-sharing auctioning)
 # features=(local)
 # features=(knowledge-sharing)
-# features=(auctioning)
+ features=(auctioning)
 
 CURRENT=$(pwd)
 

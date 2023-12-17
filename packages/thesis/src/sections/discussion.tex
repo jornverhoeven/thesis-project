@@ -49,6 +49,7 @@ After carefully inspecting the logs, two likely causes are identified. Instead o
 Additionally, because of the infrastructure size there is only a limited amount of risks, the changes of finding a better adaptation via an auction is smaller in that case. Both of these factors are likely to cause this difference in performance, but further research would be needed to confirm this.
 
 \subsection{Large Infrastructure}
+\add{rerun}
 \begin{figure}[H]
     \centering
         \input{graphs/large-infra-large}
@@ -62,7 +63,7 @@ Additionally, because of the infrastructure size there is only a limited amount 
 \subsection{Consistency}
 \label{ssec:consecutive-runs}
 During some of the experiments we see a small fluctuation in the behavior of agents. One good example of this is figure \ref{fig:adapting-time-no-change} compared to \ref{fig:adapting-time-risk-introduction}. We believe this is because of the scheduling of threads by the OS. This could lead into different auctions being initiated and joined over multiple runs. 
-
+ 
 To test this assumption, we ran the no-change scenario with the auctioning feature-set $5$ times. The results of this can be seen in figure \ref{fig:multi-run-no-change}. We see that the overall damage is very similar in all runs. However, small differences can be observed across the runs.
 
 \begin{figure}[H]
