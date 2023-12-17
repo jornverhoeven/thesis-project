@@ -130,9 +130,9 @@ Each controller is only responsible for converting events into service calls. Bu
 
 % \addtocontents{toc}{\protect\setcounter{tocdepth}{3}}
 
-\subsection{Risk Rules \& Mutations}
-\label{ssec:risk-rules-mutations}
-In this section we will describe the risk rules and mutations that are used in the ADRIAN protocol \cite{mann2023ADRIAN}. The risk rules are used to identify risks in the infrastructure. These rules look at the different properties of the infrastructure and software components, and based on these properties, they can identify a risk between two nodes, software or any combination of those two. 
+\subsection{Risk Rules \& Adaptations}
+\label{ssec:risk-rules-adaptaions}
+In this section we will describe the risk rules and adaptations that are used in the ADRIAN protocol \cite{mann2023ADRIAN}. The risk rules are used to identify risks in the infrastructure. These rules look at the different properties of the infrastructure and software components, and based on these properties, they can identify a risk between two nodes, software or any combination of those two. 
 
 To implement the risk rules we've chosen to distinguish between three types of risks; \emph{Forward risks}, \emph{Backwards risks}, and \emph{Inward risks}. \emph{Inward risks} are nearly identical to \emph{Backwards risks}, the only theoretical distinction is that inward risks always come from a void-node, whereas backwards risks only come from entities on the graph. Figure \ref{fig:risk-rules} gives a visual representation of the differences between these three types of risks.
 
@@ -159,24 +159,38 @@ To implement the risk rules we've chosen to distinguish between three types of r
     \label{fig:risk-rules}
 \end{figure}
 
+These three types of risks are then used to implement the different risk rules. The risk rules are made up partially from existing CVE's, but also from theoretical risks that could occur in a real-world scenario. The risk rules are shown in Table \ref{table:risk-rules}. The theoretical risks are used to further test the system, and show that the system is not just limited to CVE's that are known at the time of implementation. A production ready version of the system would likely include a larger set of risk rules, and would be updated regularly to include new CVE's. However, for the purpose of this thesis, we have chosen to limit the amount of risk rules to a small set of rules.
 
-The mutations are used to adapt the infrastructure and software components. These mutations are used to reduce the risk in the infrastructure.
+In table \ref{table:risk-rules} the adaptations that are used to mitigate the risks are also shown. These adaptations are used to reduce the risks in the infrastructure. The ADRIAN Concept \cite{mann2023ADRIAN} mentions two types of adaptations, \emph{Property Change} and \emph{Migration}. Both of these are implemented in the proof of concept. The adaptations in table \ref{table:risk-rules} are split into \emph{Enable Property} and \emph{Version Bump}, both of which are \emph{Property Change} adaptations. Enabling a property is used for boolean properties such as \emph{hasFirewall} and \emph{isSoftwareEncrypted}, which are the properties used by the risk rules. Version bump is used for version properties, and follow a Semantic Version scheme\footnote{\url{https://semver.org/}}. This distinction is made to show that the adaptations are not limited to a single type of property, and that the system is able to handle different types of properties.
 
-\add{Add table of all riskrules that were used.}
 \begin{table}[H]
-    % \begin{table}[]
-        \centering
-        \begin{tabular}{l|l|l}
-            \textbf{Name} & \textbf{Rule Type} & \textbf{Factor} \\ \hline
-        \end{tabular}
-        \caption{\label{table:experiment-features}Overview of the actions that are allowed in each feature set. The headers of the table represent the names of the feature sets. The rows represent the actions that are allowed in each feature set.}
-    % \end{table}
+    \centering
+    \begin{tabular}{l|l|l|l|l}
+        \textbf{Name} & \textbf{Rule Type} & \textbf{Factor} & \textbf{Adaptation} & \textbf{\begin{tabular}[c]{@{}l@{}}Mitigation \\ Factor\end{tabular}} \\ \hline
+        \textbf{Uncertainty\tablefootnote{We always include a small risk to incorporate the uncertainty factor for a more comprehensive representations, and allow agents to detect additional risks which would otherwise be hidden. }} & Inward & $0.08$ & N.A. & \\
+        
+        \textbf{Firewall} & Backward & $0.8$ & Enable Property & $0.2$ \\
+        \textbf{Physically Secured} & Backward & $0.8$ & Enable Property & $0.2$ \\
+        \textbf{Software Encrypted} & Backward & $0.8$ & Enable Property & $0.2$ \\
+        
+        \textbf{CVE-2020-3676} & Forward & $0.18$ & Version Bump & $0.0$ \\
+        \textbf{CVE-2021-22547} & Forward & $0.18$ & Version Bump & $0.0$ \\
+        \textbf{CVE-2021-40830} & Inward & $0.28$ & Version Bump & $0.0$ \\
+        \textbf{CVE-2022-25666} & Forward & $0.08$ & Version Bump & $0.0$ \\
+        \textbf{CVE-2022-35927\tablefootnote{\label{cve-2022-35927} This CVE introduces both a backward and inward risk.}} & Backward & $0.39$ & Version Bump & $0.0$ \\
+        \textbf{CVE-2022-35927\footnoteref{cve-2022-35927}} & Inward & $0.39$ & Property Change & $0.2$ \\
+        
+        \textbf{Firmware Risk\tablefootnote{\label{cve-test-risk} These risks are used for testing and are made up, and thus they have no real-world parallel }} & Forward & $0.1$ & N.A. & \\
+        \textbf{OS Risk\footnoteref{cve-test-risk}} & Forward & $0.4$ & Version Bump & $0.0$ \\
+        \textbf{SDK Risk\footnoteref{cve-test-risk}} & Forward & $0.99$ & Version Bump & $0.0$ \\
+    \end{tabular}
+    \caption{\label{table:risk-rules}Overview of the implemented risk rules used during the experimentation. It shows the name or identifier for each rule, the type of rule, the factor that is used to calculate the risk probability, the adaptation that is applied to mitigate the risk, and the mitigation factor that is used to calculate the new risk probability.}
 \end{table}
-\add{Explain the different mutations that were used.}
-
 
 \subsection{Migrations} 
 \label{ssec:migrations}
+Whereas the table \ref{table:risk-rules} shows all implemented risk rules, and their potential adaptations, it does not show the migrations an agent can make. This is due to migrations not being tied to any specific risk rule, but rather to the infrastructure itself. This means that migrations are not triggered by a risk rule. Instead, migrations are attempted and evaluated by the \code{ProposalService} (see Section \ref{sssec:services}) based on the critical software and the agent itself.
+
 While developing and experimenting with the ADRIAN protocol, we noticed that the mitigation strategy to migrate software from one node to another is seldom applied. Only under special circumstances will the agents propose to migrate software from one node to another. To illustrate some of the reasons why this is the case, we will sketch several cases that where encountered during the experiments, and why the agents did not \emph{(and should not)} propose to migrate software.
 
 \paragraph*{Migrating along the critical path}
