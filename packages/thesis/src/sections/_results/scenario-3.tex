@@ -1,5 +1,6 @@
 \subsection{Scenario 3: Growing Infrastructure}
-\add{Finish this section}
+\textit{This scenario introduces a new infrastructure node every $30$ seconds. The purpose of this scenario is to see how the system behaves when the infrastructure is growing.}
+
 \begin{figure}[H]
     \centering
     \input{graphs/overall-damage-growing}
@@ -7,25 +8,36 @@
     \label{fig:overall-damage-growing}
 \end{figure}
 
-
+From figure \ref{fig:overall-damage-growing} we see that the auctioning and knowledge-sharing agents are able to keep the damage at a stable level, even though the infrastructure is growing. Only at the end do we see that the agents cannot cope with the increasing damage and does the damage increase. The auctioning agent is keeping the overall damage at the lowest point. This is a good result, as the infrastructure is growing, and the agents are able to keep the damage at a low level. 
+As mentioned before, the damage is calculated at a $5000$ms interval. This means that the damage could be higher than the graph shows, as adaptations could be applied within the timeframe. This is the case for the auctioning agent and knowledge-sharing agent, which is observed in the log-files. However, the local-agent does not apply any adaptations during this time, this is visible in the diverging lines at the end of the graph.
+ 
 \begin{figure}[H]
     \centering
     \input{graphs/messages-growing}
     \caption{Graph showing the total amount of messages sent between agents in the growing infrastructure scenario.}
     \label{fig:messages-growing}
 \end{figure}
+
+Figure \ref{fig:messages-growing} shows that the auctioning agent sends the most messages, followed by the knowledge-sharing agent. The local-agent sends no messages. We see that both the auctioning and knowledge-sharing agents send a few messages around every time a new node is introduced. This is to be expected as the agents detect a change in their properties, and start sharing this information with other agents.
+
 \begin{figure}[H]
     \centering
     \input{graphs/proposals-growing}
     \caption{Graph showing the total amount of adaptations applied by agents in the growing scenario.}
     \label{fig:proposals-growing}
 \end{figure}
+
+As for the adaptations in this experiment, we also see a gradual increase in proposals over time. The local agent is unable to cope with the changes to the infrastructure, and is unable to apply any adaptations. We see that the auctioning agent is slowly applying adaptations, where the knowledge-sharing agent applies them like in quick succession. This is to be expected as the auctioning agent has to negotiate the adaptations, which takes time.
+
 \begin{figure}[H]
     \centering
         \input{graphs/risk-count-growing}
     \caption{Graph showing the number of unique risks detected by agents in the growing scenario.}
     \label{fig:risk-count-growing}
 \end{figure}
+
+Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds the most unique risks, followed by the auctioning agent. The auctioning agent finds only $50\%$ of the risks detected by the knowledge-sharing agent. The local-agent finds the least amount of risks, at only $10\%$ of the risks found by the knowledge-sharing agent. As mentioned in \ref{ssec:scenario-2-results}, this is likely due to the fact that in the knowledge-sharing setup agents apply multiple adaptations in parallel. 
+
 \begin{figure}[H]
     \centering
         \input{graphs/risk-remaining-growing}
@@ -33,9 +45,7 @@
     \label{fig:risk-remaining-growing}
 \end{figure}
 
-Figure \ref{fig:risk-remaining-growing} has a scale that is almost $60$ times larger than all other scenarios, and has found $212$ times more risks than initially. This can be explained by the growing size of the infrastructure, and the new edges that are introduced. A risk is defined as a path from an infrastructure node to a critical software component. As the infrastructure grows, the amount of possible paths grows exponentially. This is why the amount of risks detected is also growing exponentially. 
-
-It should be noted that the probability and damage value of many of these risks are very low, as these critical paths can become long. This could be a reason why the overall damage (figure \ref{fig:overall-damage-growing}) is only $30$ times larger than at the start of the scenario. However, the metrics that are collected are not enough to determine the exact cause of this difference.
+\add{write}
 
 \begin{figure}[H]
     \centering
@@ -43,9 +53,14 @@ It should be noted that the probability and damage value of many of these risks 
     \caption{Graph showing the sum of time spent auctioning by agents in the growing scenario.}
     \label{fig:auctioning-time-growing}
 \end{figure}
+
+Figure \ref{fig:auctioning-time-growing} shows an ever growing amount of time spent auctioning. This is in line with the expectations as the agents finds a risk, and then starts an auction. These auctions in the end lead to no proposals/adaptations being applied, as the agents are unable to find a better adaptation. This is visible in the graph as the time spent auctioning increases, but the amount of adaptations from figure \ref{fig:proposals-growing} stays the same.
+
 \begin{figure}[H]
     \centering
         \input{graphs/adapting-time-growing}
     \caption{Graph showing the sum of time spent adapting by agents in the growing scenario.}
     \label{fig:adapting-time-growing}
 \end{figure}
+
+Figure \ref{fig:adapting-time-growing} shows that the knowledge-sharing agent spends the most time adapting, followed by the auctioning agent. We see that compared to figures \ref{fig:adapting-time-no-change} and \ref{fig:adapting-time-risk-introduction}, that the auctioning agent slowly applies more and more adaptations, whereas the knowledge-sharing agent some of these adaptations applied already. 

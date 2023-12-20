@@ -1,0 +1,33 @@
+\begin{tikzpicture}
+\begin{axis}[
+    xlabel={Timestamp [s]},
+    ylabel={Damage},
+    xmin=0, xmax=75000,
+    ymin=0, ymax=78,
+    legend pos=outer north east,
+    ymajorgrids=true,
+    grid style=dashed,
+    width=\textwidth,
+    height=0.5\textwidth,
+    scaled x ticks=base 10:-3,
+    xtick scale label code/.code={}
+]
+
+	\addplot[color=blue,mark=square] coordinates {
+        (0,39.90)(5000,39.90)(10000,39.90)(15000,0.00)(20000,0.00)(25000,0.00)(30000,0.00)(35000,0.00)(40000,0.00)(45000,0.00)(50000,0.00)(55000,0.00)(60000,0.00)(65000,0.00)(70000,0.00)(71384,0.00)
+    };
+    \addlegendentry{Auctioning}
+	\addplot[color=red,mark=triangle] coordinates {
+        (0,39.90)(5000,39.90)(10000,39.90)(15000,0.00)(20000,0.00)(25000,0.00)(30000,0.00)(35000,0.00)(40000,0.00)(45000,0.00)(50000,0.00)(55000,0.00)(60000,0.00)(65000,0.00)(70000,0.00)(71269,0.00)
+    };
+    \addlegendentry{Knowledge Sharing}
+	\addplot[color=orange,mark=diamond] coordinates {
+        (0,39.90)(5000,39.90)(10000,39.90)(15000,39.90)(20000,39.90)(25000,39.90)(30000,39.90)(35000,39.90)(40000,39.90)(45000,0.00)(50000,0.00)(55000,0.00)(60000,0.00)(65000,0.00)(70000,0.00)(70516,0.00)
+    };
+    \addlegendentry{Local}
+
+
+
+
+\end{axis}
+\end{tikzpicture}

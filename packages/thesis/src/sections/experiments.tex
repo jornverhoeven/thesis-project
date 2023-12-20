@@ -124,8 +124,8 @@ The metrics are defined as follows:
     \item[Time spent auctioning] The time spent by the agents on auctioning. This time is measured from the moment an auction is initiated, or when an auction is joined, until the auction is finished. 
     \item[Time spent adapting] The time spent by the agents applying adaptations. This time is measured from the moment a proposal is accepted until the adaptation is finished.
     \item[Total number of messages exchanged] The total number of messages exchanged between agents during the epoch.
-    \item[Total number of risks identified] The total number of risks identified by the agents during the epoch.
-    \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch.
+    \item[Total number of unique risks identified] The total number of unique risks identified by the agents during the epoch. A risk is identified by the critical path from start to end, as well as the probability and damage of the risk. This means that if an agent finds a similar critical path, but with a different probability or damage, it is counted as a unique risk.
+    \item[Number of remaining risks] The number of risks that have not been mitigated by the agents during the epoch. This list is filtered to only include risks that have a damage higher than $10$. This is done to exclude small risks that exist because of the uncertainty rule.
 \end{description}
 
 \subsection{Controls and Variables}

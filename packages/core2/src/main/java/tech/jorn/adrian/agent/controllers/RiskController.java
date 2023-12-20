@@ -18,6 +18,7 @@ import tech.jorn.adrian.core.agents.AgentState;
 import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.EventManager;
+import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
 import tech.jorn.adrian.core.graphs.base.INode;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;
 import tech.jorn.adrian.core.observables.SubscribableValueEvent;
@@ -31,6 +32,7 @@ public class RiskController extends AbstractController {
     private final RiskDetection riskDetection;
     private final IRiskSelector riskSelector;
     private final KnowledgeBase knowledgeBase;
+    private final IAgentConfiguration configuration;
 
     private Timer riskAssessmentTimer;
     private ScheduledExecutorService riskAssessmentScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -47,6 +49,7 @@ public class RiskController extends AbstractController {
         this.riskDetection = riskDetection;
         this.knowledgeBase = knowledgeBase;
         this.riskSelector = riskSelector;
+        this.configuration = configuration;
 
         this.eventManager.registerEventHandler(IdentifyRiskEvent.class, this::debounced);
         this.eventManager.registerEventHandler(FoundRiskEvent.class, this::foundRiskEvent);

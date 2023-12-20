@@ -22,7 +22,9 @@
 \usepackage{subcaption}
 \usepackage{changepage}
 \usepackage{tabularx}
-\usepackage{tablefootnote}
+\usepackage{tablefootnote} 
+
+\pgfplotsset{compat=1.17, scaled ticks=false, tick label style={/pgf/number format/fixed}}
 
 \begin{document}
 
@@ -35,14 +37,17 @@
 % \committeemember{Dr. C.U. Grelck}
 \maketitle
 
-\listoftodos{}
-\newpage
+% \listoftodos{}
+% \newpage
+
+\input{sections/abstract}
+\vspace{2cm}
 
 \tableofcontents
 
 \asJava % By default use Java as the code language
 
-\input{sections/abstract}
+\newpage
 \input{sections/introduction}
 \input{sections/background}
 
@@ -53,9 +58,7 @@
 
 \input{sections/discussion}
 \input{sections/future-research}
-\input{sections/conclusion}
-
-\add{Verify the references!}
+\input{sections/conclusion} 
 
 \bibliographystyle{abbrv}
 \bibliography{bibliography}

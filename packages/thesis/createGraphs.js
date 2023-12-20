@@ -13,18 +13,18 @@ const featureSet = {
 }
 
 function main() {
-    Object.values(scenarios).forEach(scenario => {
-        writeToTexFile("overall-damage", scenario, createDamageTotal(scenario));
-        writeToTexFile("messages", scenario, createMessageTotal(scenario));
-        writeToTexFile("proposals", scenario, createProposalTotal(scenario));
-        writeToTexFile("risk-count", scenario, createRiskCountTotal(scenario));
-        writeToTexFile("risk-remaining", scenario, createRemainingRisks(scenario));
-        writeToTexFile("auctioning-time", scenario, createTimeSpentAuctioning(scenario));
-        writeToTexFile("adapting-time", scenario, createTimeSpentAdapting(scenario));
-    });
-    writeToTexFile("multi-run", "no-change", createMultiRun());
+//    Object.values(scenarios).forEach(scenario => {
+//        writeToTexFile("overall-damage", scenario, createDamageTotal(scenario));
+//        writeToTexFile("messages", scenario, createMessageTotal(scenario));
+//        writeToTexFile("proposals", scenario, createProposalTotal(scenario));
+//        writeToTexFile("risk-count", scenario, createRiskCountTotal(scenario));
+//        writeToTexFile("risk-remaining", scenario, createRemainingRisks(scenario));
+//        writeToTexFile("auctioning-time", scenario, createTimeSpentAuctioning(scenario));
+//        writeToTexFile("adapting-time", scenario, createTimeSpentAdapting(scenario));
+//    });
+//    writeToTexFile("multi-run", "no-change", createMultiRun());
     writeToTexFile("small-infra", "no-change", createSmallInfra());
-    // writeToTexFile("large-infra", "large", createLargeInfra());
+     writeToTexFile("large-infra", "large", createLargeInfra());
 }
 
 main();
@@ -97,13 +97,13 @@ function createMultiRun() {
     return pgfPlotTemplate("Total infrastructure damage", "Damage Total", data, limits, events, false, (index) => index === 5 ? "red" : "gray");
 }
 function createSmallInfra() {
-    const metric = 'riskCount-global';
-    return createForMetric("small", metric, true)(`Remaining Risks`, "Risks");
+    const metric = 'riskDamage-global';
+    return createForMetric("small", metric, true)("Damage Total", "Damage");
 }
 
 function createLargeInfra() {
     const metric = 'riskDamage-global';
-    return createForMetric("large", metric, true)(`Remaining Risks`, "Risks");
+    return createForMetric("large", metric, true)("Damage Total", "Damage");
 }
 
 function createForMetric(scenario, metric, noLegend = false) {

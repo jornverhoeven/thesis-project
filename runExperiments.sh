@@ -1,17 +1,17 @@
-infra=complex-infra.yml
-# infra=base.yml
+#infra=complex-infra.yml
+ infra=base.yml
 #infra=single-node-infra.yml
-# scenarios=(large)
+ scenarios=(large)
 #scenarios=(no-change risk-introduction growing unstable)
 # scenarios=(unstable)
 # scenarios=(growing)
 # scenarios=(risk-introduction)
-scenarios=(no-change)
-#features=(local knowledge-sharing auctioning)
+#scenarios=(no-change)
+features=(local knowledge-sharing auctioning)
 # features=(knowledge-sharing auctioning)
 # features=(local)
 # features=(knowledge-sharing)
- features=(auctioning)
+# features=(auctioning)
 
 CURRENT=$(pwd)
 

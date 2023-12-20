@@ -1,5 +1,6 @@
 \subsection{Scenario 4: Unstable Infrastructure}
-\add{Finish this section}
+\textit{This scenario removes an existing infrastructure node after $30$ seconds, and adds the node back into the infrastructure after another $30$ seconds. This is repeated twice. The purpose of this scenario is to see how the system behaves when the infrastructure (connection) is unstable.}
+
 \begin{figure}[H]
     \centering
     \input{graphs/overall-damage-unstable}
@@ -7,39 +8,52 @@
     \label{fig:overall-damage-unstable}
 \end{figure}
 
+From this first figure \ref{fig:overall-damage-unstable} we see a trend that is similar to the one from the first experiment (figure \ref{fig:overall-damage-no-change}). The second time a node gets removed and then added, we see a small dip in the graphs. But apart from this there are no \emph{new} risks to mitigate as the properties of the nodes do not change. This is also reflected in figure \ref{fig:messages-unstable}, where the knowledge-sharing agent does not see any property changes (and thus does not send any messages). The auctioning node does send some messages, as perviously due to the attempts of finding adaptations.
+
 \begin{figure}[H]
     \centering
     \input{graphs/messages-unstable}
     \caption{Graph showing the total amount of messages sent between agents in the unstable scenario.}
     \label{fig:messages-unstable}
 \end{figure}
+
 \begin{figure}[H]
     \centering
     \input{graphs/proposals-unstable}
     \caption{Graph showing the total amount of adaptations applied by agents in the unstable scenario.}
     \label{fig:proposals-unstable}
 \end{figure}
+
+Figure \ref{fig:proposals-unstable} is similar to the \emph{No change} scenario (figure \ref{fig:proposals-no-change}), and is inline with the damage reduction visible in figure \ref{fig:overall-damage-unstable}. No new adaptations are applied, and the infrastructure remains stable. The agents also do not detect any new risks, as the properties remain the same. This is reflected in figure \ref{fig:risk-count-unstable} and \ref{fig:risk-remaining-unstable}.
+
 \begin{figure}[H]
     \centering
         \input{graphs/risk-count-unstable}
     \caption{Graph showing the number of unique risks detected by agents in the unstable scenario.}
     \label{fig:risk-count-unstable}
 \end{figure}
+
 \begin{figure}[H]
     \centering
         \input{graphs/risk-remaining-unstable}
     \caption{Graph showing the number of remaining risks in the infrastructure in the unstable scenario.}
     \label{fig:risk-remaining-unstable}
 \end{figure}
+
+\add{write}
+
 \begin{figure}[H]
     \centering
         \input{graphs/auctioning-time-unstable}
     \caption{Graph showing the sum of time spent auctioning by agents in the unstable scenario.}
     \label{fig:auctioning-time-unstable}
 \end{figure}
+
 \begin{figure}[H]
     \centering
         \input{graphs/adapting-time-unstable}
     \caption{Graph showing the sum of time spent adapting by agents in the unstable scenario.}
     \label{fig:adapting-time-unstable}
 \end{figure}
+
+As with the prior graphs for this scenario we see that figure \ref{fig:adapting-time-unstable} is also stable after the first $50$ seconds. There are no new risks as shown in figure \ref{fig:risk-count-unstable} and no new adaptations are necessary to mitigate them. 

@@ -9,6 +9,7 @@ import tech.jorn.adrian.core.agents.IAgentConfiguration;
 import tech.jorn.adrian.core.controllers.AbstractController;
 import tech.jorn.adrian.core.events.EventManager;
 import tech.jorn.adrian.core.graphs.AbstractDetailedNode;
+import tech.jorn.adrian.core.graphs.MermaidGraphRenderer;
 import tech.jorn.adrian.core.graphs.base.VoidNode;
 import tech.jorn.adrian.core.graphs.infrastructure.SoftwareAsset;
 import tech.jorn.adrian.core.graphs.knowledgebase.KnowledgeBase;

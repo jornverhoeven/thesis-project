@@ -96,7 +96,7 @@ links:
     target: soc-light
   - source: router
     target: iot-controller
-  - source: router
+  - source: iot-controller
     target: desktop
   - source: router
     target: printer

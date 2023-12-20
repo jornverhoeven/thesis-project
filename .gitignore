@@ -3,6 +3,10 @@
 
 dist/
 ./output/
+output-back
+graphs-back
+
+.DS_Store
 
 DPDP/
 
