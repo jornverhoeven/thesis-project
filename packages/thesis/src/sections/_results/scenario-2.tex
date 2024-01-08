@@ -9,7 +9,7 @@
     \label{fig:overall-damage-inroduce-risk}
 \end{figure}
 
-Figure \ref{fig:overall-damage-inroduce-risk} shows a graph that follows a similar trend as shown in figure \ref{fig:overall-damage-no-change}, albeit a bit slower for the auctioning agent. This is to be expected as the scenarios are identical up until the $120$ seconds mark. During this time we see a small increase in damage for all graphs. As the metrics are collected in $5000$ms intervals, we see a small bump in all the lines around the $120$ seconds mark. And it slowly goes down again after this. Due to this timing, agents sometimes applied the adaptation before the interval ended. This explains why sometimes the lines are not as smooth as we would expect.
+Figure \ref{fig:overall-damage-inroduce-risk} shows a graph that follows a similar trend as shown in Figure \ref{fig:overall-damage-no-change}, albeit a bit slower for the auctioning agent. This is to be expected as the scenarios are identical up until the $120$ seconds mark. During this time we see a small increase in damage for all graphs. As the metrics are collected in $5000$ms intervals, we see a small bump in all the lines around the $120$ seconds mark. And it slowly goes down again after this. Due to this timing, agents sometimes applied the adaptation before the interval ended. This explains why sometimes the lines are not as smooth as we would expect.
 
 \begin{figure}[H]
     \centering
@@ -18,7 +18,7 @@ Figure \ref{fig:overall-damage-inroduce-risk} shows a graph that follows a simil
     \label{fig:messages-risk-introduction}
 \end{figure}
 
-Figure \ref{fig:messages-risk-introduction} shows a graph similar to figure \ref{fig:messages-no-change}. The auctioning agent sends the most messages, followed by the knowledge-sharing agent. The local-agent sends no messages. We see that after the $120$ seconds mark, both the auctioning and knowledge-sharing agents send a few more messages around. This is to be expected as the agents detect a change in their properties, and start sharing this information with other agents.
+Figure \ref{fig:messages-risk-introduction} shows a graph similar to Figure \ref{fig:messages-no-change}. The auctioning agent sends the most messages, followed by the knowledge-sharing agent. The local-agent sends no messages. We see that after the $120$ seconds mark, both the auctioning and knowledge-sharing agents send a few more messages around. This is to be expected as the agents detect a change in their properties, and start sharing this information with other agents.
 
 \begin{figure}[H]
     \centering
@@ -27,7 +27,7 @@ Figure \ref{fig:messages-risk-introduction} shows a graph similar to figure \ref
     \label{fig:proposals-risk-introduction}
 \end{figure}
 
-When the risk is introduced after $120$ seconds, we can see in Figure \ref{fig:proposals-risk-introduction} that a few new adaptations are applied. This is in line with the damage graph in figure \ref{fig:overall-damage-inroduce-risk}.
+When the risk is introduced after $120$ seconds, we can see in Figure \ref{fig:proposals-risk-introduction} that a few new adaptations are applied. This is in line with the damage graph in Figure \ref{fig:overall-damage-inroduce-risk}.
 
 \begin{figure}[H]
     \centering
@@ -36,7 +36,7 @@ When the risk is introduced after $120$ seconds, we can see in Figure \ref{fig:p
     \label{fig:risk-count-risk-introduction}
 \end{figure}
 
-When we look at figure \ref{fig:risk-count-risk-introduction} we can see that the knowledge-sharing agent detects the most risks, followed by the auctioning agent. The local-agent detects the least amount of risks, at only $10\%$ of the risks found by the knowledge-sharing agent. We would expect a comparable result between the auctioning and knowledge-sharing agents, however this is not the case. This is likely due to the fact that in the knowledge-sharing setup agents apply multiple adaptations in parallel. This causes the knowledge bases to change more rapidly, which could cause the agents to detect more risks. This is explained in more detail in subsection \ref{ssec:metrics}.
+When we look at Figure \ref{fig:risk-count-risk-introduction} we can see that the knowledge-sharing agent detects the most risks, followed by the auctioning agent. The local-agent detects the least amount of risks, at only $10\%$ of the risks found by the knowledge-sharing agent. We would expect a comparable result between the auctioning and knowledge-sharing agents, however this is not the case. This is likely due to the fact that in the knowledge-sharing setup agents apply multiple adaptations in parallel. This causes the knowledge bases to change more rapidly, which could cause the agents to detect more risks. This is explained in more detail in subsection \ref{ssec:metrics}.
 
 \begin{figure}[H]
     \centering
@@ -54,7 +54,7 @@ When we look at figure \ref{fig:risk-count-risk-introduction} we can see that th
     \label{fig:auctioning-time-risk-introduction}
 \end{figure}
 
-As with figure \ref{fig:auctioning-time-no-change}, we see in figure \ref{fig:adapting-time-risk-introduction} that only the auctioning agent spends time auctioning. The knowledge-sharing agent spends no time auctioning, as it does not have this feature-set. After the $120$ seconds mark we see that the auctioning agent spends more time auctioning, which is a result of the risk being introduced.
+As with Figure \ref{fig:auctioning-time-no-change}, we see in Figure \ref{fig:adapting-time-risk-introduction} that only the auctioning agent spends time auctioning. The knowledge-sharing agent spends no time auctioning, as it does not have this feature-set. After the $120$ seconds mark we see that the auctioning agent spends more time auctioning, which is a result of the risk being introduced.
 
 \begin{figure}[H]
     \centering
@@ -63,4 +63,4 @@ As with figure \ref{fig:auctioning-time-no-change}, we see in figure \ref{fig:ad
     \label{fig:adapting-time-risk-introduction}
 \end{figure}
 
-Figure \ref{fig:adapting-time-risk-introduction} shows that the knowledge-sharing agent is still spending more time adapting compared to the auctioning agent. Compared to figure \ref{fig:adapting-time-no-change} we see that the agents are all spending roughly the same amount of time adapting, until the $120$ second mark. After this time a bump is observable in the graph.
+Figure \ref{fig:adapting-time-risk-introduction} shows that the knowledge-sharing agent is still spending more time adapting compared to the auctioning agent. Compared to Figure \ref{fig:adapting-time-no-change} we see that the agents are all spending roughly the same amount of time adapting, until the $120$ second mark. After this time a bump is observable in the graph.

@@ -8,7 +8,7 @@
     \label{fig:overall-damage-growing}
 \end{figure}
 
-From figure \ref{fig:overall-damage-growing} we see that the auctioning and knowledge-sharing agents are able to keep the damage at a stable level, even though the infrastructure is growing. Only at the end do we see that the agents cannot cope with the increasing damage and does the damage increase. The auctioning agent is keeping the overall damage at the lowest point. This is a good result, as the infrastructure is growing, and the agents are able to keep the damage at a low level. 
+From Figure \ref{fig:overall-damage-growing} we see that the auctioning and knowledge-sharing agents are able to keep the damage at a stable level, even though the infrastructure is growing. Only at the end do we see that the agents cannot cope with the increasing damage and does the damage increase. The auctioning agent is keeping the overall damage at the lowest point. This is a good result, as the infrastructure is growing, and the agents are able to keep the damage at a low level. 
 As mentioned before, the damage is calculated at a $5000$ms interval. This means that the damage could be higher than the graph shows, as adaptations could be applied within the timeframe. This is the case for the auctioning agent and knowledge-sharing agent, which is observed in the log-files. However, the local-agent does not apply any adaptations during this time, this is visible in the diverging lines at the end of the graph.
  
 \begin{figure}[H]
@@ -36,7 +36,7 @@ As for the adaptations in this experiment, we also see a gradual increase in pro
     \label{fig:risk-count-growing}
 \end{figure}
 
-Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds the most unique risks, followed by the auctioning agent. The auctioning agent finds only $50\%$ of the risks detected by the knowledge-sharing agent. The local-agent finds the least amount of risks, at only $10\%$ of the risks found by the knowledge-sharing agent. As mentioned in \ref{ssec:scenario-2-results}, this is likely due to the fact that in the knowledge-sharing setup agents apply multiple adaptations in parallel. 
+Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds the most unique risks, followed by the auctioning agent. The auctioning agent finds only $50\%$ of the risks detected by the knowledge-sharing agent. The local-agent finds the least amount of risks, at only $10\%$ of the risks found by the knowledge-sharing agent. As mentioned in Section \ref{ssec:scenario-2-results}, this is likely due to the fact that in the knowledge-sharing setup agents apply multiple adaptations in parallel. 
 
 \begin{figure}[H]
     \centering
@@ -54,7 +54,7 @@ Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds 
     \label{fig:auctioning-time-growing}
 \end{figure}
 
-Figure \ref{fig:auctioning-time-growing} shows an ever growing amount of time spent auctioning. This is in line with the expectations as the agents finds a risk, and then starts an auction. These auctions in the end lead to no proposals/adaptations being applied, as the agents are unable to find a better adaptation. This is visible in the graph as the time spent auctioning increases, but the amount of adaptations from figure \ref{fig:proposals-growing} stays the same.
+Figure \ref{fig:auctioning-time-growing} shows an ever growing amount of time spent auctioning. This is in line with the expectations as the agents finds a risk, and then starts an auction. These auctions in the end lead to no proposals/adaptations being applied, as the agents are unable to find a better adaptation. This is visible in the graph as the time spent auctioning increases, but the amount of adaptations from Figure \ref{fig:proposals-growing} stays the same.
 
 \begin{figure}[H]
     \centering
@@ -63,4 +63,4 @@ Figure \ref{fig:auctioning-time-growing} shows an ever growing amount of time sp
     \label{fig:adapting-time-growing}
 \end{figure}
 
-Figure \ref{fig:adapting-time-growing} shows that the knowledge-sharing agent spends the most time adapting, followed by the auctioning agent. We see that compared to figures \ref{fig:adapting-time-no-change} and \ref{fig:adapting-time-risk-introduction}, that the auctioning agent slowly applies more and more adaptations, whereas the knowledge-sharing agent some of these adaptations applied already. 
+Figure \ref{fig:adapting-time-growing} shows that the knowledge-sharing agent spends the most time adapting, followed by the auctioning agent. We see that compared to Figures \ref{fig:adapting-time-no-change} and \ref{fig:adapting-time-risk-introduction}, that the auctioning agent slowly applies more and more adaptations, whereas the knowledge-sharing agent some of these adaptations applied already. 

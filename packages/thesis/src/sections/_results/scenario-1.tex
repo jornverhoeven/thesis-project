@@ -1,7 +1,7 @@
 \subsection{Scenario 1: No Changes}
 \textit{In this scenario, no external changes are made to the infrastructure. The purpose of this scenario is to see how the system behaves when no changes are made.}
 
-To introduce the graphs and what they mean, this subsection will go through the graphs in a bit more detail than in the subsections afterwards. 
+To introduce the graphs and explain their significance, this subsection will delve into the graphs in more detail than in the subsequent subsections. 
 
 \begin{figure}[H]
     \centering
@@ -10,7 +10,7 @@ To introduce the graphs and what they mean, this subsection will go through the 
     \label{fig:overall-damage-no-change}
 \end{figure}
 
-From figure \ref{fig:overall-damage-no-change} we see that the agent with the Local-feature set (from here-on \textit{local-agent}) slowly reduces the overall damage of the network, but is unable to get any lower than around $275$, and stays at this value after roughly the first $50$ seconds.
+From Figure \ref{fig:overall-damage-no-change} we see that the agent with the Local-feature set (from here-on \textit{local-agent}) slowly reduces the overall damage of the network, but is unable to get any lower than around $275$, and stays at this value after roughly the first $50$ seconds.
 Within the first $25$ seconds, the knowledge-sharing agents are able to reduce the overall damage to around $220$, but is unable to get any lower than this. 
 Finally, the auctioning are able to reduce the damage to roughly $80$, but is only able to get there after $80$ seconds.
 The lowest value is for the auctioning agent at $35\%$ of the damage the local-agent.
@@ -22,9 +22,9 @@ The lowest value is for the auctioning agent at $35\%$ of the damage the local-a
     \label{fig:messages-no-change}
 \end{figure}
 
-In figure \ref{fig:messages-no-change} we can see that the local-agent shares no messages, as this feature-set does not allow for it. The auctioning agent sends the most messages. After $80$ seconds all agents have found a stable point damage-wise, and this is also visible from the messages for the auctioning agents. At this point the auctioning agents have sent almost three times as much as the knowledge-sharing agents. This can be explained by the fact that the auctioning agents have a total of $11$ events that can be sent to other agents, compared to the knowledge-sharing agent, which has only $4$ types of messages. This $4 / 11$ ratio is roughly the same as the ratio between the amount of messages sent by the auctioning and knowledge-sharing agents. However, this could be a coincidence, and more research would be needed for this assumption. During an auction participating nodes send on average $4$ messages per participating node, which could also explain the difference in messages sent. 
+In Figure \ref{fig:messages-no-change} we can see that the local-agent shares no messages, as this feature-set does not allow for it. The auctioning agent sends the most messages. After $80$ seconds all agents have found a stable point damage-wise, and this is also visible from the messages for the auctioning agents. At this point the auctioning agents have sent almost three times as much as the knowledge-sharing agents. This can be explained by the fact that the auctioning agents have a total of $11$ events that can be sent to other agents, compared to the knowledge-sharing agent, which has only $4$ types of messages. This $4 / 11$ ratio is roughly the same as the ratio between the amount of messages sent by the auctioning and knowledge-sharing agents. However, this could be a coincidence, and more research would be needed for this assumption. During an auction participating nodes send on average $4$ messages per participating node, which could also explain the difference in messages sent. 
 
-The message count for auctioning nodes goes up roughly every $30$ second, which is the interval at which any agent will start identifying risks if it has received no messages. During this time the agents share some knowledge, sometimes try an auction but then stop because there are no proposals to be made.
+The message count for auctioning nodes goes up roughly every $30$ second, which is the interval at which any agent will start identifying risks if it has received no messages. During this time the agents share some knowledge, sometimes start an auction but then stop because they have received no proposals, nor was able to propose any adaptations itself. 
 
 \begin{figure}[H]
     \centering
@@ -33,7 +33,7 @@ The message count for auctioning nodes goes up roughly every $30$ second, which 
     \label{fig:proposals-no-change}
 \end{figure}
 
-From figure \ref{fig:proposals-no-change} we can see that the knowledge-sharing agent applies the most adaptations, followed by the auctioning agent. The local-agent applies the least adaptations. The knowledge-sharing agent applies almost $3$ times  more adaptations than the local agent. The knowledge-sharing agent has a steep increase in the first $25$ seconds, after which it becomes more stable. The auctioning agent has a slower increase, but is applying adaptations at a steady rate. This is to be expected as any adaptation will be negotiated first, which takes time.
+From Figure \ref{fig:proposals-no-change} we can see that the knowledge-sharing agent applies the most adaptations, followed by the auctioning agent. The local-agent applies the least adaptations. The knowledge-sharing agent applies almost $3$ times  more adaptations than the local agent. The knowledge-sharing agent has a steep increase in the first $25$ seconds, after which it becomes more stable. The auctioning agent has a slower increase, but is applying adaptations at a steady rate. This is to be expected as any adaptation will be negotiated first, which takes time.
 
 \begin{figure}[H]
     \centering
@@ -51,7 +51,7 @@ Figure \ref{fig:risk-count-no-change} shows that the knowledge-sharing agent det
     \label{fig:risk-remaining-no-change}
 \end{figure}
 
-When comparing figure \ref{fig:overall-damage-no-change} to figure \ref{fig:risk-remaining-no-change}, we see that the graphs are following the same trend. This is to be expected, as the overall damage is calculated by summing the damage of all the remaining risks.
+When comparing Figure \ref{fig:overall-damage-no-change} to Figure \ref{fig:risk-remaining-no-change}, we see that the graphs are following the same trend. This is to be expected, as the overall damage is calculated by summing the damage of all the remaining risks.
 
 \begin{figure}[H]
     \centering

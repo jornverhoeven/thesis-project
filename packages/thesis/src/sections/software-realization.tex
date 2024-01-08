@@ -15,7 +15,7 @@ To start things off we will give a brief overview of the components of the ADRIA
     \label{fig:adrian-component-overview}
 \end{figure}
 
-For the architecture design of the prototype, we wanted to create something that is easy to understand, maintain, and instrument. To achieve this, we chose to implement an Event-Driven architecture. This architecture is based on the Observer pattern \cite{gamma1995design}, commonly used in software development. By sending messages through an event bus (See \code{EventBus} in figure \ref{fig:adrian-component-overview}), we can decouple the different components of the system. Next to being able to decouple the components, it also allows us to easily instrument the system. By listening to the events on the event bus during our experiments, we can count the number of events and the time between events. This allows us to easily collect metrics of the system. More on these metrics in Section \ref{ssec:metrics}.
+For the architecture design of the prototype, we wanted to create something that is easy to understand, maintain, and instrument. To achieve this, we chose to implement an Event-Driven architecture. This architecture is based on the Observer pattern \cite{gamma1995design}, commonly used in software development. By sending messages through an event bus (See \code{EventBus} in Figure \ref{fig:adrian-component-overview}), we can decouple the different components of the system. Next to being able to decouple the components, it also allows us to easily instrument the system. By listening to the events on the event bus during our experiments, we can count the number of events and the time between events. This allows us to easily collect metrics of the system. More on these metrics in Section \ref{ssec:metrics}.
 
 Each controller in our design is responsible for a specific set of events and is connected to the event bus. This allows us to easily add new controllers, or replace existing ones during our experiments. The controllers are responsible for handling the different aspects of the agent. 
 
@@ -26,14 +26,14 @@ Each controller in our design is responsible for a specific set of events and is
     \item The \code{ProposalController} is responsible for finding and applying proposals.
 \end{enumerate}
 
-We chose to detach the external communication from the internal communication. This allows us to easily replace the external communication with a different implementation. More on this in Section \ref{sssec:message-broker}.
+We choose to detach the external communication from the internal communication. This allows us to easily replace the external communication with a different implementation. More on this in Section \ref{sssec:message-broker}.
 The \code{MessageBroker} is the layer for interfacing with the external world, and is responsible for sending and receiving messages from other agents and dispatching them to the event bus.
 
 \subsection{Class Diagrams}
 \label{ssec:class-diagrams}
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 
-In this section, we present an overview and analysis of a UML Class Diagram for our proposed implementation of the ADRIAN protocol which can be seen in Figures \ref{fig:uml-agent} through \ref{fig:uml-services}. At a glance, the architecture features multiple controllers, connected through an internal event bus, and a message broker external communication. Additionally, some classes have been extended to support the experimental setup, which is further explained in Section \ref{sec:experiments}.
+In this section, we present an overview and analysis of a UML Class Diagram for our proposed implementation of the ADRIAN protocol which can be seen in Figures \ref{fig:uml-agent} through \ref{fig:uml-services}. At a glance, the architecture features multiple controllers, connected through an internal event bus, and a message broker which enables external communication. Additionally, some classes have been extended to support the experimental setup, which is further explained in Section \ref{sec:experiments}.
 
 \begin{figure}[H]
     \centering
@@ -44,7 +44,7 @@ In this section, we present an overview and analysis of a UML Class Diagram for 
 
 \subsubsection{Increased Cohesion and Reduced Coupling through Controller Interfaces}
 \label{sssec:reduced-cohesion-coupling}
-The systems architecture uses multiple controllers to handle various aspects of the agent, aiming to reduce both cohesion and coupling between components. Each controller is responsible for a specific set of tasks and the corresponding events, leading to a more modular and flexible design. This separation of functionality allows for easier maintenance, as well as the ability to replace controllers with new implementations, minimizing the impact on other parts of the system. One place where this modularity is especially useful is in the experimental setup, where we enable or disable certain features of the agent by replacing the controllers with different implementations. For example, we can disable the \code{AuctionController} by replacing it with a \code{ProposalImplementationController}, bypasses the auction logic and choses the best proposal by itself. This allows us to easily test the system without auctions, and compare the results with the system with auctions enabled.
+The systems architecture uses multiple controllers to handle various aspects of the agent, aiming to reduce both cohesion and coupling between components. Each controller is responsible for a specific set of tasks and the corresponding events, leading to a more modular and flexible design. This separation of functionality allows for easier maintenance, as well as the ability to replace controllers with new implementations, minimizing the impact on other parts of the system. One place where this modularity is especially useful is in the experimental setup, where we enable or disable certain features of the agent by replacing the controllers with different implementations. For example, we can disable the \code{AuctionController} by replacing it with a \code{ProposalImplementation\-Controller}, bypasses the auction logic and choses the best proposal by itself. This allows us to easily test the system without auctions, and compare the results with the system with auctions enabled.
 
 \subsubsection{Event Bus for internal communication}
 \label{sssec:event-bus}
@@ -58,21 +58,21 @@ Controllers serve as an interfacing layer, between the event bus and the service
 \label{sssec:message-broker}
 The system uses a \code{MessageBroker} which facilitates communication between agents. It allows for both incoming and outgoing messages to be handled by the agent while abstracting away the underlying protocol. Incoming messages are processed and dispatched onto the internal event bus, triggering the relevant controllers to handle the message. On the other hand, outgoing messages are sent to the \code{MessageBroker}, which then sends the message to the appropriate agent.
 
-For our simulation we chose to implement the \code{MessageBroker} as a simple in-memory message broker. No actual HTTP request or other protocol is used, as all agents live on the same machine. This allows us to easily simulate the network communication, without having to worry about the complexities of the network. In a real-world scenario, the \code{MessageBroker} would be a network service, which is used to send messages between agents over the network using HTTP requests or some other protocol such as MQTT. From the agent's perspective, the \code{MessageBroker} would be the same, regardless of the implementation.
+For our simulation we chose to implement the \code{MessageBroker} as a simple in-memory message broker. No actual HTTP request or other protocol is used, as all agents run on the same machine. This allows us to easily simulate the network communication, without having to worry about the complexities of the network. In a real-world scenario, the \code{MessageBroker} would be a network service, which is used to send messages between agents over the network using HTTP requests or some other protocol such as MQTT. From the agent's perspective, the \code{MessageBroker} would be the same, regardless of the implementation.
 
 
 \subsubsection{Similarities in graph data structures}
 \label{sssec:graph-data-structures}
-In the real world, the infrastructure is a graph structure. During the configuration of each agent, a localized portion of the infrastructure is captured. This means that an agent has access to all properties of the node it is hosted on, and knows that it is connected to its neighboring nodes. The \code{Infrastructure}-graph consists of two types of nodes; \code{InfrastructureNode} and \code{SoftwareComponent}. These nodes can be mapped to actual hardware (e.g. Servers and IoT devices) and software (e.g. Databases and Services) in real-world applications, their concrete implementation is intentionally left away to reduce overhead and complexity.
+In the real world, the infrastructure is a graph structure. During the configuration of each agent, a localized portion of the infrastructure is captured. This means that an agent has access to all properties of the node it is hosted on, and knows that it is connected to its neighboring nodes. The \code{Infrastructure}-graph consists of two types of nodes; \code{InfrastructureNode} and \code{SoftwareComponent}. These nodes can be mapped to actual hardware (e.g. servers and IoT devices) and software (e.g. databases and services) in real-world applications, their concrete implementation is intentionally left away to reduce overhead and complexity.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.2\textwidth]{_content/uml-graphs}
-    \caption{UML Diagram explaining the structure of the Graphs, in a way that the separate classes are similar to their counterparts.}
+    \caption{UML Diagram explaining the structure of the graphs, in a way that the separate classes are similar to their counterparts.}
     \label{fig:uml-graphs}
 \end{figure}
 
-Throughout the runtime of the application agents learn facts and assumptions from other agents. To overcome issues with overwriting an agents information we have implemented a tiered knowledge system using \code{KnowledgeOrigins}, which we have split into three tiers. The knowledge each agent knows about the host-node (properties) \emph{Direct-knowledge}, and the information about connected nodes from the start is called \emph{Inferred-knowledge} (because it knows something should be there, but not exactly what). During the runtime of an agent it will learn more about agents and nodes around it, and this information from other is called \emph{Indirect-knowledge}. When an agent learns something from another agent, it will store the information in its knowledgebase, and mark it with the \code{KnowledgeOrigin} of the agent it learned it from. This allows us to easily keep track of where the information came from, and if it is still relevant. For example, an agent will never overwrite its \emph{Direct-knowledge} with \emph{Indirect-knowledge}, as it is more reliable. However, it will overwrite \emph{Inferred-knowledge} with \emph{Indirect-knowledge}.
+Throughout the runtime of the application agents learn knowledge from other agents. To overcome issues with overwriting an agents information we have implemented a tiered knowledge system using \code{KnowledgeOrigins}, which we have split into three tiers. The knowledge each agent knows about the host-node (properties) is called \emph{Direct-knowledge}, and the information about connected nodes from the start is called \emph{Inferred-knowledge} (because the agent knows something should be there, but not exactly what). During the runtime of an agent it will learn more about agents and nodes around it, and this information is called \emph{Indirect-knowledge}. When an agent learns something from another agent, it will store the information in its knowledge base, and mark it with the \code{KnowledgeOrigin} of the agent it learned it from. This allows us to easily keep track of where the information came from, and if it is still relevant. For example, an agent will never overwrite its \emph{Direct-knowledge} with \emph{Indirect-knowledge}, as it is more reliable. However, it will overwrite \emph{Inferred-knowledge} with \emph{Indirect-knowledge}.
 
 \subsubsection{Services}
 \label{sssec:services}
@@ -81,13 +81,15 @@ Each controller is only responsible for converting events into service calls. Bu
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{_content/uml-services}
-    \caption{UML Diagram depicting how the Agent's services are tied together.}
+    \caption{UML Diagram depicting how the agent's services are tied together.}
     \label{fig:uml-services}
 \end{figure}
 
 \begin{description}
-    \item[RiskDetection] This service is responsible for detecting risks in the infrastructure. It does this by calculating the attack graph for each node in the infrastructure. With the attack graph, it can then identify \textit{Critical Paths} by finding paths from nodes to a \textit{critical software component}. These \textit{Critical Paths} are then used to calculate the risk damage value. We calculate the risk damage by taking the potential damage value of a software component and multiplying it by the probability of the path. The probability is calculated over all edges between nodes, that are in the same direction of the critical path. 
+    \item[RiskDetection] This service is responsible for detecting risks in the infrastructure. It does this by generating the attack graph from the agents knowledge base. With the attack graph, it can then identify \textit{Critical Paths} by finding paths from nodes to a \textit{critical software component}. These \textit{Critical Paths} are then used to calculate the risk damage value. We calculate the risk damage value by taking the potential damage value of a software component and multiplying it by the probability of the path. The probability is calculated over all edges between nodes, that are in the same direction of the critical path. The result of this operation is called the \emph{risk report}. Figure \ref{fig:attack-graph-to-risk-report} shows an example of the difference between an attack graph and a risk report.
+    
     \begin{figure}[H]
+        \label{fig:attack-graph-to-risk-report}
         \centering
         \begin{subfigure}[b]{0.4\textwidth}
             \centering
@@ -106,9 +108,9 @@ Each controller is only responsible for converting events into service calls. Bu
         \caption{On the left is the graph representation of an attack graph, where each edge is a risk that holds a probability of an attacker exploiting it. The graph is directional and can hold edges in multiple directions. On the right is the graph representation of a risk report. The risk report is also directional but only contains the edges that are in the same \textit{direction} as the critical path. Both graphs can have incoming edges to indicate that a node could be the starting point of an attack.}
     \end{figure}
 
-    \item[ProposalService] This service is responsible for calculating proposals that the node is willing to apply. It does this by taking the risk report from an auction and applying different adaptations to it. For example, an adaptation could be to update the properties of a node or software or migrate a software component to another node. The service then calculates the risk damage value for each adaptation and returns the adaptation with the lowest risk damage value. This adaptation is then used as a bid in the auction, for the auctioneer to consider. 
+    \item[ProposalService] This service is responsible for calculating proposals that the node is able to apply. It does this by taking the risk report from an auction and merging it in its own knowledge base to update it with the latest information about the risk. It will then apply different adaptations to a copy of the knowledge base. An adaptation could be, for example, to update the properties of a node or software (Refer to Section \ref{ssec:risk-rules-adaptaions} for more information). The service then calculates the risk damage value for each adaptation. From the list of all applicable adaptations, the adaptation that mitigates the risk and reduces the damage the most is selected. Additionally, the agent checks if the adaptation does not introduce any new risks. More on that in Section \ref{ssec:risk-deltas}. The selected adaptation is then used as a bid in the auction, for the auctioneer to consider. 
     
-    \item[AuctionManager] This service is responsible for starting and managing the state of an auction. When it starts a new auction, it will send invitations to other agents and wait for their replies (accept or reject). It will also keep track of the current state of the auction and wait for proposals to be submitted. When a proposal is submitted, it will check if all participating nodes replied. If this is the case, it will calculate the risk damage value for each proposal, and select the proposal with the lowest risk damage value. This proposal is then broadcast to all participating nodes, and the auction is finished. The manager will then wait for the next auction to start. There might also be cases where participating nodes fail to send proposals. For these cases, the \code{AuctionManager} has a timeout that starts when an auction starts. If the timeout is reached, the manager will finish the auction at that point, and select the proposal with the lowest risk damage value. If no applicable proposals are received, the auction is canceled and nothing is done.
+    \item[AuctionManager] This service is responsible for starting and managing the state of an auction. Once the \code{RiskDetection} selects a risk to mitigate, the \code{AuctionManager} will start a new auction. It will send invitations to other agents and wait for their replies (accept or reject). It will also keep track of the current state of the auction and wait for proposals to be submitted. When a proposal is submitted, it will check if all participating nodes replied. If this is the case, it will calculate the risk damage value for each proposal, and select the proposal with the lowest risk damage value. This proposal is then broadcasted to all participating nodes, and the auction is finished. The manager will then wait for the next auction to start. There might also be cases where participating nodes fail to send proposals. For these cases, the \code{AuctionManager} has a timeout that starts when an auction starts. If the timeout is reached, the manager will finish the auction at that point, and select the proposal with the lowest risk damage value. If no applicable proposals are received, the auction is canceled and nothing is done.
 \end{description}
 
 % \subsection{Sequence Diagrams}
@@ -132,9 +134,13 @@ Each controller is only responsible for converting events into service calls. Bu
 
 \subsection{Risk Rules \& Adaptations}
 \label{ssec:risk-rules-adaptaions}
-In this section we will describe the risk rules and adaptations that are used in the ADRIAN protocol \cite{mann2023ADRIAN}. The risk rules are used to identify risks in the infrastructure. These rules look at the different properties of the infrastructure and software components, and based on these properties, they can identify a risk between two nodes, software or any combination of those two. 
+In this section we will describe the risk rules and adaptations that are used in the ADRIAN protocol \cite{mann2023ADRIAN}. The risk rules are used to identify risks in the infrastructure. These rules are based on the different properties of the infrastructure and software components,and they can represent a risk between two nodes, regardless of whether it is an infrastructure node or software component.
 
-To implement the risk rules we've chosen to distinguish between three types of risks; \emph{Forward risks}, \emph{Backwards risks}, and \emph{Inward risks}. \emph{Inward risks} are nearly identical to \emph{Backwards risks}, the only theoretical distinction is that inward risks always come from a void-node, whereas backwards risks only come from entities on the graph. Figure \ref{fig:risk-rules} gives a visual representation of the differences between these three types of risks.
+To implement the risk rules we choose to distinguish between three types of risks; \emph{Forward risks}, \emph{Backwards risks}, and \emph{Inward risks}. Figure \ref{fig:risk-rules} gives a visual representation of the differences between these three types of risks. 
+\emph{Forward risks} are risks that are triggered by a property (or combination of properties) on the parent node. They create a directed edge from the parent node to the child node. 
+\emph{Backwards risks} are risks that are triggered by properties on the child node. They create a directed edge from the child node to the parent node. 
+\emph{Inward risks} are risks that are triggered by properties on a node. They create a directed incoming edge to the child node. To implement incoming edges, we use a \emph{void node}, as is also shown in Figure \ref{fig:risk-rule-inward}. The void node is a node that is not part of the infrastructure, and is only used to represent incoming edges.
+\emph{Inward risks} are nearly identical to \emph{Backwards risks}, the only theoretical distinction is that inward risks always come from a void-node, whereas backwards risks only come from entities on the graph. 
 
 \begin{figure}[H]
     \begin{subfigure}[b]{0.3\textwidth}
@@ -161,42 +167,42 @@ To implement the risk rules we've chosen to distinguish between three types of r
 
 These three types of risks are then used to implement the different risk rules. The risk rules are made up partially from existing CVE's, but also from theoretical risks that could occur in a real-world scenario. The risk rules are shown in Table \ref{table:risk-rules}. The theoretical risks are used to further test the system, and show that the system is not just limited to CVE's that are known at the time of implementation. A production ready version of the system would likely include a larger set of risk rules, and would be updated regularly to include new CVE's. However, for the purpose of this thesis, we have chosen to limit the amount of risk rules to a small set of rules.
 
-In table \ref{table:risk-rules} the adaptations that are used to mitigate the risks are also shown. These adaptations are used to reduce the risks in the infrastructure. The ADRIAN Concept \cite{mann2023ADRIAN} mentions two types of adaptations, \emph{Property Change} and \emph{Migration}. Both of these are implemented in the proof of concept. The adaptations in table \ref{table:risk-rules} are split into \emph{Enable Property} and \emph{Version Bump}, both of which are \emph{Property Change} adaptations. Enabling a property is used for boolean properties such as \emph{hasFirewall} and \emph{isSoftwareEncrypted}, which are the properties used by the risk rules. Version bump is used for version properties, and follow a Semantic Version scheme\footnote{\url{https://semver.org/}}. This distinction is made to show that the adaptations are not limited to a single type of property, and that the system is able to handle different types of properties.
+In Table \ref{table:risk-rules} the adaptations that are used to mitigate the risks are also shown. These adaptations are used to reduce the risks in the infrastructure. The ADRIAN concept \cite{mann2023ADRIAN} mentions two types of adaptations, \emph{Property Change} and \emph{Migration}. Both of these are implemented in the proof of concept. The adaptations in Table \ref{table:risk-rules} are split into \emph{Enable Property} and \emph{Version Change}, both of which are \emph{Property Change} adaptations. Enabling a property is used for boolean properties such as \emph{hasFirewall} and \emph{isSoftwareEncrypted}, which are the properties used by the risk rules. \emph{Version change} is used for version properties, and follow a Semantic Version scheme\footnote{\url{https://semver.org/}}. This distinction is made to show that the adaptations are not limited to a single type of property, and that the system is able to handle different types of properties.
 
 \begin{table}[H]
     \centering
     \begin{tabular}{l|l|l|l|l}
-        \textbf{Name} & \textbf{Rule Type} & \textbf{Factor} & \textbf{Adaptation} & \textbf{\begin{tabular}[c]{@{}l@{}}Mitigation \\ Factor\end{tabular}} \\ \hline
+        \textbf{Name} & \textbf{Rule Type} & \textbf{$\mathbf{p}_{\mathbf{k}}$} & \textbf{Adaptation} & \textbf{\begin{tabular}[c]{@{}l@{}}Mitigation \\ Factor\end{tabular}} \\ \hline
         \textbf{Uncertainty\tablefootnote{We always include a small risk to incorporate the uncertainty factor for a more comprehensive representations, and allow agents to detect additional risks which would otherwise be hidden. }} & Inward & $0.08$ & N.A. & \\
         
         \textbf{Firewall} & Backward & $0.8$ & Enable Property & $0.2$ \\
         \textbf{Physically Secured} & Backward & $0.8$ & Enable Property & $0.2$ \\
         \textbf{Software Encrypted} & Backward & $0.8$ & Enable Property & $0.2$ \\
         
-        \textbf{CVE-2020-3676} & Forward & $0.18$ & Version Bump & $0.0$ \\
-        \textbf{CVE-2021-22547} & Forward & $0.18$ & Version Bump & $0.0$ \\
-        \textbf{CVE-2021-40830} & Inward & $0.28$ & Version Bump & $0.0$ \\
-        \textbf{CVE-2022-25666} & Forward & $0.08$ & Version Bump & $0.0$ \\
-        \textbf{CVE-2022-35927\tablefootnote{\label{cve-2022-35927} This CVE introduces both a backward and inward risk.}} & Backward & $0.39$ & Version Bump & $0.0$ \\
-        \textbf{CVE-2022-35927\footnoteref{cve-2022-35927}} & Inward & $0.39$ & Property Change & $0.2$ \\
+        \textbf{CVE-2020-3676} & Forward & $0.18$ & Version Change & $0.0$ \\
+        \textbf{CVE-2021-22547} & Forward & $0.18$ & Version Change & $0.0$ \\
+        \textbf{CVE-2021-40830} & Inward & $0.28$ & Version Change & $0.0$ \\
+        \textbf{CVE-2022-25666} & Forward & $0.08$ & Version Change & $0.0$ \\
+        \textbf{CVE-2022-35927\tablefootnote{\label{cve-2022-35927} This CVE introduces both a backward and inward risk.}} & Backward & $0.39$ & Version Change & $0.0$ \\
+        \textbf{CVE-2022-35927\footnoteref{cve-2022-35927}} & Inward & $0.39$ & Version Change & $0.0$ \\
         
         \textbf{Firmware Risk\tablefootnote{\label{cve-test-risk} These risks are used for testing and are made up, and thus they have no real-world parallel }} & Forward & $0.1$ & N.A. & \\
-        \textbf{OS Risk\footnoteref{cve-test-risk}} & Forward & $0.4$ & Version Bump & $0.0$ \\
-        \textbf{SDK Risk\footnoteref{cve-test-risk}} & Forward & $0.99$ & Version Bump & $0.0$ \\
+        \textbf{OS Risk\footnoteref{cve-test-risk}} & Forward & $0.4$ & Version Change & $0.0$ \\
+        \textbf{SDK Risk\footnoteref{cve-test-risk}} & Forward & $0.99$ & Version Change & $0.0$ \\
     \end{tabular}
-    \caption{\label{table:risk-rules}Overview of the implemented risk rules used during the experimentation. It shows the name or identifier for each rule, the type of rule, the factor that is used to calculate the risk probability, the adaptation that is applied to mitigate the risk, and the mitigation factor that is used to calculate the new risk probability.}
+    \caption{\label{table:risk-rules}Overview of the implemented risk rules. It shows the name or identifier for each rule, the type of rule, the factor that is used to calculate the risk probability, the adaptation that is applied to mitigate the risk, and the mitigation factor that is used to calculate the new risk probability.}
 \end{table}
 
 \subsection{Migrations} 
 \label{ssec:migrations}
-Whereas the table \ref{table:risk-rules} shows all implemented risk rules, and their potential adaptations, it does not show the migrations an agent can make. This is due to migrations not being tied to any specific risk rule, but rather to the infrastructure itself. This means that migrations are not triggered by a risk rule. Instead, migrations are attempted and evaluated by the \code{ProposalService} (see Section \ref{sssec:services}) based on the critical software and the agent itself.
+Whereas Table \ref{table:risk-rules} shows all implemented risk rules, and their potential adaptations, it does not show the migrations an agent can make. This is due to migrations not being tied to any specific risk rule, but rather to the infrastructure itself. This means that migrations are not triggered by a risk rule. Instead, migrations are attempted and evaluated by the \code{ProposalService} (see Section \ref{sssec:services}) based on the critical software and the agent itself.
 
 While developing and experimenting with the ADRIAN protocol, we noticed that the mitigation strategy to migrate software from one node to another is seldom applied. Only under special circumstances will the agents propose to migrate software from one node to another. To illustrate some of the reasons why this is the case, we will sketch several cases that where encountered during the experiments, and why the agents did not \emph{(and should not)} propose to migrate software.
 
 \paragraph*{Migrating along the critical path}
-In figure \ref{fig:migrations-example} we see a simplified infrastructure. The critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node A, the critical path would be shortened as shown in figure \ref{fig:migrations-shortened}. None of the properties change and all edge-probabilities stay the same, only the critical path does. This means that the damage would in almost all cases increase, as any additional edges (unless the probability is exactly 1) decrease the probability of the attack graph, because each probability is always \(0 \leq p \leq 1\). 
+In Figure \ref{fig:migrations-infrastructure} we see a simplified infrastructure. The critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node A, the critical path would be shortened as shown in figure \ref{fig:migrations-shortened}. None of the properties change and all edge-probabilities stay the same. Only the critical path changes. This means that the damage value would in almost all cases increase, as any additional edges (unless the probability is exactly 1) decrease the probability of an attacker reaching the critical component, because each probability is always \(0 \leq p \leq 1\). 
 
-Only if the new edge between node A and software S1 has a significantly reduced probability, would the migration be beneficial. However, because the properties of A and S1 do not change, this is unlikely to happen. 
+The migration would be beneficial only if the new edge between node A and software component S1 has a significantly reduced probability. However, because the properties of A and S1 do not change, this is unlikely to happen.
 
 \begin{figure}[H]
     \begin{subfigure}[b]{0.3\textwidth}
@@ -222,7 +228,7 @@ Only if the new edge between node A and software S1 has a significantly reduced 
 \end{figure}
 
 \paragraph*{Migrating outside the critical path}
-As per our previous example from Figure \ref{fig:migrations-example} we see that migrations along the critical path are usually not beneficial. However, migrations could be a viable option when migrating to neighboring nodes on the critical path. In figure \ref{fig:migrations-outside} we show what a migration outside of the critical path could look like. In this example we see that the critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node C, the critical path would be shortened as shown in figure \ref{fig:migrations-outside-proposal}. This time the overall probability could decrease as expected.  
+As per our previous example from Figure \ref{fig:migrations-example} we see that migrations along the critical path are usually not beneficial. However, migrations could be a viable option when migrating to neighboring nodes on the critical path. In Figure \ref{fig:migrations-outside} we show what a migration outside of the critical path could look like. In this example we see that the critical path from node A to software S1 is shown in red. If we were to migrate software S1 to node C, the critical path would be shortened as shown in Figure \ref{fig:migrations-outside-proposal}. This time the overall probability could decrease as expected.  
 
 \begin{figure}[H]
     \begin{subfigure}[b]{0.3\textwidth}
@@ -247,12 +253,13 @@ As per our previous example from Figure \ref{fig:migrations-example} we see that
     \label{fig:migrations-outside}
 \end{figure}
 
-The ADRIAN concept by Mann \& Smolka \cite{mann2023ADRIAN} initially mentions that agents could only invite other agents that are on the critical path. This would mean that the migration from Figure \ref{fig:migrations-outside} are not possible. However, a small note was made in the concept that potentially others could be invited as well. We believe that this is a good idea, and has been implemented in our system as well.
+The ADRIAN protocol by Mann and Smolka \cite{mann2023ADRIAN} initially mentions that agents could only invite other agents that are on the critical path. This would mean that the migration from Figure \ref{fig:migrations-outside} are not possible. However, a small note was made in the concept that potentially others could be invited as well. We believe that this is a good idea, as it greatly increases the space for finding the best adaptations. 
 
 \paragraph*{Calculating risk deltas}
-When calculating the effectiveness of a mutation, the original ADRIAN concept by Mann \& Smolka \cite{mann2023ADRIAN} mentions that the new probability of the critical path should be calculated. For simple attribute changes this is easy as the critical path stays the same, and the changes are always optimistic\footnote{When implementing the risk rule and its adaptation, we change a property so it never creates a higher risk. It will only ever reduce the risk, or remove it completely.}. However, in case of migrations this calculation becomes a bit more complex. 
+\label{ssec:risk-deltas}
+When calculating the effectiveness of an adaptation, the original ADRIAN protocol by Mann and Smolka \cite{mann2023ADRIAN} mentions that the new probability of the critical path should be calculated. For simple attribute changes this is easy as the critical path stays the same, and the changes are always optimistic\footnote{When implementing the risk rule and its adaptation, we change a property so it never creates a higher risk. It will only ever reduce the risk, or remove it completely.}. However, in case of migrations this calculation becomes a bit more complex. 
 
-When migrating software from one node to another, the critical path changes. This means that the new critical path has to be calculated, and the new risk probability has to be calculated. This as a calculation is only a bit more complex than the evaluation for attribute changes. However, the problem with a migration is that new risks could be introduced in the infrastructure, outside the critical path. Figure \ref{fig:migrations-delta} illustrates this problem in more detail.
+When migrating software from one node to another, the critical path changes. This means that the new critical path has to be calculated, and the new damage value has to be calculated. This as a calculation is only a bit more complex than the evaluation for attribute changes. However, the problem with a migration is that new risks could be introduced in the infrastructure, outside the critical path. Figure \ref{fig:migrations-delta} illustrates this problem in more detail.
 
 \begin{figure}[H]
     \begin{subfigure}[b]{0.3\textwidth}
@@ -279,4 +286,4 @@ When migrating software from one node to another, the critical path changes. Thi
 
 Since these new risks are not on the critical path, they are not taken into account when calculating the risk probability. This means that a migration could make sense for a specific risk, but could introduce new risks that are not taken into account. This could lead to a situation where the risk probability of the critical path is reduced, but the overall risk probability of the infrastructure is increased. 
 
-To mitigate this problem, we've implemented logic that detects risks from its knowledge base before a mutation is applied, and after a mutation is applied. The software then calculates a delta between the two, both in size and total damage. If there are too many new risks introduced, or the total damage increases too much, the mutation is not applied. This adds an additional safeguard to the system, and prevents the agents from applying mutations that could potentially increase the overall damage of the infrastructure.
+To mitigate this problem, logic has been implemented for agents that detects existing risks from an agent's knowledge base before an adaptation is applied, and after an adaptation is applied. The agent then calculates a delta between the two, both in risk count and total damage. If there are too many new risks introduced, or the total damage increases too much, the mutation is not applied. This prevents the agents from applying mutations that could potentially increase the overall damage of the infrastructure.
