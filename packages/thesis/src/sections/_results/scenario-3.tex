@@ -45,10 +45,10 @@ Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds 
     \label{fig:risk-remaining-growing}
 \end{figure}
 
-\add{write}
+When looking at Figure \ref{fig:risk-remaining-growing} it can be observed that the local agent has the most remaining risks, which slowly increases over time. This can be explained by the trend in Figure \ref{fig:proposals-growing}, where the local agent does not apply any adaptations. Both the knowledge-sharing and auctioning agents stay relatively stable, with the knowledge-sharing agent having the least amount of remaining risks. 
 
 \begin{figure}[H]
-    \hspace*{-1cm}
+    \hspace*{-1.2cm}
     \centering
         \input{graphs/auctioning-time-growing}
     \caption{Graph showing the sum of time spent auctioning by agents in the growing scenario.}
@@ -58,7 +58,7 @@ Figure \ref{fig:risk-count-growing} show that the knowledge-sharing agent finds 
 Figure \ref{fig:auctioning-time-growing} shows an ever growing amount of time spent auctioning. This is in line with the expectations as the agents finds a risk, and then starts an auction. These auctions in the end lead to no proposals/adaptations being applied, as the agents are unable to find a better adaptation. This is visible in the graph as the time spent auctioning increases, but the amount of adaptations from Figure \ref{fig:proposals-growing} stays the same.
 
 \begin{figure}[H]
-    \hspace*{-1cm}
+    \hspace*{-1.2cm}
     \centering
         \input{graphs/adapting-time-growing}
     \caption{Graph showing the sum of time spent adapting by agents in the growing scenario.}

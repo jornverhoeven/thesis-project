@@ -43,7 +43,7 @@ function createProposalTotal(scenario) {
 }
 function createRiskCountTotal(scenario) {
     const metric = 'riskUnique-total';
-    return createForMetric(scenario, metric, true)(`Total number of unique risks found`, "Risks");
+    return createForMetric(scenario, metric, true)(`Total number of unique risks found`, "Unique Risks");
 }
 function createTimeSpentAuctioning(scenario) {
     const metric = 'auctioning-time-global';
