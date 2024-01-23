@@ -1,16 +1,16 @@
 \begin{tikzpicture}
 \begin{axis}[
     xlabel={Timestamp [s]},
-    ylabel={Time [ms]},
+    ylabel={\shortstack{Cumulative \\ Adapting Time [ms]}},
     xmin=0, xmax=200000,
     ymin=0, ymax=190019,
-    legend pos=outer north east,
+    legend columns=-1,
+    legend style={at={(0.5,-0.1)},anchor=north},
     ymajorgrids=true,
     grid style=dashed,
     width=\textwidth,
     height=0.5\textwidth,
     scaled x ticks=base 10:-3,
-    scaled y ticks=base 10:-3,
     xtick scale label code/.code={}
 ]
 

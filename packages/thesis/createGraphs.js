@@ -13,18 +13,18 @@ const featureSet = {
 }
 
 function main() {
-//    Object.values(scenarios).forEach(scenario => {
-//        writeToTexFile("overall-damage", scenario, createDamageTotal(scenario));
-//        writeToTexFile("messages", scenario, createMessageTotal(scenario));
-//        writeToTexFile("proposals", scenario, createProposalTotal(scenario));
-//        writeToTexFile("risk-count", scenario, createRiskCountTotal(scenario));
-//        writeToTexFile("risk-remaining", scenario, createRemainingRisks(scenario));
-//        writeToTexFile("auctioning-time", scenario, createTimeSpentAuctioning(scenario));
-//        writeToTexFile("adapting-time", scenario, createTimeSpentAdapting(scenario));
-//    });
+   Object.values(scenarios).forEach(scenario => {
+       writeToTexFile("overall-damage", scenario, createDamageTotal(scenario));
+       writeToTexFile("messages", scenario, createMessageTotal(scenario));
+       writeToTexFile("proposals", scenario, createProposalTotal(scenario));
+       writeToTexFile("risk-count", scenario, createRiskCountTotal(scenario));
+       writeToTexFile("risk-remaining", scenario, createRemainingRisks(scenario));
+       writeToTexFile("auctioning-time", scenario, createTimeSpentAuctioning(scenario));
+       writeToTexFile("adapting-time", scenario, createTimeSpentAdapting(scenario));
+   });
 //    writeToTexFile("multi-run", "no-change", createMultiRun());
-    writeToTexFile("small-infra", "no-change", createSmallInfra());
-     writeToTexFile("large-infra", "large", createLargeInfra());
+    // writeToTexFile("small-infra", "no-change", createSmallInfra());
+    //  writeToTexFile("large-infra", "large", createLargeInfra());
 }
 
 main();
@@ -47,11 +47,11 @@ function createRiskCountTotal(scenario) {
 }
 function createTimeSpentAuctioning(scenario) {
     const metric = 'auctioning-time-global';
-    return createForMetric(scenario, metric, true)(`Time spent auctioning`, "Time [ms]");
+    return createForMetric(scenario, metric, true)(`Time spent auctioning`, "\\shortstack{Cumulative \\\\ Auctioning Time [ms]}");
 }
 function createTimeSpentAdapting(scenario) {
     const metric = 'migrating-time-global';
-    return createForMetric(scenario, metric, true)(`Time spent adapting`, "Time [ms]");
+    return createForMetric(scenario, metric, true)(`Time spent adapting`, "\\shortstack{Cumulative \\\\ Adapting Time [ms]}");
 }
 function createRemainingRisks(scenario) {
     const metric = 'riskCount-global';
@@ -171,7 +171,8 @@ function pgfPlotTemplate(title, yLabel, data, limits, events, noLegend, colors =
     ylabel={${yLabel}},
     xmin=0, xmax=${xmax},
     ymin=0, ymax=${ymax},
-    legend pos=outer north east,
+    legend columns=-1,
+    legend style={at={(0.5,-0.1)},anchor=north},
     ymajorgrids=true,
     grid style=dashed,
     width=\\textwidth,

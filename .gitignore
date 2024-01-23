@@ -4,7 +4,9 @@
 dist/
 ./output/
 output-back
+output-back-2
 graphs-back
+graphs-back-2
 
 .DS_Store
 
